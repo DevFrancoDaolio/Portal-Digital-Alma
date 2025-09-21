@@ -1,13 +1,13 @@
-package com.alma_centroterapeutico.ServicioProfesionales;
+package com.example.demo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ServicioProfesionalesApplication {
+public class DemoApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ServicioProfesionalesApplication.class, args);
+		SpringApplication.run(DemoApplication.class, args);
 	}
 
 }

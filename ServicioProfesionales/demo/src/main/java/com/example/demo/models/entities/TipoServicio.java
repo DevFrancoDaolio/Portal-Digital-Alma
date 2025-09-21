@@ -1,4 +1,4 @@
-package com.alma_centroterapeutico.ServicioProfesionales.models;
+package com.example.demo.models.entities;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "tipos_servicio")
+@Table(name = "TIPO_SERVICIO")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,6 +27,6 @@ public class TipoServicio {
     private Double costo;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "profesional_id", nullable = false)
+    @JoinColumn(name = "profesional_id")
     private Profesional profesional;
 }
