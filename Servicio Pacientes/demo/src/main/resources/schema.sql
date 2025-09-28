@@ -1,0 +1,41 @@
+-- Tabla PROVINCIA
+CREATE TABLE PROVINCIA (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(255) NOT NULL
+);
+
+-- Tabla OBRA_SOCIAL
+CREATE TABLE OBRA_SOCIAL (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(255) NOT NULL
+);
+
+-- Tabla LOCALIDAD
+CREATE TABLE LOCALIDAD (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(255) NOT NULL,
+    provincia_id BIGINT,
+    FOREIGN KEY (provincia_id) REFERENCES PROVINCIA(id)
+);
+
+-- Tabla PACIENTE
+CREATE TABLE PACIENTE (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    dni VARCHAR(20) NOT NULL,
+    nombre VARCHAR(255) NOT NULL,
+    apellido VARCHAR(255) NOT NULL,
+    fecha_nacimiento DATE NOT NULL,
+    email VARCHAR(255),
+    telefono VARCHAR(50),
+    calle VARCHAR(255),
+    numero VARCHAR(20),
+    codigo_postal VARCHAR(20),
+    piso VARCHAR(10),
+    dpto VARCHAR(10),
+    provincia_id BIGINT,
+    localidad_id BIGINT,
+    obra_social_id BIGINT,
+    FOREIGN KEY (provincia_id) REFERENCES PROVINCIA(id),
+    FOREIGN KEY (localidad_id) REFERENCES LOCALIDAD(id),
+    FOREIGN KEY (obra_social_id) REFERENCES OBRA_SOCIAL(id)
+);
