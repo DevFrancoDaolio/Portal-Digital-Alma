@@ -1,0 +1,116 @@
+/* 🔷 Navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 32px;
+  background-color: white;
+  border-bottom: 1px solid #ddd;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.logo a {
+  font-size: 24px;
+  font-weight: bold;
+  color: #007bff;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: 24px;
+  list-style: none;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+}
+
+.nav-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-outline {
+  padding: 8px 16px;
+  border: 1px solid #30008a;
+  border-radius: 6px;
+  background-color: white;
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.btn-primary {
+  padding: 8px 16px;
+  background-color: #000000;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: #333;
+}
+
+/* 🔐 Formulario */
+.create-account-container {
+  max-width: 400px;
+  margin: 60px auto;
+  padding: 30px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.create-account-container h2 {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.subtitle {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.create-account-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.create-account-form input {
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.2s;
+}
+
+.create-account-form input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.create-account-container p {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.create-account-container a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.create-account-container a:hover {
+  text-decoration: underline;
+}

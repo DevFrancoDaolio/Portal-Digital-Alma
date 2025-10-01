@@ -1,0 +1,8 @@
+h2 {
+  font-weight: 600;
+  color: #343a40;
+}
+
+input::placeholder {
+  font-style: italic;
+}
