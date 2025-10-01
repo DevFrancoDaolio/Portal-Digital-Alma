@@ -1,71 +1,93 @@
 package com.example.demo.services;
 
+import com.example.demo.mappers.EspecialidadMapper;
+import com.example.demo.mappers.TipoServicioMapper;
+import com.example.demo.mappers.ProfesionalMapper;
 import com.example.demo.models.dto.ProfesionalDto;
-import com.example.demo.models.dto.TipoServicioDto;
 import com.example.demo.models.entities.Especialidad;
 import com.example.demo.models.entities.Profesional;
 import com.example.demo.models.entities.TipoServicio;
 import com.example.demo.repositories.ProfesionalRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ProfesionalService {
 
-    @Autowired
-    private ProfesionalRepository profesionalRepository;
+    private final ProfesionalRepository profesionalRepository;
+    private final ProfesionalMapper profesionalMapper;
+    private final EspecialidadMapper especialidadMapper;
+    private final TipoServicioMapper tipoServicioMapper;
 
-
-    public Profesional create(Profesional profesional){
-        System.out.println("Guardando un nuevo profesional: " + profesional);
-        return profesionalRepository.save(profesional);
+    public ProfesionalService(ProfesionalRepository profesionalRepository,
+                              ProfesionalMapper profesionalMapper,
+                              EspecialidadMapper especialidadMapper,
+                              TipoServicioMapper tipoServicioMapper) {
+        this.profesionalRepository = profesionalRepository;
+        this.profesionalMapper = profesionalMapper;
+        this.especialidadMapper = especialidadMapper;
+        this.tipoServicioMapper = tipoServicioMapper;
     }
 
-    public Iterable<Profesional> getAll(){
-        return profesionalRepository.findAll();
-    }
+    // Crear profesional
+    public ProfesionalDto create(ProfesionalDto dto) {
+        Profesional profesional = profesionalMapper.toEntity(dto);
 
-    public Profesional getById(Long id) throws Exception{
-        return profesionalRepository.findById(id).orElseThrow(()->
-                new Exception("No se encontro empleado"));
-    }
-
-    @Transactional
-    public Profesional update(Long id, ProfesionalDto profesionalDetails) throws Exception {
-        Profesional profesional = getById(id);
-
-        if (profesionalDetails.getNombre() != null) {
-            profesional.setNombre(profesionalDetails.getNombre());
-        }
-        if (profesionalDetails.getEmail() != null) {
-            profesional.setEmail(profesionalDetails.getEmail());
-        }
-        if (profesionalDetails.getTelefono() != null) {
-            profesional.setTelefono(profesionalDetails.getTelefono());
+        // Mapear especialidades
+        if (dto.getEspecialidades() != null) {
+            List<Especialidad> especialidades = dto.getEspecialidades().stream()
+                    .map(especialidadMapper::toEntity)
+                    .collect(Collectors.toList());
+            profesional.setEspecialidades(especialidades);
         }
 
-        return profesionalRepository.save(profesional);
+        // Mapear servicios
+        if (dto.getServicios() != null) {
+            List<TipoServicio> servicios = dto.getServicios().stream()
+                    .map(tipoServicioMapper::toEntity)
+                    .collect(Collectors.toList());
+            profesional.setServicios(servicios);
+        }
 
+        Profesional guardado = profesionalRepository.save(profesional);
+        return profesionalMapper.toDto(guardado);
     }
 
-    public void eliminarProfesional(Long id) {
+    // Actualizar profesional
+    public ProfesionalDto update(Long id, ProfesionalDto dto) {
         Profesional profesional = profesionalRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Profesional no encontrado con ID: " + id));
-        profesionalRepository.delete(profesional);
+
+        // Actualizar datos básicos
+        profesional.setNombre(dto.getNombre());
+        profesional.setEmail(dto.getEmail());
+        profesional.setTelefono(dto.getTelefono());
+
+        // Actualizar listas
+        if (dto.getEspecialidades() != null) {
+            List<Especialidad> especialidades = dto.getEspecialidades().stream()
+                    .map(especialidadMapper::toEntity)
+                    .collect(Collectors.toList());
+            profesional.setEspecialidades(especialidades);
+        }
+
+        if (dto.getServicios() != null) {
+            List<TipoServicio> servicios = dto.getServicios().stream()
+                    .map(tipoServicioMapper::toEntity)
+                    .collect(Collectors.toList());
+            profesional.setServicios(servicios);
+        }
+
+        Profesional actualizado = profesionalRepository.save(profesional);
+        return profesionalMapper.toDto(actualizado);
     }
 
-    @Transactional
-    public Profesional agregarServicio(Long id, TipoServicio servicioNuevo) throws Exception {
-//        Profesional profesional = getById(id);
-        // Buscar profesional
+    // Obtener profesional por ID
+    public ProfesionalDto getByIdDto(Long id) {
         Profesional profesional = profesionalRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Profesional no encontrado"));
-
-        profesional.agregarServicio(servicioNuevo);
-        return profesionalRepository.save(profesional);
-
+                .orElseThrow(() -> new RuntimeException("Profesional no encontrado con ID: " + id));
+        return profesionalMapper.toDto(profesional);
     }
-
-
 }
+

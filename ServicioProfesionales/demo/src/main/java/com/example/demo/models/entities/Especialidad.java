@@ -27,9 +27,10 @@ public class Especialidad {
     private String descripcion;
 
 
-    @OneToMany(mappedBy = "especialidad", cascade = CascadeType.ALL, orphanRemoval = true)
-    @ToString.Exclude
-    private List<Profesional> profesionales;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profesional_id")
+    private Profesional profesional;
+    private String matricula;
 
 
 }

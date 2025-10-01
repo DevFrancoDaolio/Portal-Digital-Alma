@@ -28,13 +28,13 @@ public class Profesional {
     @Column(name="TELEFONO")
     private int telefono;
 
-
-    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "ESPECIALIDAD_ID",nullable = false)
-    private Especialidad especialidad;
+    @OneToMany(mappedBy = "profesional", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Especialidad> especialidades;
 
     @OneToMany(mappedBy = "profesional", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TipoServicio> servicios;
+
+    private boolean activo = true;
 
 
     public void agregarServicio(TipoServicio servicio) {
