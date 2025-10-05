@@ -1,0 +1,36 @@
+import { Link } from "react-router-dom";
+import "../styles/Home.css"; 
+
+export default function Home() {
+  return (
+    <>
+      {/* 🔷 Navbar con solapas */}
+      <nav className="navbar">
+        <div className="logo">
+          <Link to="/">Turnify</Link>
+        </div>
+        <ul className="nav-links">
+          <li><Link to="/">Inicio</Link></li>
+          <li><Link to="/RegistrarProfesional">Profesionales</Link></li>
+          <li><Link to="/Pacientes">Pacientes</Link></li>
+          <li><Link to="/Turnos">Turnos</Link></li>
+        </ul>
+        <div className="nav-actions">
+          <Link to="/signup" className="btn-primary">Crear cuenta</Link>
+        </div>
+      </nav>
+
+      {/* 🔷 Contenido principal del Home */}
+      <div className="container mt-5 text-center">
+        <h1 className="mb-4">Bienvenido a Turnify</h1>
+        <p className="lead">Gestioná profesionales, pacientes y turnos desde un solo lugar.</p>
+
+        <div className="d-flex flex-column align-items-center gap-3 mt-4">
+          <Link to="/RegistrarProfesional" className="btn-light-gray w-50">Agregar Profesional</Link>
+          <Link to="/Pacientes" className="btn-light-gray w-50">Ver Pacientes</Link>
+          <Link to="/Turnos" className="btn-light-gray w-50">Administrar Turnos</Link>
+        </div>
+      </div>
+    </>
+  );
+}

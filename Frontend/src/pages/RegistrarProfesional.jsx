@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Select from "react-select";
 //import { crearProfesional } from "../services/profesionalesService";
 //import { getEspecialidades } from "../services/especialidadesService";
+import { getEspecialidades } from "../services/especialidades-service";
 import "../styles/Profesionales.css";
+
 
 export default function AgregarProfesional() {
   const navigate = useNavigate();
@@ -25,6 +28,14 @@ export default function AgregarProfesional() {
     especialidades: [],
     principal: "",
   });
+
+useEffect(() => {
+  getEspecialidades()
+    .then((data) => setEspecialidadesDisponibles(data))
+    .catch((err) => console.error("Error al cargar especialidades:", err));
+}, []);
+
+
 
 /*   useEffect(() => {
     getEspecialidades()
@@ -62,6 +73,12 @@ export default function AgregarProfesional() {
     console.log("Nuevo profesional:", form);
     //navigate("/ListarProfesionales");
   };
+
+  const opcionesEspecialidades = especialidadesDisponibles.map((esp) => ({
+  value: esp.id,
+  label: esp.nombre,
+}));
+
 
   return (
     <div className="container mt-5">
@@ -102,7 +119,23 @@ export default function AgregarProfesional() {
         <div className="mb-3 d-flex align-items-center gap-3">
           <div style={{ flex: 1 }}>
             <label className="form-label">Especialidades</label>
-            <select
+            
+            
+            <Select
+              isMulti
+              name="especialidades"
+              options={opcionesEspecialidades}
+              className="basic-multi-select"
+              classNamePrefix="select"
+              value={opcionesEspecialidades.filter((opt) => form.especialidades.includes(opt.value))}
+              onChange={(seleccionadas) => {
+                const ids = seleccionadas.map((opt) => opt.value);
+                setForm({ ...form, especialidades: ids });
+              }}
+            />     
+     
+            
+            {/* <select
               multiple
               name="especialidades"
               className="form-select"
@@ -115,7 +148,7 @@ export default function AgregarProfesional() {
               {especialidadesDisponibles.map((esp) => (
                 <option key={esp.id} value={esp.id}>{esp.nombre}</option>
               ))}
-            </select>
+            </select> */}
           </div>
 
           <div className="boton-agregar">
@@ -140,7 +173,7 @@ export default function AgregarProfesional() {
           />
         </div>
         <button type="submit" className="btn btn-primary me-2">Guardar</button>
-        <button type="button" className="btn btn-secondary" onClick={() => navigate("")}>
+        <button type="button" className="btn btn-secondary" onClick={() => navigate("/")}>
           Cancelar
         </button>
       </form>
