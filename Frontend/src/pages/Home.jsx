@@ -16,7 +16,7 @@ export default function Home() {
           <li><Link to="/Turnos">Turnos</Link></li>
         </ul>
         <div className="nav-actions">
-          <Link to="/signup" className="btn-primary">Crear cuenta</Link>
+          <Link to="/login" className="btn-primary">Crear cuenta</Link>
         </div>
       </nav>
 
