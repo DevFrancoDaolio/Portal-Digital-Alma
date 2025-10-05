@@ -8,19 +8,17 @@ label {
 }
 
 input::placeholder,
+textarea::placeholder,
 select {
   font-style: italic;
+}
+
+textarea {
+  resize: vertical;
 }
 
 table th,
 table td {
   vertical-align: middle;
   text-align: center;
-}
-
-.boton-agregar {
-  display: flex;
-  align-items: center;
-  height: 100%;
-  padding-top: 30px; /* ajustá según el alto del select */
 }

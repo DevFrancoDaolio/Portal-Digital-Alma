@@ -98,20 +98,37 @@ export default function AgregarProfesional() {
             onChange={handleChange}
           />
         </div>
-        {/* <div className="mb-3">
-          <label className="form-label">Especialidad</label>
-          <select
-            name="especialidad"
-            className="form-select"
-            value={form.especialidad}
-            onChange={handleChange}
-          >
-            <option value="">Seleccionar especialidad</option>
-              {especialidades.map((esp, i) => (
-              <option key={i} value={esp}>{esp}</option>
-            ))}
-          </select>
-        </div> */}
+        
+        <div className="mb-3 d-flex align-items-center gap-3">
+          <div style={{ flex: 1 }}>
+            <label className="form-label">Especialidades</label>
+            <select
+              multiple
+              name="especialidades"
+              className="form-select"
+              value={form.especialidades}
+              onChange={(e) => {
+                const opciones = Array.from(e.target.selectedOptions, (opt) => opt.value);
+                setForm({ ...form, especialidades: opciones });
+              }}
+            >
+              {especialidadesDisponibles.map((esp) => (
+                <option key={esp.id} value={esp.id}>{esp.nombre}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="boton-agregar">
+            <button
+              type="button"
+              className="btn btn-success"
+              onClick={() => navigate("/Especialidad")}
+            >
+              +
+            </button>
+          </div>
+          </div>
+
         <div className="mb-3">
           <label className="form-label">Tipo de servicio</label>
           <input
