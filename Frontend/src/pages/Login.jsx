@@ -52,7 +52,7 @@ export default function CreateAccount() {
       {/* 🔐 Formulario de registro */}
       <div className="create-account-container">
         <h2>Crear cuenta</h2>
-        <p className="subtitle">Registrarse para solicitar turnos</p>
+        <p className="subtitle">Registrarse para solicitar o gestionar turnos</p>
         <form onSubmit={handleSubmit} className="create-account-form">
           <input
             type="text"
