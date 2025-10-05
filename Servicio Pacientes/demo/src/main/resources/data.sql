@@ -20,6 +20,7 @@ INSERT INTO OBRA_SOCIAL (id, nombre) VALUES (2, 'PAMI');
 INSERT INTO OBRA_SOCIAL (id, nombre) VALUES (3, 'Swiss Medical');
 INSERT INTO OBRA_SOCIAL (id, nombre) VALUES (4, 'IOMA');
 INSERT INTO OBRA_SOCIAL (id, nombre) VALUES (5, 'Medicus');
+INSERT INTO OBRA_SOCIAL (id, nombre) VALUES (0, 'No especifica');
 
 -- Pacientes de prueba
 INSERT INTO PACIENTE (
@@ -27,7 +28,7 @@ INSERT INTO PACIENTE (
   calle, numero, codigo_postal, piso, dpto,
   provincia_id, localidad_id, obra_social_id
 ) VALUES (
-  1, '30123456', 'Lucía', 'González', '1990-03-12', 'lucia.g@example.com', '3511234567',
+  20, '30123456', 'Lucía', 'González', '1990-03-12', 'lucia.g@example.com', '3511234567',
   'Av. Colón', '1234', '5000', '2', 'B',
   1, 1, 1
 );
@@ -37,7 +38,7 @@ INSERT INTO PACIENTE (
   calle, numero, codigo_postal, piso, dpto,
   provincia_id, localidad_id, obra_social_id
 ) VALUES (
-  2, '27876543', 'Martín', 'Pérez', '1982-07-25', 'martin.p@example.com', '2619876543',
+  21, '27876543', 'Martín', 'Pérez', '1982-07-25', 'martin.p@example.com', '2619876543',
   'San Martín', '456', '5500', NULL, NULL,
   4, 7, 2
 );

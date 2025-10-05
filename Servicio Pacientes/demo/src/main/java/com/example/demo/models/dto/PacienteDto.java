@@ -16,7 +16,6 @@ public class PacienteDto {
     private String dni;
 
 
-
     @NotBlank(message = "El nombre es obligatorio")
     @Pattern(regexp = "^[A-Za-zÁÉÍÓÚÑáéíóúñ ]+$", message = "El nombre solo puede contener letras")
     private String nombre;
@@ -27,6 +26,7 @@ public class PacienteDto {
     private String apellido;
 
     @Email(message = "Email inválido")
+    @NotBlank(message = "El email es obligatorio")
     private String email;
 
     @Past(message = "La fecha debe ser anterior a hoy")
@@ -38,13 +38,26 @@ public class PacienteDto {
 
 
     private String calle;
+
+    @Pattern(regexp = "^[0-9]+$", message = "Solo se permiten números")
     private String numero;
+
+    @Pattern(regexp = "^\\d{4,6}$", message = "El código postal debe tener entre 4 y 6 dígitos")
     private String codigoPostal;
+
+
     private String piso;
     private String dpto;
 
+    @NotNull(message = "La provincia es obligatoria")
     private Long provinciaId;
+
+    @NotNull(message = "La Localidad es obligatoria")
     private Long localidadId;
-    private Long obraSocialId;
+
+
+    @NotNull(message = "La Obra social es obligatoria")
+    private Long obraSocialId; // en caso de que no tenga obra social, secretaria debera seleccionar opcion "no especifica", pero siempre
+    //se debe ingresar una obra social (se puede cambiar pero paja)
 
 }

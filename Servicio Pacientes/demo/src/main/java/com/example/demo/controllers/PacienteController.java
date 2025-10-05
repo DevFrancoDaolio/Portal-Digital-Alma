@@ -11,6 +11,7 @@ import com.example.demo.repositories.LocalidadRepository;
 import com.example.demo.repositories.ObraSocialRepository;
 import com.example.demo.repositories.ProvinciaRepository;
 
+import com.example.demo.services.PacienteService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,16 +27,11 @@ import java.util.stream.Collectors;
 public class PacienteController {
 
     private final PacienteService service;
-    private final ProvinciaRepository provinciaRepo;
-    private final LocalidadRepository localidadRepo;
-    private final ObraSocialRepository obraSocialRepo;
+
 
     @Autowired
-    public PacienteController(PacienteService service, ProvinciaRepository provinciaRepo, LocalidadRepository localidadRepo, ObraSocialRepository obraSocialRepo) {
+    public PacienteController(PacienteService service) {
         this.service = service;
-        this.provinciaRepo = provinciaRepo;
-        this.localidadRepo = localidadRepo;
-        this.obraSocialRepo = obraSocialRepo;
     }
 
     @GetMapping
@@ -55,50 +51,39 @@ public class PacienteController {
         return ResponseEntity.ok(service.toResponseDto(paciente));
     }
 
+
     @PostMapping
-    public ResponseEntity<PacienteResponseDto> crear(@Valid @RequestBody PacienteDto dto) {
-//        Provincia provincia = provinciaRepo.findById(dto.getProvinciaId()).orElseThrow();
-        Provincia provincia = provinciaRepo.findById(dto.getProvinciaId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Provincia no encontrada"));
-        Localidad localidad = localidadRepo.findById(dto.getLocalidadId()).orElseThrow();
-        ObraSocial obraSocial = obraSocialRepo.findById(dto.getObraSocialId()).orElseThrow();
+    public ResponseEntity<?> crear(@Valid @RequestBody PacienteDto dto) {
+            Paciente paciente = service.crearPaciente(dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(service.toResponseDto(paciente));
 
-        Paciente paciente = service.toEntity(dto, provincia, localidad, obraSocial);
-        Paciente guardado = service.guardar(paciente);
-
-        PacienteResponseDto response = service.toResponseDto(guardado);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<PacienteResponseDto> actualizar(@PathVariable Long id, @Valid @RequestBody PacienteDto dto) {
-        if (service.obtenerPorId(id) == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Provincia provincia = provinciaRepo.findById(dto.getProvinciaId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Provincia no encontrada"));
-        Localidad localidad = localidadRepo.findById(dto.getLocalidadId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Localidad no encontrada"));
-        ObraSocial obraSocial = obraSocialRepo.findById(dto.getObraSocialId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Obra social no encontrada"));
-
-        Paciente paciente = service.toEntity(dto, provincia, localidad, obraSocial);
-        paciente.setId(id); // importante para que actualice el existente
-
-        Paciente actualizado = service.guardar(paciente);
-        return ResponseEntity.ok(service.toResponseDto(actualizado));
+        PacienteResponseDto response = service.actualizarPaciente(id, dto);
+        return ResponseEntity.ok(response);
     }
 
 
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        if (service.obtenerPorId(id) == null) {
-            return ResponseEntity.notFound().build();
-        }
-        service.eliminar(id);
-        return ResponseEntity.noContent().build();
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+//        if (service.obtenerPorId(id) == null) {
+//            return ResponseEntity.notFound().build();
+//        }
+//        service.eliminar(id);
+//        return ResponseEntity.noContent().build();
+//    }
+
+    @GetMapping("/buscar")
+    public List<PacienteResponseDto> buscar(@RequestParam(required = false) String dni,
+                                            @RequestParam(required = false) String nombre) {
+        return service.buscar(dni, nombre).stream()
+                .map(service::toResponseDto)
+                .collect(Collectors.toList());
     }
+
 
 }
