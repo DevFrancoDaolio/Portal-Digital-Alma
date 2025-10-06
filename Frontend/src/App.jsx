@@ -17,7 +17,6 @@ function App() {
         <Route path="/turnos" element={<Turnos />} />
         <Route path="/RegistrarProfesional" element={<RegistrarProfesional />} />
         <Route path="/Especialidad" element={<AgregarEspecialidad />} />
-
       </Routes>
     </BrowserRouter>
   );

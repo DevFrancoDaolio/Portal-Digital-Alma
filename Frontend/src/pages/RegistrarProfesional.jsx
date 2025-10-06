@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Select from "react-select";
 //import { crearProfesional } from "../services/profesionalesService";
 //import { getEspecialidades } from "../services/especialidadesService";
@@ -25,158 +25,301 @@ export default function AgregarProfesional() {
       provincia: "",
       localidad: "",
     },
-    especialidades: [],
-    principal: "",
+    especialidades: [], // [{ especialidadId, matricula, esPrincipal }]
+    servicio: "",
   });
-
-useEffect(() => {
-  getEspecialidades()
-    .then((data) => setEspecialidadesDisponibles(data))
-    .catch((err) => console.error("Error al cargar especialidades:", err));
-}, []);
-
-
-
-/*   useEffect(() => {
-    getEspecialidades()
-      .then((res) => setEspecialidadesDisponibles(res.data))
-      .catch((err) => console.error("Error al cargar especialidades:", err));
-  }, []); */
-
-  // ... resto del código igual que antes
-
-
-// export default function AgregarProfesional() {
-//   const especialidades = [
-//     "Cardiología",
-//     "Pediatría",
-//     "Dermatología",
-//     "Neurología",
-//     "Clínica Médica",
-//   ];
-
-//   const [form, setForm] = useState({
-//     nombre: "",
-//     email: "",
-//     telefono: "",
-//     especialidad: "",
-//     servicio: "",
-//   });
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleAgregar = (e) => {
-    e.preventDefault();
-    // Acá podrías enviar a backend o usar context para compartir con Profesionales.jsx
-    console.log("Nuevo profesional:", form);
-    //navigate("/ListarProfesionales");
+  const handleEspecialidadesChange = (e) => {
+    const seleccionadas = Array.from(e.target.selectedOptions, (opt) => opt.value);
+    const nuevas = seleccionadas.map((id) => {
+      const existente = form.especialidades.find((e) => e.especialidadId === id);
+      return existente ?? { especialidadId: id, matricula: "", esPrincipal: false };
+    });
+    setForm({ ...form, especialidades: nuevas });
   };
 
-  const opcionesEspecialidades = especialidadesDisponibles.map((esp) => ({
-  value: esp.id,
-  label: esp.nombre,
-}));
+  const handleMatriculaChange = (index, value) => {
+    const copia = [...form.especialidades];
+    copia[index].matricula = value;
+    setForm({ ...form, especialidades: copia });
+  };
+
+  const handlePrincipalChange = (id) => {
+    const actualizadas = form.especialidades.map((e) => ({
+      ...e,
+      esPrincipal: e.especialidadId === id,
+    }));
+    setForm({ ...form, especialidades: actualizadas });
+  };
+
+  const handleAgregar = (e) => {
+    e.preventDefault();
+    console.log("Nuevo profesional:", form);
+    // navigate("/ListarProfesionales");
+  };
+
+  const handleDireccionChange = (e) => {
+  const { name, value } = e.target;
+  setForm({
+    ...form,
+    direccion: {
+      ...form.direccion,
+      [name]: value,
+      ...(name === "provincia" ? { localidad: "" } : {}), // reset localidad si cambia provincia
+    },
+  });
+};
 
 
-  return (
+  useEffect(() => {
+  // Simulación de especialidades disponibles
+  setEspecialidadesDisponibles([
+    { id: "cardiologia", nombre: "Cardiología" },
+    { id: "pediatria", nombre: "Pediatría" },
+    { id: "dermatologia", nombre: "Dermatología" },
+    { id: "neurologia", nombre: "Neurología" },
+    { id: "clinica", nombre: "Clínica Médica" },
+  ]);
+}, []);
+
+const provincias = [
+  { id: "cordoba", nombre: "Córdoba" },
+  { id: "buenos_aires", nombre: "Buenos Aires" },
+  { id: "santa_fe", nombre: "Santa Fe" },
+];
+
+const localidadesPorProvincia = {
+  cordoba: ["Córdoba Capital", "Villa María", "Río Cuarto"],
+  buenos_aires: ["La Plata", "Mar del Plata", "Bahía Blanca"],
+  santa_fe: ["Rosario", "Santa Fe Capital", "Rafaela"],
+};
+
+
+  return (   
+  <>
+    {/* 🔷 Navbar con solapas */}
+    <nav className="navbar">
+      <div className="logo">
+        <Link to="/">Turnify</Link>
+      </div>
+      <ul className="nav-links">
+        <li><Link to="/">Inicio</Link></li>
+        <li><Link to="/RegistrarProfesional">Profesionales</Link></li>
+        <li><Link to="/Pacientes">Pacientes</Link></li>
+        <li><Link to="/Turnos">Turnos</Link></li>
+      </ul>
+      <div className="nav-actions">
+        <Link to="/login" className="btn-primary">Crear cuenta</Link>
+      </div>
+    </nav>
+
+    {/* 🔷 Formulario de registro de profesional */}
     <div className="container mt-5">
       <h2 className="text-center mb-4">Agregar Profesional</h2>
 
       <form className="mb-4" onSubmit={handleAgregar}>
+        {/* Datos básicos */}
         <div className="mb-3">
           <label className="form-label">Nombre</label>
-          <input
-            type="text"
-            name="nombre"
-            className="form-control"
-            value={form.nombre}
-            onChange={handleChange}
-          />
+          <input type="text" name="nombre" className="form-control" value={form.nombre} onChange={handleChange} />
         </div>
         <div className="mb-3">
           <label className="form-label">Email</label>
-          <input
-            type="email"
-            name="email"
-            className="form-control"
-            value={form.email}
-            onChange={handleChange}
-          />
+          <input type="email" name="email" className="form-control" value={form.email} onChange={handleChange} />
         </div>
         <div className="mb-3">
           <label className="form-label">Teléfono</label>
-          <input
-            type="text"
-            name="telefono"
-            className="form-control"
-            value={form.telefono}
-            onChange={handleChange}
-          />
+          <input type="text" name="telefono" className="form-control" value={form.telefono} onChange={handleChange} />
         </div>
-        
-        <div className="mb-3 d-flex align-items-center gap-3">
-          <div style={{ flex: 1 }}>
-            <label className="form-label">Especialidades</label>
-            
-            
-            <Select
-              isMulti
-              name="especialidades"
-              options={opcionesEspecialidades}
-              className="basic-multi-select"
-              classNamePrefix="select"
-              value={opcionesEspecialidades.filter((opt) => form.especialidades.includes(opt.value))}
-              onChange={(seleccionadas) => {
-                const ids = seleccionadas.map((opt) => opt.value);
-                setForm({ ...form, especialidades: ids });
-              }}
-            />     
-     
-            
-            {/* <select
-              multiple
-              name="especialidades"
-              className="form-select"
-              value={form.especialidades}
-              onChange={(e) => {
-                const opciones = Array.from(e.target.selectedOptions, (opt) => opt.value);
-                setForm({ ...form, especialidades: opciones });
-              }}
-            >
-              {especialidadesDisponibles.map((esp) => (
-                <option key={esp.id} value={esp.id}>{esp.nombre}</option>
-              ))}
-            </select> */}
-          </div>
 
-          <div className="boton-agregar">
-            <button
-              type="button"
-              className="btn btn-success"
-              onClick={() => navigate("/Especialidad")}
-            >
-              +
-            </button>
-          </div>
-          </div>
+{/* Dirección */}
+<div className="mb-4">
+  <label className="form-label">Dirección</label>
 
+  <div className="row mb-2">
+    <div className="col-md-6">
+      <input
+        type="text"
+        name="calle"
+        className="form-control"
+        placeholder="Calle"
+        value={form.direccion.calle}
+        onChange={handleDireccionChange}
+      />
+    </div>
+    <div className="col-md-3">
+      <input
+        type="text"
+        name="numero"
+        className="form-control"
+        placeholder="Número"
+        value={form.direccion.numero}
+        onChange={handleDireccionChange}
+      />
+    </div>
+    <div className="col-md-3">
+      <input
+        type="text"
+        name="codigoPostal"
+        className="form-control"
+        placeholder="Código Postal"
+        value={form.direccion.codigoPostal}
+        onChange={handleDireccionChange}
+      />
+    </div>
+  </div>
+
+  <div className="row mb-2">
+    <div className="col-md-3">
+      <input
+        type="text"
+        name="piso"
+        className="form-control"
+        placeholder="Piso"
+        value={form.direccion.piso}
+        onChange={handleDireccionChange}
+      />
+    </div>
+    <div className="col-md-3">
+      <input
+        type="text"
+        name="dpto"
+        className="form-control"
+        placeholder="Dpto"
+        value={form.direccion.dpto}
+        onChange={handleDireccionChange}
+      />
+    </div>
+    <div className="col-md-3">
+      <select
+        name="provincia"
+        className="form-select"
+        value={form.direccion.provincia}
+        onChange={handleDireccionChange}
+      >
+        <option value="">Provincia</option>
+        {provincias.map((prov) => (
+          <option key={prov.id} value={prov.id}>{prov.nombre}</option>
+        ))}
+      </select>
+    </div>
+    <div className="col-md-3">
+      <select
+        name="localidad"
+        className="form-select"
+        value={form.direccion.localidad}
+        onChange={handleDireccionChange}
+        disabled={!form.direccion.provincia}
+      >
+        <option value="">Localidad</option>
+        {(localidadesPorProvincia[form.direccion.provincia] || []).map((loc) => (
+          <option key={loc} value={loc}>{loc}</option>
+        ))}
+      </select>
+    </div>
+  </div>
+</div>
+
+
+        {/* Tabla de especialidades */}
+<div className="mb-4">
+  <label className="form-label">Especialidades</label>
+  <table className="table table-bordered">
+    <thead>
+      <tr>
+        <th>Seleccionar</th>
+        <th>Matrícula</th>
+        <th>Principal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {especialidadesDisponibles.map((esp) => {
+        const seleccionada = form.especialidades.find((e) => e.especialidadId === esp.id);
+        return (
+          <tr key={esp.id}>
+            <td>
+              <div className="form-check">
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  checked={!!seleccionada}
+                  onChange={() => {
+                    const yaExiste = !!seleccionada;
+                    const nuevas = yaExiste
+                      ? form.especialidades.filter((e) => e.especialidadId !== esp.id)
+                      : [...form.especialidades, { especialidadId: esp.id, matricula: "", esPrincipal: false }];
+                    setForm({ ...form, especialidades: nuevas });
+                  }}
+                />
+                <label className="form-check-label ms-2">{esp.nombre}</label>
+              </div>
+            </td>
+            <td>
+              {seleccionada && (
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Matrícula"
+                  value={seleccionada.matricula}
+                  onChange={(e) => {
+                    const actualizadas = form.especialidades.map((item) =>
+                      item.especialidadId === esp.id ? { ...item, matricula: e.target.value } : item
+                    );
+                    setForm({ ...form, especialidades: actualizadas });
+                  }}
+                />
+              )}
+            </td>
+            <td className="text-center">
+              {seleccionada && (
+                <input
+                  type="radio"
+                  name="principal"
+                  checked={seleccionada.esPrincipal}
+                  onChange={() => {
+                    const actualizadas = form.especialidades.map((item) => ({
+                      ...item,
+                      esPrincipal: item.especialidadId === esp.id,
+                    }));
+                    setForm({ ...form, especialidades: actualizadas });
+                  }}
+                />
+              )}
+            </td>
+          </tr>
+        );
+      })}
+    </tbody>
+  </table>
+  <div className="d-flex justify-content-end mt-2">
+  <button
+    type="button"
+    className="btn btn-success"
+    onClick={() => navigate("/Especialidad")}
+  >
+    + Agregar especialidad
+  </button>
+  </div>
+
+  </div>
+
+        {/* Servicio */}
         <div className="mb-3">
           <label className="form-label">Tipo de servicio</label>
-          <input
-            type="text"
-            name="servicio"
-            className="form-control"
-            value={form.servicio}
-            onChange={handleChange}
-          />
+          <input type="text" name="servicio" className="form-control" value={form.servicio} onChange={handleChange} />
         </div>
+
+        {/* Botones */}
         <button type="submit" className="btn btn-primary me-2">Guardar</button>
         <button type="button" className="btn btn-secondary" onClick={() => navigate("/")}>
           Cancelar
         </button>
       </form>
     </div>
+  </>
   );
 }
