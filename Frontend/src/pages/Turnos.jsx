@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../styles/Turnos.css";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Turnos() {
   const [turnos, setTurnos] = useState([
@@ -33,6 +34,31 @@ export default function Turnos() {
   };
 
   return (
+
+    <div style={{
+    backgroundImage: 'url("../../public/FondoTurnify.png")',
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    minHeight: "100vh",
+  }}>
+
+  {/* 🔷 Navbar con solapas */}
+    <nav className="navbar">
+      <div className="logo">
+        <Link to="/">Turnify</Link>
+      </div>
+      <ul className="nav-links">
+        <li><Link to="/">Inicio</Link></li>
+        <li><Link to="/RegistrarProfesional">Profesionales</Link></li>
+        <li><Link to="/Pacientes">Pacientes</Link></li>
+        <li><Link to="/Turnos">Turnos</Link></li>
+      </ul>
+      <div className="nav-actions">
+        <Link to="/login" className="btn-primary">Crear cuenta</Link>
+      </div>
+    </nav>
+
+    <div className="registro-card">
     <div className="container mt-5">
       <h2 className="text-center mb-4">Gestión de Turnos</h2>
 
@@ -99,6 +125,8 @@ export default function Turnos() {
           ))}
         </tbody>
       </table>
+    </div>
+    </div>
     </div>
   );
 }

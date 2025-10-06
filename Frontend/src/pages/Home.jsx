@@ -4,6 +4,12 @@ import "../styles/Home.css";
 export default function Home() {
   return (
     <>
+    <div style={{
+    backgroundImage: 'url("../../public/FondoTurnify.png")',
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    minHeight: "100vh",
+    }}>
       {/* 🔷 Navbar con solapas */}
       <nav className="navbar">
         <div className="logo">
@@ -30,6 +36,7 @@ export default function Home() {
           <Link to="/Pacientes" className="btn-light-gray w-50">Ver Pacientes</Link>
           <Link to="/Turnos" className="btn-light-gray w-50">Administrar Turnos</Link>
         </div>
+      </div>
       </div>
     </>
   );

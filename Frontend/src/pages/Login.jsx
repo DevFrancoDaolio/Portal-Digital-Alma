@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/Login.css';
 
+
 export default function CreateAccount() {
   const [formData, setFormData] = useState({
     fullName: '',
@@ -31,8 +32,15 @@ export default function CreateAccount() {
     }
   };
 
+
   return (
     <>
+    <div style={{
+    backgroundImage: 'url("../../public/FondoTurnify.png")',
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    minHeight: "100vh",
+  }}>
       {/* 🔷 Navbar con solapas */}
       <nav className="navbar">
         <div className="logo">
@@ -83,6 +91,7 @@ export default function CreateAccount() {
         <p>
           ¿Ya tenés cuenta? <Link to="/login">Iniciar sesión</Link>
         </p>
+      </div>
       </div>
     </>
   );

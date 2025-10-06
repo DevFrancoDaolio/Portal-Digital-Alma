@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/Especialidad.css";
 
 
@@ -26,6 +26,31 @@ export default function AgregarEspecialidad() {
 
 
   return (
+    <>
+    <div style={{
+    backgroundImage: 'url("../../public/FondoTurnify.png")',
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    minHeight: "100vh",
+  }}>
+
+  {/* 🔷 Navbar con solapas */}
+    <nav className="navbar">
+      <div className="logo">
+        <Link to="/">Turnify</Link>
+      </div>
+      <ul className="nav-links">
+        <li><Link to="/">Inicio</Link></li>
+        <li><Link to="/RegistrarProfesional">Profesionales</Link></li>
+        <li><Link to="/Pacientes">Pacientes</Link></li>
+        <li><Link to="/Turnos">Turnos</Link></li>
+      </ul>
+      <div className="nav-actions">
+        <Link to="/login" className="btn-primary">Crear cuenta</Link>
+      </div>
+    </nav>
+
+    <div className="registro-card">
     <div className="container mt-5">
       <h2 className="text-center mb-4">Agregar Especialidad</h2>
 
@@ -87,5 +112,9 @@ export default function AgregarEspecialidad() {
         </button>
       </form>
     </div>
+    </div>
+    </div>
+    </>
   );
+  
 }

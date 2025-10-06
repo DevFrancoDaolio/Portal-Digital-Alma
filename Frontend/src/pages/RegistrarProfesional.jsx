@@ -116,7 +116,7 @@ const localidadesPorProvincia = {
         <Link to="/login" className="btn-primary">Crear cuenta</Link>
       </div>
     </nav>
-
+    <div className="registro-card">
     {/* 🔷 Formulario de registro de profesional */}
     <div className="container mt-5">
       <h2 className="text-center mb-4">Agregar Profesional</h2>
@@ -320,6 +320,8 @@ const localidadesPorProvincia = {
         </button>
       </form>
     </div>
+    </div>
+    
   </>
   );
 }
