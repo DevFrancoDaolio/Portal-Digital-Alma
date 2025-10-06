@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-// import { crearProfesional } from "../services/profesionalesService";
-// import { getEspecialidades } from "../services/especialidadesService";
+import { Link, useNavigate } from "react-router-dom";
+import Select from "react-select";
+//import { crearProfesional } from "../services/profesionalesService";
+//import { getEspecialidades } from "../services/especialidadesService";
+import { getEspecialidades } from "../services/especialidades-service";
 import "../styles/Profesionales.css";
 
 
@@ -97,7 +99,25 @@ const localidadesPorProvincia = {
 };
 
 
-  return (
+  return (   
+  <>
+    {/* 🔷 Navbar con solapas */}
+    <nav className="navbar">
+      <div className="logo">
+        <Link to="/">Turnify</Link>
+      </div>
+      <ul className="nav-links">
+        <li><Link to="/">Inicio</Link></li>
+        <li><Link to="/RegistrarProfesional">Profesionales</Link></li>
+        <li><Link to="/Pacientes">Pacientes</Link></li>
+        <li><Link to="/Turnos">Turnos</Link></li>
+      </ul>
+      <div className="nav-actions">
+        <Link to="/login" className="btn-primary">Crear cuenta</Link>
+      </div>
+    </nav>
+
+    {/* 🔷 Formulario de registro de profesional */}
     <div className="container mt-5">
       <h2 className="text-center mb-4">Agregar Profesional</h2>
 
@@ -295,8 +315,11 @@ const localidadesPorProvincia = {
 
         {/* Botones */}
         <button type="submit" className="btn btn-primary me-2">Guardar</button>
-        <button type="button" className="btn btn-secondary" onClick={() => navigate("")}>Cancelar</button>
+        <button type="button" className="btn btn-secondary" onClick={() => navigate("/")}>
+          Cancelar
+        </button>
       </form>
     </div>
+  </>
   );
 }

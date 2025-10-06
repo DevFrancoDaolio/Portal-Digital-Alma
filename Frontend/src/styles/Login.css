@@ -55,7 +55,7 @@
 }
 
 .btn-primary:hover {
-  background-color: #333;
+  background-color: #007bff;
 }
 
 /* 🔐 Formulario */
@@ -65,7 +65,7 @@
   padding: 30px;
   border-radius: 8px;
   background-color: #f9f9f9;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   font-family: 'Segoe UI', sans-serif;
 }
 

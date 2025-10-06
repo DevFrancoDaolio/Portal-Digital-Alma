@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Especialidad.css";
 
+
 export default function AgregarEspecialidad() {
   const navigate = useNavigate();
 
@@ -22,6 +23,7 @@ export default function AgregarEspecialidad() {
     // Aquí podrías enviar a backend con fetch o axios
     // navigate("/ListarEspecialidades");
   };
+
 
   return (
     <div className="container mt-5">
@@ -80,7 +82,7 @@ export default function AgregarEspecialidad() {
         </div>
 
         <button type="submit" className="btn btn-primary me-2">Guardar</button>
-        <button type="button" className="btn btn-secondary" onClick={() => navigate("/")}>
+        <button type="button" className="btn btn-secondary" onClick={() => navigate("../RegistrarProfesional")}>
           Cancelar
         </button>
       </form>
