@@ -44,7 +44,10 @@ export default function CreateAccount() {
       {/* 🔷 Navbar con solapas */}
       <nav className="navbar">
         <div className="logo">
-          <Link to="/">Turnify</Link>
+          <Link to="/">
+          <span>Turnify </span>
+          <img src={"/public/LogoSinLetras.png"} style={{ height: '45px', width: '40px' }}/>
+          </Link>
         </div>
         <ul className="nav-links">
           <li><Link to="/">Inicio</Link></li>

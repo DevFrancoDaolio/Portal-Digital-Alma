@@ -4,7 +4,7 @@ import '../styles/Profesionales.css'; // ✅ Import del CSS
 
 
 const specialties = [
-  'Clínico', 'Ginecólogo', 'Dermatólogo', 'Pediatra', 'Neurólogo', 'Gastroenterólogo'
+  'Kinesiología', 'Psicología', 'Cardiología', 'Pediatría', 'Fonoaudiología', 'Psiquiatría', 'Médico Clínico', 'Psicomotricidad'
 ];
 
 const professionals = [
@@ -14,7 +14,7 @@ const professionals = [
     apellido: 'James',
     email: 'richard.james@clinic.com',
     direccion: 'Av. Salud 123',
-    especialidades: ['Clínico'],
+    especialidades: ['Pediatría', 'Psicomotricidad'],
   },
   {
     id: 2,
@@ -22,7 +22,7 @@ const professionals = [
     apellido: 'Larson',
     email: 'emily.larson@clinic.com',
     direccion: 'Calle Bienestar 456',
-    especialidades: ['Ginecólogo'],
+    especialidades: ['Kinesiología', 'Psicología'],
   },
   {
     id: 3,
@@ -30,8 +30,19 @@ const professionals = [
     apellido: 'Patel',
     email: 'sarah.patel@clinic.com',
     direccion: 'Ruta Médica 789',
-    especialidades: ['Dermatólogo', 'Clínico'],
+    especialidades: ['Cardiología', 'Medico Clínico'],
   },
+
+   {
+    id: 4,
+    nombre: 'Juan',
+    apellido: 'Puga',
+    email: 'Juanka.patel@clinic.com',
+    direccion: 'Ruta Médica 781',
+    especialidades: [ 'Kinesiología' ],
+  },
+
+
 ];
 
 
@@ -44,17 +55,29 @@ export default function ClinicProfessionals() {
     : professionals;
 
   return (
+
+
+    <div style={{
+    backgroundImage: 'url("../../public/FondoTurnify.png")',
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    minHeight: "100vh",
+  }}>
+
     <div className="clinic-container">
       
       {/* 🔷 Navbar */}
       <nav className="navbar">
         <div className="logo">
-          <Link to="/">Turnify</Link>
+          <Link to="/">
+          <span>Turnify </span>
+          <img src={"/public/LogoSinLetras.png"} style={{ height: '45px', width: '40px' }}/>
+          </Link>
         </div>
         <ul className="nav-links">
           <li><Link to="/">Inicio</Link></li>
           <li><Link to="/ListarProfesionales">Profesionales</Link></li>
-          <li><Link to="/Pacientes">Pacientes</Link></li>
+          <li><Link to="/ListarPaciente">Pacientes</Link></li>
           <li><Link to="/Turnos">Turnos</Link></li>
         </ul>
         <div className="nav-actions">
@@ -115,10 +138,17 @@ export default function ClinicProfessionals() {
               <h3>Detalles de {seleccionado.nombre} {seleccionado.apellido}</h3>
               <p><strong>Email:</strong> {seleccionado.email}</p>
               <p><strong>Dirección:</strong> {seleccionado.direccion}</p>
+                  <button
+                  className="btn btn-warning mt-2"
+                  onClick={() => navigate(`/EditarProfesional/${seleccionado.id}`)}
+                  >
+                  Editar Profesional
+                  </button>
             </div>
           )}
         </main>
       </div>
+    </div>
     </div>
   );
 }

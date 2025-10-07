@@ -13,12 +13,16 @@ export default function Home() {
       {/* 🔷 Navbar con solapas */}
       <nav className="navbar">
         <div className="logo">
-          <Link to="/">Turnify</Link>
+          <Link to="/">
+          <span>Turnify </span>
+          <img src={"/public/LogoSinLetras.png"} style={{ height: '45px', width: '40px' }}/>
+          </Link>
+
         </div>
         <ul className="nav-links">
           <li><Link to="/">Inicio</Link></li>
           <li><Link to="/ListarProfesionales">Profesionales</Link></li>
-          <li><Link to="/Pacientes">Pacientes</Link></li>
+          <li><Link to="/ListarPaciente">Pacientes</Link></li>
           <li><Link to="/Turnos">Turnos</Link></li>
         </ul>
         <div className="nav-actions">
