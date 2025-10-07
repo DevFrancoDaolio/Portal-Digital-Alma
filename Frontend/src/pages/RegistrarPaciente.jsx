@@ -70,10 +70,10 @@ export default function RegistrarPaciente() {
           </Link>
         </div>
         <ul className="nav-links">
-          <li><Link to="/">Inicio</Link></li>
-          <li><Link to="/ListarProfesionales">Profesionales</Link></li>
-          <li><Link to="/ListarPacientes">Pacientes</Link></li>
-          <li><Link to="/Turnos">Turnos</Link></li>
+          <li className={location.pathname === "/" ? "active" : ""} ><Link to="/">Inicio</Link></li>
+          <li className={location.pathname === "/ListarProfesionales" ? "active" : ""}><Link to="/ListarProfesionales">Profesionales</Link></li>
+          <li className={location.pathname === "/RegistrarPaciente" ? "active" : ""}><Link to="/ListarPaciente">Pacientes</Link></li>
+          <li className={location.pathname === "/Turnos" ? "active" : ""}><Link to="/Turnos">Turnos</Link></li>
         </ul>
         <div className="nav-actions">
           <Link to="/login" className="btn-primary">Crear cuenta</Link>

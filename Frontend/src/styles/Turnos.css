@@ -17,3 +17,16 @@ input::placeholder {
   font-family: 'Segoe UI', sans-serif;
 }
 
+.nav-links li {
+  padding-bottom: 4px;
+}
+
+.nav-links li.active {
+  border-bottom: 3px solid #007bff; /* Línea azul debajo */
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+}

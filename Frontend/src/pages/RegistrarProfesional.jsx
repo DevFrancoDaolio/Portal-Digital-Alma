@@ -110,15 +110,26 @@ const localidadesPorProvincia = {
           </Link>
       </div>
       <ul className="nav-links">
-        <li><Link to="/">Inicio</Link></li>
-        <li><Link to="/ListarProfesionales">Profesionales</Link></li>
-        <li><Link to="/ListarPaciente">Pacientes</Link></li>
-        <li><Link to="/Turnos">Turnos</Link></li>
+          <li className={location.pathname === "/" ? "active" : ""} ><Link to="/">Inicio</Link></li>
+          <li className={location.pathname === "/RegistrarProfesional" ? "active" : ""}><Link to="/ListarProfesionales">Profesionales</Link></li>
+          <li className={location.pathname === "/ListarPaciente" ? "active" : ""}><Link to="/ListarPaciente">Pacientes</Link></li>
+          <li className={location.pathname === "/Turnos" ? "active" : ""}><Link to="/Turnos">Turnos</Link></li>
       </ul>
       <div className="nav-actions">
         <Link to="/login" className="btn-primary">Crear cuenta</Link>
       </div>
     </nav>
+
+    
+    <div style={{
+    backgroundImage: 'url("../../public/FondoTurnify.png")',
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    minHeight: "100vh",
+  }}> 
+
+
+
     <div className="registro-card2">
     {/* 🔷 Formulario de registro de profesional */}
     <div className="container mt-5">
@@ -318,12 +329,13 @@ const localidadesPorProvincia = {
 
         {/* Botones */}
         <button type="submit" className="btn btn-primary me-2">Guardar</button>
-        <button type="button" className="btn btn-secondary" onClick={() => navigate("/")}>
+        <button type="button" className="btn btn-secondary" onClick={() => navigate("/listarProfesionales")}>
           Cancelar
         </button>
       </form>
     </div>
     </div>
+    </div> 
     
   </>
   );

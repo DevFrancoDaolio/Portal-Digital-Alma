@@ -20,10 +20,10 @@ export default function Home() {
 
         </div>
         <ul className="nav-links">
-          <li><Link to="/">Inicio</Link></li>
-          <li><Link to="/ListarProfesionales">Profesionales</Link></li>
-          <li><Link to="/ListarPaciente">Pacientes</Link></li>
-          <li><Link to="/Turnos">Turnos</Link></li>
+          <li className={location.pathname === "/" ? "active" : ""} ><Link to="/">Inicio</Link></li>
+          <li className={location.pathname === "/ListarProfesionales" ? "active" : ""} ><Link to="/ListarProfesionales">Profesionales</Link></li>
+          <li className={location.pathname === "/ListarPaciente" ? "active" : ""} ><Link to="/ListarPaciente">Pacientes</Link></li>
+          <li className={location.pathname === "/Turnos" ? "active" : ""}><Link to="/Turnos">Turnos</Link></li>
         </ul>
         <div className="nav-actions">
           <Link to="/login" className="btn-primary">Crear cuenta</Link>
@@ -37,7 +37,7 @@ export default function Home() {
 
         <div className="d-flex flex-column align-items-center gap-3 mt-4">
           <Link to="/ListarProfesionales" className="btn-light-gray w-50">Profesionales</Link>
-          <Link to="/Pacientes" className="btn-light-gray w-50">Ver Pacientes</Link>
+          <Link to="/ListarPaciente" className="btn-light-gray w-50">Ver Pacientes</Link>
           <Link to="/Turnos" className="btn-light-gray w-50">Administrar Turnos</Link>
         </div>
       </div>

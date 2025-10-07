@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import '../styles/Profesionales.css'; // ✅ Import del CSS
 
 
@@ -37,9 +37,9 @@ const professionals = [
     id: 4,
     nombre: 'Juan',
     apellido: 'Puga',
-    email: 'Juanka.patel@clinic.com',
+    email: 'Puga@clinic.com',
     direccion: 'Ruta Médica 781',
-    especialidades: [ 'Kinesiología' ],
+    especialidades: [ 'Kinesiología', 'Psicología', 'Cardiología',  ],
   },
 
 
@@ -53,6 +53,9 @@ export default function ClinicProfessionals() {
   const filtrados = filtro
     ? professionals.filter(p => p.especialidades.includes(filtro))
     : professionals;
+
+  const location = useLocation();
+
 
   return (
 
@@ -75,10 +78,10 @@ export default function ClinicProfessionals() {
           </Link>
         </div>
         <ul className="nav-links">
-          <li><Link to="/">Inicio</Link></li>
-          <li><Link to="/ListarProfesionales">Profesionales</Link></li>
-          <li><Link to="/ListarPaciente">Pacientes</Link></li>
-          <li><Link to="/Turnos">Turnos</Link></li>
+          <li className={location.pathname === "/" ? "active" : ""} ><Link to="/">Inicio</Link></li>
+          <li className={location.pathname === "/ListarProfesionales" ? "active" : ""}><Link to="/ListarProfesionales">Profesionales</Link></li>
+          <li className={location.pathname === "/ListarPaciente" ? "active" : ""}><Link to="/ListarPaciente">Pacientes</Link></li>
+          <li className={location.pathname === "/Turnos" ? "active" : ""}><Link to="/Turnos">Turnos</Link></li>
         </ul>
         <div className="nav-actions">
           <Link to="/login" className="btn-primary">Crear cuenta</Link>
@@ -119,7 +122,9 @@ export default function ClinicProfessionals() {
                 </button>
                 </div>
           </div>
-          <div className="cards-container">
+
+          
+          {/* <div className="cards-container">
             {filtrados.map((prof) => (
               <div
                 key={prof.id}
@@ -130,7 +135,28 @@ export default function ClinicProfessionals() {
                 <p>Especialidades: {prof.especialidades.join(', ')}</p>
               </div>
             ))}
+          </div> */}
+
+        <div className="cards-container">
+  {filtrados.map((prof) => (
+    <div
+            key={prof.id}
+            className={`professional-card ${seleccionado?.id === prof.id ? 'selected' : ''}`}
+            onClick={() => setSeleccionado(prof)}
+          >
+            <img
+              src={prof.fotoUrl || '../../public/doc1.png'}
+              alt={`${prof.nombre} ${prof.apellido}`}
+              className="doctor-photo"
+            />
+            <strong>{prof.nombre} {prof.apellido}</strong>
+            <p>Especialidades: {prof.especialidades.join(', ')}</p>
           </div>
+        ))}
+      </div>
+         
+
+
 
           {/* Detalle */}
           {seleccionado && (

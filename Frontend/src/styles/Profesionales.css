@@ -1,7 +1,4 @@
-/* Ya tenías esto: */
-body {
-  background-image: url("/FondoTurnify.png");
-}
+
 
 h2 {
   font-weight: 600;
@@ -266,4 +263,51 @@ table td {
   border-radius: 12px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
   font-family: 'Segoe UI', sans-serif;
+}
+
+.nav-links li {
+  padding-bottom: 4px;
+}
+
+.nav-links li.active {
+  border-bottom: 3px solid #007bff; /* Línea azul debajo */
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+}
+
+
+/* fotoss de profesionales */
+
+.professional-card {
+  background-color: #ffffff; 
+  border-radius: 12px;
+  padding: 20px;
+  margin: 12px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+  cursor: pointer;
+  width: 250px;
+}
+
+.professional-card:hover {
+  transform: scale(1.02);
+}
+
+.professional-card.selected {
+  border: 2px solid #007BFF;
+}
+
+.doctor-photo { 
+  height: 210px;
+  object-fit: cover;
+  border-radius: 4px; 
+  margin-bottom: 22px;
+  border: 1px solid white;
+  box-shadow: 0 0 6px rgba(0,0,0,0.1);
+
 }
