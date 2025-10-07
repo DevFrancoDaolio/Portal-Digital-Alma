@@ -49,7 +49,7 @@ export default function Turnos() {
       </div>
       <ul className="nav-links">
         <li><Link to="/">Inicio</Link></li>
-        <li><Link to="/RegistrarProfesional">Profesionales</Link></li>
+        <li><Link to="/ListarProfesionales">Profesionales</Link></li>
         <li><Link to="/Pacientes">Pacientes</Link></li>
         <li><Link to="/Turnos">Turnos</Link></li>
       </ul>

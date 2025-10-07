@@ -17,7 +17,7 @@ export default function Home() {
         </div>
         <ul className="nav-links">
           <li><Link to="/">Inicio</Link></li>
-          <li><Link to="/RegistrarProfesional">Profesionales</Link></li>
+          <li><Link to="/ListarProfesionales">Profesionales</Link></li>
           <li><Link to="/Pacientes">Pacientes</Link></li>
           <li><Link to="/Turnos">Turnos</Link></li>
         </ul>
@@ -32,7 +32,7 @@ export default function Home() {
         <p className="lead">Gestioná profesionales, pacientes y turnos desde un solo lugar.</p>
 
         <div className="d-flex flex-column align-items-center gap-3 mt-4">
-          <Link to="/RegistrarProfesional" className="btn-light-gray w-50">Agregar Profesional</Link>
+          <Link to="/ListarProfesionales" className="btn-light-gray w-50">Profesionales</Link>
           <Link to="/Pacientes" className="btn-light-gray w-50">Ver Pacientes</Link>
           <Link to="/Turnos" className="btn-light-gray w-50">Administrar Turnos</Link>
         </div>
