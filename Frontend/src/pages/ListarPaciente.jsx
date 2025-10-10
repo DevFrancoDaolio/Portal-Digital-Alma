@@ -37,9 +37,9 @@ const pacientes = [
   },  {
     id: 5,
     nombre: 'Gabriel',
-    apellido: 'SCRUM MASTER',
-    email: 'scrumasdas@salud.com',
-    direccion: 'PRESENTE 07/10/2025',
+    apellido: 'Giron',
+    email: 'Giron@salud.com',
+    direccion: '9 de julio 123',
     dni: '42528901',
   },
    {
@@ -82,10 +82,10 @@ export default function ListarPaciente() {
           </Link>
         </div>
         <ul className="nav-links">
-          <li><Link to="/">Inicio</Link></li>
-          <li><Link to="/ListarProfesionales">Profesionales</Link></li>
-          <li><Link to="/ListarPaciente">Pacientes</Link></li>
-          <li><Link to="/Turnos">Turnos</Link></li>
+          <li className={location.pathname === "/" ? "active" : ""} ><Link to="/">Inicio</Link></li>
+          <li className={location.pathname === "/ListarProfesionales" ? "active" : ""}><Link to="/ListarProfesionales">Profesionales</Link></li>
+          <li className={location.pathname === "/ListarPaciente" ? "active" : ""}><Link to="/ListarPaciente">Pacientes</Link></li>
+          <li className={location.pathname === "/Turnos" ? "active" : ""}><Link to="/Turnos">Turnos</Link></li>
         </ul>
         <div className="nav-actions">
           <Link to="/login" className="btn-primary">Crear cuenta</Link>

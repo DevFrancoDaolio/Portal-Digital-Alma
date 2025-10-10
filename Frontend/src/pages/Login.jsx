@@ -50,9 +50,9 @@ export default function CreateAccount() {
           </Link>
         </div>
         <ul className="nav-links">
-          <li><Link to="/">Inicio</Link></li>
+          <li ><Link to="/">Inicio</Link></li>
           <li><Link to="/ListarProfesionales">Profesionales</Link></li>
-          <li><Link to="/Pacientes">Pacientes</Link></li>
+          <li><Link to="/LIstarPaciente">Pacientes</Link></li>
           <li><Link to="/Turnos">Turnos</Link></li>
         </ul>
         <div className="nav-actions">
