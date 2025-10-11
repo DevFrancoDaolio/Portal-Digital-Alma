@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/Login.css';
+import NavBar from "../componentes/NavBar";
+import Fondo from '../componentes/Fondo';
 
 
 export default function CreateAccount() {
@@ -35,30 +37,11 @@ export default function CreateAccount() {
 
   return (
     <>
-    <div style={{
-    backgroundImage: 'url("../../public/FondoTurnify.png")',
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    minHeight: "100vh",
-  }}>
+    <Fondo>
+
       {/* 🔷 Navbar con solapas */}
-      <nav className="navbar">
-        <div className="logo">
-          <Link to="/">
-          <span>Turnify </span>
-          <img src={"/public/LogoSinLetras.png"} style={{ height: '45px', width: '40px' }}/>
-          </Link>
-        </div>
-        <ul className="nav-links">
-          <li ><Link to="/">Inicio</Link></li>
-          <li><Link to="/ListarProfesionales">Profesionales</Link></li>
-          <li><Link to="/LIstarPaciente">Pacientes</Link></li>
-          <li><Link to="/Turnos">Turnos</Link></li>
-        </ul>
-        <div className="nav-actions">
-          <Link to="/login" className="btn-primary">Crear cuenta</Link>
-        </div>
-      </nav>
+      <NavBar />
+
 
       {/* 🔐 Formulario de registro */}
       <div className="create-account-container">
@@ -95,7 +78,7 @@ export default function CreateAccount() {
           ¿Ya tenés cuenta? <Link to="/login">Iniciar sesión</Link>
         </p>
       </div>
-      </div>
+      </Fondo>
     </>
   );
 }

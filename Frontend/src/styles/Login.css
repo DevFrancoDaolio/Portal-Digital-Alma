@@ -7,39 +7,11 @@
 }
 
 
-/* 🔷 Navbar */
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 32px;
-  background-color: white;
-  border-bottom: 1px solid #ddd;
-  font-family: 'Segoe UI', sans-serif;
-}
-
 .logo a {
   font-size: 24px;
   font-weight: bold;
   color: #007bff;
   text-decoration: none;
-}
-
-.nav-links {
-  display: flex;
-  gap: 24px;
-  list-style: none;
-}
-
-.nav-links a {
-  text-decoration: none;
-  color: #333;
-  font-weight: 500;
-}
-
-.nav-actions {
-  display: flex;
-  gap: 12px;
 }
 
 .btn-outline {

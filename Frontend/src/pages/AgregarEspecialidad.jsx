@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/Especialidad.css";
-
+import NavBar from "../componentes/NavBar";
+import Fondo from '../componentes/Fondo';
 
 export default function AgregarEspecialidad() {
   const navigate = useNavigate();
@@ -27,31 +28,10 @@ export default function AgregarEspecialidad() {
 
   return (
     <>
-    <div style={{
-    backgroundImage: 'url("../../public/FondoTurnify.png")',
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    minHeight: "100vh",
-  }}>
+    <Fondo>
 
-  {/* 🔷 Navbar con solapas */}
-    <nav className="navbar">
-      <div className="logo">
-          <Link to="/">
-          <span>Turnify </span>
-          <img src={"/public/LogoSinLetras.png"} style={{ height: '45px', width: '40px' }}/>
-          </Link>
-      </div>
-      <ul className="nav-links">
-          <li className={location.pathname === "/" ? "active" : ""} ><Link to="/">Inicio</Link></li>
-          <li className={location.pathname === "/Especialidad" ? "active" : ""}><Link to="/ListarProfesionales">Profesionales</Link></li>
-          <li className={location.pathname === "/ListarPaciente" ? "active" : ""}><Link to="/ListarPaciente">Pacientes</Link></li>
-          <li className={location.pathname === "/Turnos" ? "active" : ""}><Link to="/Turnos">Turnos</Link></li>
-      </ul>
-      <div className="nav-actions">
-        <Link to="/login" className="btn-primary">Crear cuenta</Link>
-      </div>
-    </nav>
+    {/* 🔷 Navbar */}
+    <NavBar />
 
     <div className="registro-card">
     <div className="container mt-5">
@@ -116,8 +96,7 @@ export default function AgregarEspecialidad() {
       </form>
     </div>
     </div>
-    </div>
+    </Fondo>
     </>
   );
-  
 }

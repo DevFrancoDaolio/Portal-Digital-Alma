@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import "../styles/Paciente.css"; // Asegurate de tener este archivo
+import NavBar from "../componentes/NavBar";
+import Fondo from '../componentes/Fondo';
 
 export default function RegistrarPaciente() {
   const navigate = useNavigate();
@@ -61,24 +63,12 @@ export default function RegistrarPaciente() {
 
   return (
     <>
+    
+    <Fondo>
+  
       {/* 🔷 Navbar */}
-      <nav className="navbar">
-        <div className="logo">
-          <Link to="/">
-            <span>Turnify </span>
-            <img src={"/public/LogoSinLetras.png"} style={{ height: '45px', width: '40px' }} />
-          </Link>
-        </div>
-        <ul className="nav-links">
-          <li className={location.pathname === "/" ? "active" : ""} ><Link to="/">Inicio</Link></li>
-          <li className={location.pathname === "/ListarProfesionales" ? "active" : ""}><Link to="/ListarProfesionales">Profesionales</Link></li>
-          <li className={location.pathname === "/RegistrarPaciente" ? "active" : ""}><Link to="/ListarPaciente">Pacientes</Link></li>
-          <li className={location.pathname === "/Turnos" ? "active" : ""}><Link to="/Turnos">Turnos</Link></li>
-        </ul>
-        <div className="nav-actions">
-          <Link to="/login" className="btn-primary">Crear cuenta</Link>
-        </div>
-      </nav>
+      <NavBar />
+
 
       {/* 🔷 Formulario */}
       <div className="registro-card">
@@ -162,6 +152,7 @@ export default function RegistrarPaciente() {
           </form>
         </div>
       </div>
+      </Fondo>
     </>
   );
 }

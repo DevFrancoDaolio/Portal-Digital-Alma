@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import '../styles/Profesionales.css'; // ✅ Import del CSS
+import NavBar from "../componentes/NavBar";
+import Fondo from '../componentes/Fondo';
 
 
 const specialties = [
@@ -59,34 +61,13 @@ export default function ClinicProfessionals() {
 
   return (
 
-
-    <div style={{
-    backgroundImage: 'url("../../public/FondoTurnify.png")',
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    minHeight: "100vh",
-  }}>
+    <Fondo>
 
     <div className="clinic-container">
       
       {/* 🔷 Navbar */}
-      <nav className="navbar">
-        <div className="logo">
-          <Link to="/">
-          <span>Turnify </span>
-          <img src={"/public/LogoSinLetras.png"} style={{ height: '45px', width: '40px' }}/>
-          </Link>
-        </div>
-        <ul className="nav-links">
-          <li className={location.pathname === "/" ? "active" : ""} ><Link to="/">Inicio</Link></li>
-          <li className={location.pathname === "/ListarProfesionales" ? "active" : ""}><Link to="/ListarProfesionales">Profesionales</Link></li>
-          <li className={location.pathname === "/ListarPaciente" ? "active" : ""}><Link to="/ListarPaciente">Pacientes</Link></li>
-          <li className={location.pathname === "/Turnos" ? "active" : ""}><Link to="/Turnos">Turnos</Link></li>
-        </ul>
-        <div className="nav-actions">
-          <Link to="/login" className="btn-primary">Crear cuenta</Link>
-        </div>
-      </nav>
+      <NavBar />
+
 
       {/* Layout principal */}
       <div className="main-layout">
@@ -115,27 +96,13 @@ export default function ClinicProfessionals() {
               <div className="d-flex justify-content-end mt-1">
                 <button
                     type="button"
-                    className="Profesional-button"
+                    className="boton-agregar"
                     onClick={() => navigate("/RegistrarProfesional")}
                 >
                     + Agregar Profesional
                 </button>
                 </div>
           </div>
-
-          
-          {/* <div className="cards-container">
-            {filtrados.map((prof) => (
-              <div
-                key={prof.id}
-                className={`professional-card ${seleccionado?.id === prof.id ? 'selected' : ''}`}
-                onClick={() => setSeleccionado(prof)}
-              >
-                <strong>{prof.nombre} {prof.apellido}</strong>
-                <p>Especialidades: {prof.especialidades.join(', ')}</p>
-              </div>
-            ))}
-          </div> */}
 
         <div className="cards-container">
   {filtrados.map((prof) => (
@@ -145,7 +112,7 @@ export default function ClinicProfessionals() {
             onClick={() => setSeleccionado(prof)}
           >
             <img
-              src={prof.fotoUrl || '../../public/doc1.png'}
+              src={prof.fotoUrl || '/doc1.png'}
               alt={`${prof.nombre} ${prof.apellido}`}
               className="doctor-photo"
             />
@@ -154,10 +121,7 @@ export default function ClinicProfessionals() {
           </div>
         ))}
       </div>
-         
-
-
-
+      
           {/* Detalle */}
           {seleccionado && (
             <div className="professional-detail">
@@ -175,6 +139,6 @@ export default function ClinicProfessionals() {
         </main>
       </div>
     </div>
-    </div>
+    </Fondo>
   );
 }

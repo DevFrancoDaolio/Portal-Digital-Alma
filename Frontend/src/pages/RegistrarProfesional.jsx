@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Select from "react-select";
 //import { crearProfesional } from "../services/profesionalesService";
 //import { getEspecialidades } from "../services/especialidadesService";
 import { getEspecialidades } from "../services/especialidades-service";
 import "../styles/Profesionales.css";
+import NavBar from "../componentes/NavBar";
+import Fondo from '../componentes/Fondo';
 
 
 export default function AgregarProfesional() {
@@ -101,33 +103,12 @@ const localidadesPorProvincia = {
 
   return (   
   <>
-    {/* 🔷 Navbar con solapas */}
-    <nav className="navbar">
-      <div className="logo">
-          <Link to="/">
-          <span>Turnify </span>
-          <img src={"/public/LogoSinLetras.png"} style={{ height: '45px', width: '40px' }}/>
-          </Link>
-      </div>
-      <ul className="nav-links">
-          <li className={location.pathname === "/" ? "active" : ""} ><Link to="/">Inicio</Link></li>
-          <li className={location.pathname === "/RegistrarProfesional" ? "active" : ""}><Link to="/ListarProfesionales">Profesionales</Link></li>
-          <li className={location.pathname === "/ListarPaciente" ? "active" : ""}><Link to="/ListarPaciente">Pacientes</Link></li>
-          <li className={location.pathname === "/Turnos" ? "active" : ""}><Link to="/Turnos">Turnos</Link></li>
-      </ul>
-      <div className="nav-actions">
-        <Link to="/login" className="btn-primary">Crear cuenta</Link>
-      </div>
-    </nav>
 
+    <Fondo>
     
-    <div style={{
-    backgroundImage: 'url("../../public/FondoTurnify.png")',
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    minHeight: "100vh",
-  }}> 
 
+    {/* 🔷 Navbar con solapas */}
+    <NavBar />
 
 
     <div className="registro-card2">
@@ -312,7 +293,7 @@ const localidadesPorProvincia = {
   <div className="d-flex justify-content-end mt-2">
   <button
     type="button"
-    className="btn btn-success"
+    className="boton-agregar"
     onClick={() => navigate("/Especialidad")}
   >
     + Agregar especialidad
@@ -335,8 +316,7 @@ const localidadesPorProvincia = {
       </form>
     </div>
     </div>
-    </div> 
-    
+    </Fondo>
   </>
   );
 }

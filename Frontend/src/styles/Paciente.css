@@ -36,27 +36,6 @@ table td {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
-/* 🔷 Navbar */
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-}
-
-.nav-links {
-  display: flex;
-  gap: 1rem;
-  list-style: none;
-}
-
-.nav-actions .btn-primary {
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  font-weight: bold;
-  text-decoration: none;
-}
-
 /* 🔷 Layout principal */
 .main-layout {
   display: flex;
@@ -102,22 +81,6 @@ table td {
   padding: 1rem;
 }
 
-/* 🔷 Botón agregar paciente */
-.Paciente-button {
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.Paciente-button:hover {
-  background-color: #218838;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
 
 /* 🔷 Inputs y selects del formulario */
 .paciente-form input,
@@ -146,19 +109,4 @@ table td {
 
 .btn:hover {
   opacity: 0.9;
-}
-
-
-.nav-links li {
-  padding-bottom: 4px;
-}
-
-.nav-links li.active {
-  border-bottom: 1,1px solid #007bff; 
-}
-
-.nav-links a {
-  text-decoration: none;
-  color: #333;
-  font-weight: 500;
 }
