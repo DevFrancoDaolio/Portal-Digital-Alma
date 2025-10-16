@@ -79,7 +79,7 @@ export default function ListarPaciente() {
 
       {/* Layout principal */}
       <div className="main-layout">
-        
+        <div className="paciente-list-box">
         {/* Lista de pacientes */}
         <main className="paciente-list">
           <div className="header-pacientes">
@@ -119,6 +119,7 @@ export default function ListarPaciente() {
           )}
         </main>
       </div>
+    </div>
     </div>
     </Fondo>
   );

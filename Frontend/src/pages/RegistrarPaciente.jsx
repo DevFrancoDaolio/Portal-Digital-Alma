@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import "../styles/Paciente.css"; // Asegurate de tener este archivo
+import "../styles/RegistrarPaciente.css"; // Asegurate de tener este archivo
 import NavBar from "../componentes/NavBar";
 import Fondo from '../componentes/Fondo';
 
@@ -71,7 +71,7 @@ export default function RegistrarPaciente() {
 
 
       {/* 🔷 Formulario */}
-      <div className="registro-card">
+        <div className="registro-card">
         <div className="container mt-5">
           <h2 className="text-center mb-4">Registrar Paciente</h2>
 
@@ -148,10 +148,12 @@ export default function RegistrarPaciente() {
 
             {/* Botones */}
             <button type="submit" className="btn btn-primary me-2">Guardar</button>
-            <button type="button" className="btn btn-secondary" onClick={() => navigate("/")}>Cancelar</button>
+            <button type="button" className="btn btn-secondary" onClick={() => navigate("/ListarPaciente")}>Cancelar</button>
           </form>
         </div>
       </div>
+  
+
       </Fondo>
     </>
   );
