@@ -15,8 +15,8 @@ return (
       </div>
       <ul className="nav-links">
           <li className={location.pathname === "/" ? "active" : ""} ><Link to="/">Inicio</Link></li>
-          <li className={location.pathname === "/ListarProfesionales" ? "active" : ""}><Link to="/ListarProfesionales">Profesionales</Link></li>
-          <li className={location.pathname === "/ListarPaciente" ? "active" : ""}><Link to="/ListarPaciente">Pacientes</Link></li>
+          <li className={location.pathname === "/ListarProfesionales" || location.pathname === "/RegistrarProfesional" || location.pathname === "/Especialidad" ? "active" : ""}><Link to="/ListarProfesionales">Profesionales</Link></li>
+          <li className={location.pathname === "/ListarPaciente" || location.pathname === "/RegistrarPaciente" ? "active" : ""}><Link to="/ListarPaciente">Pacientes</Link></li>
           <li className={location.pathname === "/Turnos" ? "active" : ""}><Link to="/Turnos">Turnos</Link></li>
       </ul>
       <div className="nav-actions">

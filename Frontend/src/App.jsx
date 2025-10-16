@@ -24,7 +24,7 @@ function App() {
         <Route path="/RegistrarProfesional" element={<RegistrarProfesional />} />
         <Route path="/Especialidad" element={<AgregarEspecialidad />} />
         <Route path="/ListarPaciente" element={<ListarPaciente />} />
-        <Route path="/RegistrarPaciente" element={<ListarPaciente />} />
+        <Route path="/RegistrarPaciente" element={<RegistrarPaciente />} />
 
               
       </Routes>
