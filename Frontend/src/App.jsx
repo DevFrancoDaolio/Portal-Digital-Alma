@@ -9,6 +9,7 @@ import ListarPaciente from "./pages/ListarPaciente.jsx";
 import RegistrarPaciente from "./pages/RegistrarPaciente.jsx";
 import AgregarConsultorio  from "./pages/AgregarConsultorio.jsx";
 import ListarConsultorio from "./pages/ListarConsultorio.jsx";
+import Test from "./pages/test.jsx";
 //import Navbar from "./components/Navbar";
 
 
@@ -20,6 +21,7 @@ function App() {
     
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/Test" element={<Test/>}/>
         <Route path="/login" element={<Login />} />
         <Route path="/turnos" element={<Turnos />} />
         <Route path="/ListarProfesionales" element={<ListarProfesionales />} />

@@ -3,7 +3,6 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import Select from "react-select";
 //import { crearProfesional } from "../services/profesionalesService";
 //import { getEspecialidades } from "../services/especialidadesService";
-import { getEspecialidades } from "../services/especialidades-service";
 import "../styles/Profesionales.css";
 import NavBar from "../componentes/NavBar";
 import Fondo from '../componentes/Fondo';
@@ -301,13 +300,6 @@ const localidadesPorProvincia = {
   </div>
 
   </div>
-
-        {/* Servicio */}
-        <div className="mb-3">
-          <label className="form-label">Tipo de servicio</label>
-          <input type="text" name="servicio" className="form-control" value={form.servicio} onChange={handleChange} />
-        </div>
-
         {/* Botones */}
         <button type="submit" className="btn btn-primary me-2">Guardar</button>
         <button type="button" className="btn btn-secondary" onClick={() => navigate("/listarProfesionales")}>

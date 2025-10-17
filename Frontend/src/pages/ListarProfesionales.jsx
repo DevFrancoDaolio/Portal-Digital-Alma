@@ -1,62 +1,38 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { getProfesionales } from '../services/profesionalesService';
 import '../styles/Profesionales.css'; // ✅ Import del CSS
 import NavBar from "../componentes/NavBar";
 import Fondo from '../componentes/Fondo';
-
+ 
 
 const specialties = [
   'Kinesiología', 'Psicología', 'Cardiología', 'Pediatría', 'Fonoaudiología', 'Psiquiatría', 'Médico Clínico', 'Psicomotricidad'
 ];
 
-const professionals = [
-  {
-    id: 1,
-    nombre: 'Richard',
-    apellido: 'James',
-    email: 'richard.james@clinic.com',
-    direccion: 'Av. Salud 123',
-    especialidades: ['Pediatría', 'Psicomotricidad'],
-  },
-  {
-    id: 2,
-    nombre: 'Emily',
-    apellido: 'Larson',
-    email: 'emily.larson@clinic.com',
-    direccion: 'Calle Bienestar 456',
-    especialidades: ['Kinesiología', 'Psicología'],
-  },
-  {
-    id: 3,
-    nombre: 'Sarah',
-    apellido: 'Patel',
-    email: 'sarah.patel@clinic.com',
-    direccion: 'Ruta Médica 789',
-    especialidades: ['Cardiología', 'Medico Clínico'],
-  },
-
-   {
-    id: 4,
-    nombre: 'Juan',
-    apellido: 'Puga',
-    email: 'Puga@clinic.com',
-    direccion: 'Ruta Médica 781',
-    especialidades: [ 'Kinesiología', 'Psicología', 'Cardiología',  ],
-  },
-
-
-];
 
 
 export default function ClinicProfessionals() {
   const [filtro, setFiltro] = useState(null);
   const [seleccionado, setSeleccionado] = useState(null);
+  const [professionals, setProfessionals] = useState([]);
   const navigate = useNavigate();
+  
   const filtrados = filtro
     ? professionals.filter(p => p.especialidades.includes(filtro))
     : professionals;
 
   const location = useLocation();
+
+  useEffect(() => {
+  getProfesionales()
+    .then(response => {
+      setProfessionals(response.data);
+    })
+    .catch(error => {
+      console.error("Error al obtener profesionales:", error);
+    });
+}, []);
 
 
   return (
