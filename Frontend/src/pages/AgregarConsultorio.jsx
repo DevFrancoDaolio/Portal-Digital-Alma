@@ -1,12 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import NavBar from "../componentes/NavBar"
 import "../styles/Profesionales.css"
 
 const AgregarConsultorio = () => {
   const navigate = useNavigate()
+  const { id } = useParams()
+  const modoEdicion = !!id
 
   const especialidadesDisponibles = [
     "Kinesiología",
@@ -48,6 +50,32 @@ const AgregarConsultorio = () => {
   const [errors, setErrors] = useState({})
 
   useEffect(() => {
+    if (modoEdicion) {
+      const consultoriosGuardados = JSON.parse(localStorage.getItem("consultorios") || "[]")
+      const consultorio = consultoriosGuardados.find((c) => c.id === Number.parseInt(id))
+
+      if (consultorio) {
+        setFormData({
+          numero: consultorio.numero,
+          nombre: consultorio.nombre,
+          piso: consultorio.piso,
+          ubicacion: consultorio.ubicacion,
+        })
+        setEspecialidadesSeleccionadas(consultorio.especialidades || [])
+
+        const horariosActualizados = horariosDisponibles.map((h) => ({
+          ...h,
+          seleccionado: consultorio.horariosDisponibles?.includes(h.horario) || false,
+        }))
+        setHorarios(horariosActualizados)
+      } else {
+        alert("Consultorio no encontrado")
+        navigate("/ListarConsultorio")
+      }
+    }
+  }, [id, modoEdicion, navigate])
+
+  useEffect(() => {
     if (especialidadesSeleccionadas.length > 0) {
       const nombreGenerado = `Consultorio de ${especialidadesSeleccionadas.join(", ")}`
       setFormData((prev) => ({
@@ -68,7 +96,6 @@ const AgregarConsultorio = () => {
       ...formData,
       [name]: value,
     })
-    // Limpiar error del campo cuando el usuario empieza a escribir
     if (errors[name]) {
       setErrors({
         ...errors,
@@ -83,7 +110,6 @@ const AgregarConsultorio = () => {
     } else {
       setEspecialidadesSeleccionadas([...especialidadesSeleccionadas, especialidad])
     }
-    // Limpiar error de especialidades
     if (errors.especialidades) {
       setErrors({
         ...errors,
@@ -94,7 +120,6 @@ const AgregarConsultorio = () => {
 
   const handleHorarioChange = (id) => {
     setHorarios(horarios.map((h) => (h.id === id ? { ...h, seleccionado: !h.seleccionado } : h)))
-    // Limpiar error de horarios
     if (errors.horarios) {
       setErrors({
         ...errors,
@@ -138,34 +163,55 @@ const AgregarConsultorio = () => {
       const horariosSeleccionados = horarios.filter((h) => h.seleccionado).map((h) => h.horario)
 
       const consultoriosGuardados = JSON.parse(localStorage.getItem("consultorios") || "[]")
-      const nuevoId = consultoriosGuardados.length > 0 ? Math.max(...consultoriosGuardados.map((c) => c.id)) + 1 : 1
 
-      const consultorioData = {
-        id: nuevoId,
-        numero: formData.numero,
-        nombre: formData.nombre,
-        especialidades: especialidadesSeleccionadas,
-        piso: formData.piso,
-        ubicacion: formData.ubicacion,
-        horariosDisponibles: horariosSeleccionados,
-        estado: "disponible",
-        fechaCreacion: new Date().toISOString(),
+      if (modoEdicion) {
+        const consultoriosActualizados = consultoriosGuardados.map((c) =>
+          c.id === Number.parseInt(id)
+            ? {
+                ...c,
+                numero: formData.numero,
+                nombre: formData.nombre,
+                especialidades: especialidadesSeleccionadas,
+                piso: formData.piso,
+                ubicacion: formData.ubicacion,
+                horariosDisponibles: horariosSeleccionados,
+                fechaModificacion: new Date().toISOString(),
+              }
+            : c,
+        )
+
+        localStorage.setItem("consultorios", JSON.stringify(consultoriosActualizados))
+        console.log(
+          "Consultorio actualizado:",
+          consultoriosActualizados.find((c) => c.id === Number.parseInt(id)),
+        )
+        alert("Consultorio actualizado exitosamente")
+      } else {
+        const nuevoId = consultoriosGuardados.length > 0 ? Math.max(...consultoriosGuardados.map((c) => c.id)) + 1 : 1
+
+        const consultorioData = {
+          id: nuevoId,
+          numero: formData.numero,
+          nombre: formData.nombre,
+          especialidades: especialidadesSeleccionadas,
+          piso: formData.piso,
+          ubicacion: formData.ubicacion,
+          horariosDisponibles: horariosSeleccionados,
+          estado: "disponible",
+          fechaCreacion: new Date().toISOString(),
+        }
+
+        consultoriosGuardados.push(consultorioData)
+        localStorage.setItem("consultorios", JSON.stringify(consultoriosGuardados))
+        console.log("Consultorio guardado:", consultorioData)
+        alert("Consultorio registrado exitosamente")
       }
 
-      // Guardar en localStorage
-      consultoriosGuardados.push(consultorioData)
-      localStorage.setItem("consultorios", JSON.stringify(consultoriosGuardados))
-
-      console.log("Consultorio guardado:", consultorioData)
-      alert("Consultorio registrado exitosamente")
-
-      // Redirigir al listado
       navigate("/ListarConsultorio")
     }
   }
 
   const handleCancel = () => {
-    // Redirigir al listado
     navigate("/ListarConsultorio")
   }
 
@@ -173,7 +219,7 @@ const AgregarConsultorio = () => {
     <>
       <NavBar />
       <div className="registro-card2">
-        <h2>Registrar Nuevo Consultorio</h2>
+        <h2>{modoEdicion ? "Editar Consultorio" : "Registrar Nuevo Consultorio"}</h2>
         <form onSubmit={handleSubmit}>
           <div className="row">
             <div className="col-md-6 mb-3">
@@ -317,7 +363,7 @@ const AgregarConsultorio = () => {
                 Cancelar
               </button>
               <button type="submit" className="boton-agregar">
-                Guardar Consultorio
+                {modoEdicion ? "Actualizar Consultorio" : "Guardar Consultorio"}
               </button>
             </div>
           </div>

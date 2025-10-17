@@ -7,8 +7,13 @@ import RegistrarProfesional from "./pages/RegistrarProfesional.jsx";
 import AgregarEspecialidad from "./pages/AgregarEspecialidad.jsx";
 import ListarPaciente from "./pages/ListarPaciente.jsx";
 import RegistrarPaciente from "./pages/RegistrarPaciente.jsx";
+import EditarPaciente from "./pages/EditarPaciente.jsx";
 import AgregarConsultorio  from "./pages/AgregarConsultorio.jsx";
 import ListarConsultorio from "./pages/ListarConsultorio.jsx";
+import EditarConsultorio from "./pages/EditarConsultorio.jsx";
+import MisHorarios from "./pages/MisHorarios.jsx";
+import RegistrarHorario from "./pages/RegistrarHorario.jsx";
+import CreateAccount from "./pages/CreateAccount.jsx";
 //import Navbar from "./components/Navbar";
 
 
@@ -29,6 +34,11 @@ function App() {
         <Route path="/RegistrarPaciente" element={<RegistrarPaciente />} />
         <Route path="/AgregarConsultorio" element={<AgregarConsultorio />} />
         <Route path="/ListarConsultorio" element={<ListarConsultorio />} />
+        <Route path="/EditarConsultorio/:id" element={<EditarConsultorio />} />
+        <Route path="/EditarPaciente/:id" element={<EditarPaciente />} />
+        <Route path="/MisHorarios" element={<MisHorarios />} />
+        <Route path="/RegistrarHorario" element={<RegistrarHorario />} />
+        <Route path="/CreateAccount" element={<CreateAccount />} />
 
 
               

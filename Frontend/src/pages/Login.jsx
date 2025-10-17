@@ -1,61 +1,67 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import '../styles/Login.css';
-import NavBar from "../componentes/NavBar";
-import Fondo from '../componentes/Fondo';
+"use client"
 
+import { useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import "../styles/Login.css"
+import NavBar from "../componentes/NavBar"
+import Fondo from "../componentes/Fondo"
 
-export default function CreateAccount() {
+export default function Login() {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-  });
+    email: "",
+    password: "",
+  })
+  const [error, setError] = useState("")
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+    setError("")
+  }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('https://tu-api.com/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
+  const handleSubmit = (e) => {
+    e.preventDefault()
 
-      if (!response.ok) throw new Error('Error al crear cuenta');
-      const result = await response.json();
-      console.log('Cuenta creada:', result);
-    } catch (error) {
-      console.error('Error:', error.message);
+    // Obtener usuarios registrados
+    const usuarios = JSON.parse(localStorage.getItem("usuarios") || "[]")
+
+    // Buscar usuario
+    const usuario = usuarios.find((u) => u.email === formData.email && u.password === formData.password)
+
+    if (usuario) {
+      // Guardar sesión
+      const sesion = {
+        userId: usuario.id,
+        nombre: usuario.nombre,
+        apellido: usuario.apellido,
+        email: usuario.email,
+        rol: usuario.rol,
+        profesionalId: usuario.profesionalId || null,
+      }
+      localStorage.setItem("sesion", JSON.stringify(sesion))
+
+      // Redirigir según el rol
+      if (usuario.rol === "profesional") {
+        navigate("/MisHorarios")
+      } else {
+        navigate("/Profesionales")
+      }
+    } else {
+      setError("Email o contraseña incorrectos")
     }
-  };
-
+  }
 
   return (
-    <>
     <Fondo>
-
-      {/* 🔷 Navbar con solapas */}
       <NavBar />
-
-
-      {/* 🔐 Formulario de registro */}
       <div className="create-account-container">
-        <h2>Crear cuenta</h2>
-        <p className="subtitle">Registrarse para solicitar o gestionar turnos</p>
+        <h2>Iniciar sesión</h2>
+        <p className="subtitle">Ingresá para gestionar turnos y horarios</p>
+
+        {error && <p className="error-message">{error}</p>}
+
         <form onSubmit={handleSubmit} className="create-account-form">
-          <input
-            type="text"
-            name="fullName"
-            placeholder="Nombre y Apellido"
-            value={formData.fullName}
-            onChange={handleChange}
-            required
-          />
           <input
             type="email"
             name="email"
@@ -72,13 +78,14 @@ export default function CreateAccount() {
             onChange={handleChange}
             required
           />
-          <button type="submit" className="btn-primary">Registrar</button>
+          <button type="submit" className="btn-primary">
+            Iniciar sesión
+          </button>
         </form>
         <p>
-          ¿Ya tenés cuenta? <Link to="/login">Iniciar sesión</Link>
+          ¿No tenés cuenta? <Link to="/CreateAccount">Crear cuenta</Link>
         </p>
       </div>
-      </Fondo>
-    </>
-  );
+    </Fondo>
+  )
 }
