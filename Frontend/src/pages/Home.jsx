@@ -19,8 +19,9 @@ export default function Home() {
 
         <div className="d-flex flex-column align-items-center gap-3 mt-4">
           <Link to="/ListarProfesionales" className="btn-light-gray w-50">Profesionales</Link>
-          <Link to="/ListarPaciente" className="btn-light-gray w-50">Ver Pacientes</Link>
-          <Link to="/Turnos" className="btn-light-gray w-50">Administrar Turnos</Link>
+          <Link to="/ListarPaciente" className="btn-light-gray w-50">Pacientes</Link>
+          <Link to="/Turnos" className="btn-light-gray w-50">Turnos</Link>
+          <Link to="/ListarConsultorio" className="btn-light-gray w-50">Consultorios</Link>
         </div>
       </div>
       </Fondo>

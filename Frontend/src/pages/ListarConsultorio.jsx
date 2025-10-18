@@ -230,7 +230,7 @@ const ListarConsultorios = () => {
                           className="btn btn-danger btn-sm"
                           onClick={() => handleDarDeBaja(consultorio, "permanente")}
                         >
-                          Baja Permanente
+                          Eliminar
                         </button>
                       </>
                     ) : (

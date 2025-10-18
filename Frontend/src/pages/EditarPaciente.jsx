@@ -1,21 +1,22 @@
 "use client"
 
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useState, useEffect } from "react"
+import { useNavigate, useParams } from "react-router-dom"
 import "../styles/Paciente.css"
 import NavBar from "../componentes/NavBar"
 import Fondo from "../componentes/Fondo"
 
-export default function RegistrarPaciente() {
+export default function EditarPaciente() {
   const navigate = useNavigate()
+  const { id } = useParams()
 
   const [form, setForm] = useState({
     nombre: "",
     apellido: "",
     dni: "",
-    email: "",
+    email: "", // Agregado email
     telefono: "",
-    fechaNacimiento: "",
+    fechaNacimiento: "", // Agregado fecha de nacimiento
     obraSocial: "",
     direccion: {
       calle: "",
@@ -43,6 +44,34 @@ export default function RegistrarPaciente() {
     buenos_aires: ["La Plata", "Mar del Plata", "Bahía Blanca"],
     santa_fe: ["Rosario", "Santa Fe Capital", "Rafaela"],
   }
+
+  useEffect(() => {
+    const pacientesGuardados = JSON.parse(localStorage.getItem("pacientes") || "[]")
+    const paciente = pacientesGuardados.find((p) => p.id === Number.parseInt(id))
+
+    if (paciente) {
+      setForm({
+        nombre: paciente.nombre,
+        apellido: paciente.apellido,
+        dni: paciente.dni,
+        email: paciente.email || "", // Cargar email
+        telefono: paciente.telefono,
+        fechaNacimiento: paciente.fechaNacimiento || "", // Cargar fecha de nacimiento
+        obraSocial: paciente.obraSocial,
+        direccion: paciente.direccion || {
+          calle: "",
+          numero: "",
+          codigoPostal: "",
+          piso: "",
+          dpto: "",
+          provincia: "",
+          localidad: "",
+        },
+      })
+    } else {
+      navigate("/ListarPaciente")
+    }
+  }, [id, navigate])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -90,7 +119,7 @@ export default function RegistrarPaciente() {
     return Object.keys(nuevosErrores).length === 0
   }
 
-  const handleRegistrar = (e) => {
+  const handleActualizar = (e) => {
     e.preventDefault()
 
     if (!validarFormulario()) {
@@ -99,20 +128,17 @@ export default function RegistrarPaciente() {
 
     const pacientesGuardados = JSON.parse(localStorage.getItem("pacientes") || "[]")
 
-    const dniExiste = pacientesGuardados.some((p) => p.dni === form.dni)
+    const dniExiste = pacientesGuardados.some((p) => p.dni === form.dni && p.id !== Number.parseInt(id))
     if (dniExiste) {
-      setErrors({ ...errors, dni: "Ya existe un paciente con este DNI" })
+      setErrors({ ...errors, dni: "Ya existe otro paciente con este DNI" })
       return
     }
 
-    const nuevoPaciente = {
-      id: Date.now(),
-      ...form,
-      fechaRegistro: new Date().toISOString(),
-    }
+    const pacientesActualizados = pacientesGuardados.map((p) =>
+      p.id === Number.parseInt(id) ? { ...p, ...form, fechaModificacion: new Date().toISOString() } : p,
+    )
 
-    pacientesGuardados.push(nuevoPaciente)
-    localStorage.setItem("pacientes", JSON.stringify(pacientesGuardados))
+    localStorage.setItem("pacientes", JSON.stringify(pacientesActualizados))
 
     navigate("/ListarPaciente")
   }
@@ -123,9 +149,9 @@ export default function RegistrarPaciente() {
 
       <div className="registro-card">
         <div className="container mt-5">
-          <h2 className="text-center mb-4">Registrar Paciente</h2>
+          <h2 className="text-center mb-4">Editar Paciente</h2>
 
-          <form onSubmit={handleRegistrar} className="paciente-form">
+          <form onSubmit={handleActualizar} className="paciente-form">
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label htmlFor="nombre" className="form-label">
@@ -339,8 +365,8 @@ export default function RegistrarPaciente() {
             </div>
 
             <div className="d-flex gap-2">
-              <button type="submit" className="boton-agregar">
-                Guardar
+              <button type="submit" className="btn btn-primary">
+                Actualizar
               </button>
               <button type="button" className="btn btn-secondary" onClick={() => navigate("/ListarPaciente")}>
                 Cancelar

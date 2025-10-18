@@ -30,14 +30,14 @@ const NavBar = () => {
         </li>
         <li
           className={
-            location.pathname === "/ListarPaciente" || location.pathname === "/RegistrarPaciente" ? "active" : ""
+            location.pathname === "/ListarPaciente" || location.pathname === "/RegistrarPaciente" || location.pathname.startsWith("/EditarPaciente/") ? "active" : ""
           }
         >
           <Link to="/ListarPaciente">Pacientes</Link>
         </li>
         <li
           className={
-            location.pathname === "/ListarConsultorio" || location.pathname === "/AgregarConsultorio" ? "active" : ""
+            location.pathname === "/ListarConsultorio" || location.pathname === "/AgregarConsultorio" || location.pathname.startsWith("/EditarConsultorio/") ? "active" : ""
           }
         >
           <Link to="/ListarConsultorio">Consultorios</Link>
@@ -48,7 +48,7 @@ const NavBar = () => {
       </ul>
       <div className="nav-actions">
         <Link to="/login" className="btn-primary">
-          Crear cuenta
+          Iniciar Sesión
         </Link>
       </div>
     </nav>
