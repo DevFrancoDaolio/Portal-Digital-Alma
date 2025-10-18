@@ -9,9 +9,12 @@ public class ProfesionalResponseDto {
 
     private Long id;
     private String nombre;
-    private String dni;
+    private String apellido;
+    private String sexo;
+    private String cuil;
     private String email;
     private String telefono;
+
 
     // Dirección
     private String calle;
@@ -26,4 +29,6 @@ public class ProfesionalResponseDto {
 
     // Especialidades con matrícula
     private List<EspecialidadConMatriculaDtoResponse> especialidades;
+
+    private Boolean activo;
 }

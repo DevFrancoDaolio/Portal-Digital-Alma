@@ -10,7 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
-@CrossOrigin(origins = "http://localhost:5173")
+//@CrossOrigin(origins = "http://localhost:5173")
+
 @RestController
 @RequestMapping("/profesionales")
 public class ProfesionalController {
@@ -50,6 +51,13 @@ public class ProfesionalController {
 //        return ResponseEntity.ok("Profesional eliminado correctamente");
 //    }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> darBaja(@PathVariable Long id) {
+        service.darBajaProfesional(id);
+        return ResponseEntity.ok("Profesional dado de baja correctamente.");
+    }
+
+
     @GetMapping("/buscar")
     public ResponseEntity<List<ProfesionalResponseDto>> buscarProfesionales(
             @RequestParam(required = false) String nombre,
@@ -59,4 +67,17 @@ public class ProfesionalController {
     ) {
         return ResponseEntity.ok(service.buscar(nombre, especialidadId, provinciaId, localidadId));
     }
+
+    @GetMapping("/activos")
+    public ResponseEntity<List<ProfesionalResponseDto>> getActivos() {
+        return ResponseEntity.ok(service.getAllActivos());
+    }
+
+    @PutMapping("/{id}/reactivar")
+    public ResponseEntity<String> reactivarProfesional(@PathVariable Long id) {
+        service.reactivarProfesional(id);
+        return ResponseEntity.ok("Profesional reactivado correctamente.");
+    }
+
+
 }

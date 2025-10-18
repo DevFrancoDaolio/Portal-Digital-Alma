@@ -1,8 +1,10 @@
 package com.example.demo.models.dto;
 
+import com.example.demo.models.enums.Sexo;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+
 
 import java.util.List;
 
@@ -14,14 +16,25 @@ public class ProfesionalRequestDto {
     @Size(min = 2, max = 50, message = "El nombre debe tener entre 2 y 50 caracteres")
     private String nombre;
 
+
+    @NotBlank(message = "El apellido es obligatorio")
+    @Pattern(regexp = "^[A-Za-zÁÉÍÓÚÑáéíóúñ ]+$", message = "El apellido solo puede contener letras")
+    @Size(min = 2, max = 50, message = "El apellido debe tener entre 2 y 50 caracteres")
+    private String apellido;
+
+
     @Pattern(regexp = "^[0-9]+$", message = "Solo se permiten números")
-    @Pattern(regexp = "^[0-9]{7,15}$", message = "El DNI debe tener entre 7 y 15 dígitos")
+    @Pattern(regexp = "^[0-9]{7,15}$", message = "El CUIL debe tener entre 7 y 15 dígitos")
     @NotBlank(message = "El DNI es obligatorio")
-    private String dni;
+    private String cuil;
 
     @Email(message = "Email inválido")
     @NotBlank(message = "El email es obligatorio")
     private String email;
+
+    // Sexo del profesional
+    @NotNull(message = "El sexo es obligatorio")
+    private Sexo sexo;
 
 
     @NotBlank(message = "El teléfono no puede estar vacío")

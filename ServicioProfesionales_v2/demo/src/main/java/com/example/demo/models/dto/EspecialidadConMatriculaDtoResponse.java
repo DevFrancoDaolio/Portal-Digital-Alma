@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 public class EspecialidadConMatriculaDtoResponse {
 
     private String nombre;
-
     private String matricula;
+    private boolean esPrincipal;
 
 }

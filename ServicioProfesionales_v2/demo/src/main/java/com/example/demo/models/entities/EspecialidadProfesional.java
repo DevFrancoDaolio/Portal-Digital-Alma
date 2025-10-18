@@ -28,4 +28,10 @@ public class EspecialidadProfesional {
 //    private String matricula;
     @Column(name = "matricula")
     private String matricula;
+
+    @Column(name = "principal")
+    private boolean esPrincipal;
+
+
+
 }

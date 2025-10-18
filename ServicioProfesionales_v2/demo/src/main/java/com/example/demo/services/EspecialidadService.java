@@ -1,5 +1,7 @@
 package com.example.demo.services;
 
+import com.example.demo.exception.EspecialidadDuplicadaException;
+import com.example.demo.exception.EspecialidadDuplicadaNombreException;
 import com.example.demo.models.dto.EspecialidadDto;
 import com.example.demo.models.entities.Especialidad;
 import com.example.demo.repositories.EspecialidadRepository;
@@ -22,9 +24,14 @@ public class EspecialidadService {
     }
 
     public EspecialidadDto crear(EspecialidadDto dto) {
+
+        if (especialidadRepository.existsByNombreIgnoreCase(dto.getNombre())) {
+            throw new EspecialidadDuplicadaNombreException(dto.getNombre());
+        }
         Especialidad especialidad = new Especialidad();
         especialidad.setNombre(dto.getNombre());
         especialidad.setDescripcion(dto.getDescripcion());
+
         Especialidad guardada = especialidadRepository.save(especialidad);
         return new EspecialidadDto(guardada.getId(), guardada.getNombre(), guardada.getDescripcion());
     }

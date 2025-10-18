@@ -177,9 +177,9 @@ INSERT INTO ESPECIALIDAD (nombre, descripcion) VALUES
 
 -- Profesional de ejemplo
 INSERT INTO PROFESIONAL (
-    nombre, dni, email, telefono, calle, numero, codigo_postal, piso, departamento, provincia_id, localidad_id
+    nombre, apellido, sexo, cuil, email, telefono, calle, numero, codigo_postal, piso, departamento, provincia_id, localidad_id
 ) VALUES (
-    'gabriel gabriel', '444444444', 'gabi@salud.com', '3511234567', 'Av. Colón', '1234', '5000', '3', 'A', 5, 14
+    'Gabriel Cristian', 'Giron', 'MASCULINO','11111111111','gabi@salud.com', '3511234567', 'Av. Colón', '1234', '5000', '3', 'A', 5, 14
 );
 
 -- Especialidades con matrícula
