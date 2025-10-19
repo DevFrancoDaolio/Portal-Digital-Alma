@@ -105,6 +105,7 @@ export default function RegistrarPaciente() {
       return
     }
 
+    /*¿Sirve de algo la fecha de registro? */
     const nuevoPaciente = {
       id: Date.now(),
       ...form,

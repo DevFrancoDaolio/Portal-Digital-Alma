@@ -405,6 +405,18 @@ table td {
   border-top: 1px solid #e0e0e0;
 }
 
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem; /* opcional, para espacio entre título y botón */
+}
+
+.header-top h2 {
+  margin: 0; /* elimina margen vertical si es necesario */
+}
+
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .main-layout {
@@ -438,4 +450,6 @@ table td {
   .modal-overlay {
     padding: 10px;
   }
+
+  
 }

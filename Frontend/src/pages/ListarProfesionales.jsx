@@ -117,12 +117,14 @@ export default function ClinicProfessionals() {
 
           <main className="professional-list">
             <div className="header-profesionales">
-              <h2>Nuestros Profesionales</h2>
+              <div className="header-top">
+                <h2>Nuestros Profesionales</h2>
                 {isAdmin && (
                   <button type="button" className="boton-agregar" onClick={() => navigate("/RegistrarProfesional")}>
                     + Registrar Profesional
                   </button>
-              )}
+                )}
+              </div>
               <div className="search-container mb-3">
                 <input
                   type="text"

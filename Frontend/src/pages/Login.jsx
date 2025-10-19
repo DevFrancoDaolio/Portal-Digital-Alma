@@ -45,7 +45,7 @@ export default function Login() {
       if (usuario.rol === "profesional") {
         navigate("/MisHorarios")
       } else {
-        navigate("/Profesionales")
+        navigate("/ListarProfesionales")
       }
     } else {
       setError("Email o contraseña incorrectos")

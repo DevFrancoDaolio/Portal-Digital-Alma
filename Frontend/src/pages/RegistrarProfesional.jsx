@@ -9,16 +9,19 @@ import Fondo from "../componentes/Fondo"
 export default function AgregarProfesional({ isModal = false, onClose = null, profesional = null, onSave = null }) {
   const navigate = useNavigate()
   const { id } = useParams()
+  /* aca debería ser administrador */
   const modoEdicion = !!id || !!profesional
 
   const [especialidadesDisponibles, setEspecialidadesDisponibles] = useState([])
   const [errors, setErrors] = useState({})
 
   const [form, setForm] = useState({
+    foto: "",
     nombre: "",
     apellido: "",
     sexo: "",
     cuil: "",
+    fechaNacimiento: "",
     email: "",
     telefono: "",
     direccion: {
@@ -102,6 +105,7 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
   }
 
   useEffect(() => {
+    /* aca debo traer del back */
     setEspecialidadesDisponibles([
       { id: "cardiologia", nombre: "Cardiología" },
       { id: "pediatria", nombre: "Pediatría" },
@@ -119,6 +123,10 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
 
   const validateForm = () => {
     const newErrors = {}
+
+/*     if (!from.foto.trim()) {
+      newErrors.foto = "La foto es obligatoria"
+    } */
 
     if (!form.nombre.trim()) {
       newErrors.nombre = "El nombre es obligatorio"
@@ -167,7 +175,7 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
     }
   }
 
-  const handleEspecialidadesChange = (e) => {
+/*   const handleEspecialidadesChange = (e) => {
     const seleccionadas = Array.from(e.target.selectedOptions, (opt) => opt.value)
     const nuevas = seleccionadas.map((id) => {
       const existente = form.especialidades.find((e) => e.especialidadId === id)
@@ -188,7 +196,7 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
       esPrincipal: e.especialidadId === id,
     }))
     setForm({ ...form, especialidades: actualizadas })
-  }
+  } */
 
   const handleAgregar = (e) => {
     e.preventDefault()
@@ -260,6 +268,13 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
     })
   }
 
+  const handleSeleccionarFoto = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFoto(file);
+    }
+  };}
+
   const provincias = [
     { id: "cordoba", nombre: "Córdoba" },
     { id: "buenos_aires", nombre: "Buenos Aires" },
@@ -279,6 +294,9 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
 
         <form className="mb-4" onSubmit={handleAgregar}>
           <div className="row mb-3">
+            <div>
+              <label className="form-label">Foto</label>
+            </div>
             <div className="col-md-6">
               <label className="form-label">Nombre *</label>
               <input
