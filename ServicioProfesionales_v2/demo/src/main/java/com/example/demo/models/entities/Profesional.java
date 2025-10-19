@@ -1,5 +1,6 @@
 package com.example.demo.models.entities;
 
+import com.example.demo.models.enums.Sexo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -24,8 +25,15 @@ public class Profesional {
     @Column(nullable = false)
     private String nombre;
 
+    @Column(nullable = false)
+    private String apellido;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Sexo sexo;
+
     @Column(nullable = false, unique = true)
-    private String dni;
+    private String cuil;
 
     @Column
     private String email;
@@ -63,13 +71,6 @@ public class Profesional {
     @JsonIgnore
     private List<EspecialidadProfesional> especialidades = new ArrayList<>();
 
-//    public void agregarEspecialidad(EspecialidadProfesional ep) {
-//        especialidades.add(ep);
-//        ep.setProfesional(this);
-//    }
-//
-//    public void eliminarEspecialidad(EspecialidadProfesional ep) {
-//        especialidades.remove(ep);
-//        ep.setProfesional(null);
-//    }
+    @Column(name = "activo")
+    private boolean activo= true;
 }

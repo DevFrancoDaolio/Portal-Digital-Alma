@@ -16,4 +16,8 @@ public class EspecialidadConMatriculaDto {
 
     @NotBlank(message = "La matrícula no puede estar vacía")
     private String matricula;
+
+    private boolean esPrincipal;
+
+
 }
