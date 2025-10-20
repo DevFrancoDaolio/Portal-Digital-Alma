@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom"
 import "../styles/Paciente.css"
 import NavBar from "../componentes/NavBar"
 import Fondo from "../componentes/Fondo"
+import pacienteService from "../services/pacientesService"
 
 export default function ListarPaciente() {
   const navigate = useNavigate()
@@ -12,30 +13,48 @@ export default function ListarPaciente() {
   const [busqueda, setBusqueda] = useState("")
   const [filtroObraSocial, setFiltroObraSocial] = useState("")
   const [paginaActual, setPaginaActual] = useState(1)
+  const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState(null)
+  const [obrasSociales, setObrasSociales] = useState([])
+  const [pacienteSeleccionado, setPacienteSeleccionado] = useState(null)
+  const [mostrarModal, setMostrarModal] = useState(false)
   const pacientesPorPagina = 10
 
-  // Cargar pacientes desde localStorage
   useEffect(() => {
-    const pacientesGuardados = JSON.parse(localStorage.getItem("pacientes") || "[]")
-    setPacientes(pacientesGuardados)
+    cargarDatos()
   }, [])
 
-  // Obras sociales únicas para el filtro
-  const obrasSociales = [...new Set(pacientes.map((p) => p.obraSocial))].sort()
+  const cargarDatos = async () => {
+    try {
+      setCargando(true)
+      setError(null)
 
-  // Filtrar pacientes
+      const [pacientesData, obrasSocialesData] = await Promise.all([
+        pacienteService.listar(),
+        pacienteService.obtenerObrasSociales(),
+      ])
+
+      setPacientes(pacientesData)
+      setObrasSociales(obrasSocialesData)
+    } catch (err) {
+      console.error("Error al cargar datos:", err)
+      setError("Error al cargar los datos. Por favor, intente nuevamente.")
+    } finally {
+      setCargando(false)
+    }
+  }
+
   const pacientesFiltrados = pacientes.filter((paciente) => {
     const cumpleBusqueda =
       paciente.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
       paciente.apellido.toLowerCase().includes(busqueda.toLowerCase()) ||
       paciente.dni.includes(busqueda)
 
-    const cumpleObraSocial = !filtroObraSocial || paciente.obraSocial === filtroObraSocial
+    const cumpleObraSocial = !filtroObraSocial || paciente.obraSocialNombre === filtroObraSocial
 
     return cumpleBusqueda && cumpleObraSocial
   })
 
-  // Paginación
   const indiceUltimo = paginaActual * pacientesPorPagina
   const indicePrimero = indiceUltimo - pacientesPorPagina
   const pacientesPaginados = pacientesFiltrados.slice(indicePrimero, indiceUltimo)
@@ -43,6 +62,50 @@ export default function ListarPaciente() {
 
   const cambiarPagina = (numeroPagina) => {
     setPaginaActual(numeroPagina)
+  }
+
+  const verDetallesPaciente = (paciente) => {
+    setPacienteSeleccionado(paciente)
+    setMostrarModal(true)
+  }
+
+  const cerrarModal = () => {
+    setMostrarModal(false)
+    setPacienteSeleccionado(null)
+  }
+
+  if (cargando) {
+    return (
+      <Fondo>
+        <NavBar />
+        <div className="registro-card">
+          <div className="container mt-5 text-center">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Cargando...</span>
+            </div>
+            <p className="mt-3">Cargando pacientes...</p>
+          </div>
+        </div>
+      </Fondo>
+    )
+  }
+
+  if (error) {
+    return (
+      <Fondo>
+        <NavBar />
+        <div className="registro-card">
+          <div className="container mt-5">
+            <div className="alert alert-danger" role="alert">
+              {error}
+              <button className="btn btn-primary mt-3" onClick={cargarDatos}>
+                Reintentar
+              </button>
+            </div>
+          </div>
+        </div>
+      </Fondo>
+    )
   }
 
   return (
@@ -58,7 +121,6 @@ export default function ListarPaciente() {
             </button>
           </div>
 
-          {/* Filtros de búsqueda */}
           <div className="row mb-4">
             <div className="col-md-8">
               <input
@@ -83,15 +145,14 @@ export default function ListarPaciente() {
               >
                 <option value="">Todas las obras sociales</option>
                 {obrasSociales.map((obra) => (
-                  <option key={obra} value={obra}>
-                    {obra}
+                  <option key={obra.id} value={obra.nombre}>
+                    {obra.nombre}
                   </option>
                 ))}
               </select>
             </div>
           </div>
 
-          {/* Tabla de pacientes */}
           {pacientesPaginados.length > 0 ? (
             <>
               <div className="table-responsive">
@@ -113,14 +174,29 @@ export default function ListarPaciente() {
                         <td>{paciente.apellido}</td>
                         <td>{paciente.dni}</td>
                         <td>{paciente.telefono}</td>
-                        <td>{paciente.obraSocial}</td>
+                        <td>{paciente.obraSocialNombre}</td>
                         <td>
+                          <button
+                            className="btn btn-sm btn-outline-info me-2"
+                            onClick={() => verDetallesPaciente(paciente)}
+                            title="Ver detalles del paciente"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              fill="currentColor"
+                              viewBox="0 0 16 16"
+                            >
+                              <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z" />
+                              <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z" />
+                            </svg>
+                          </button>
                           <button
                             className="btn btn-sm btn-outline-primary"
                             onClick={() => navigate(`/EditarPaciente/${paciente.id}`)}
                             title="Editar paciente"
                           >
-                            {/* SVG de lápiz */}
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               width="16"
@@ -138,7 +214,6 @@ export default function ListarPaciente() {
                 </table>
               </div>
 
-              {/* Paginación */}
               {totalPaginas > 1 && (
                 <nav>
                   <ul className="pagination justify-content-center">
@@ -172,8 +247,6 @@ export default function ListarPaciente() {
                   </ul>
                 </nav>
               )}
-
-              
             </>
           ) : (
             <div className="alert alert-info text-center">
@@ -184,6 +257,98 @@ export default function ListarPaciente() {
           )}
         </div>
       </div>
+
+      {mostrarModal && pacienteSeleccionado && (
+        <div
+          className="modal fade show"
+          style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}
+          onClick={cerrarModal}
+        >
+          <div className="modal-dialog modal-lg" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Detalles del Paciente</h5>
+                <button type="button" className="btn-close" onClick={cerrarModal}></button>
+              </div>
+              <div className="modal-body">
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <h6 className="text-muted">Datos Personales</h6>
+                    <hr />
+                    <p>
+                      <strong>Nombre:</strong> {pacienteSeleccionado.nombre}
+                    </p>
+                    <p>
+                      <strong>Apellido:</strong> {pacienteSeleccionado.apellido}
+                    </p>
+                    <p>
+                      <strong>DNI:</strong> {pacienteSeleccionado.dni}
+                    </p>
+                    <p>
+                      <strong>Fecha de Nacimiento:</strong> {pacienteSeleccionado.fechaNacimiento}
+                    </p>
+                    <p>
+                      <strong>Email:</strong> {pacienteSeleccionado.email}
+                    </p>
+                    <p>
+                      <strong>Teléfono:</strong> {pacienteSeleccionado.telefono || "No especificado"}
+                    </p>
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <h6 className="text-muted">Dirección</h6>
+                    <hr />
+                    <p>
+                      <strong>Calle:</strong> {pacienteSeleccionado.calle || "No especificado"}
+                    </p>
+                    <p>
+                      <strong>Número:</strong> {pacienteSeleccionado.numero || "No especificado"}
+                    </p>
+                    <p>
+                      <strong>Piso:</strong> {pacienteSeleccionado.piso || "No especificado"}
+                    </p>
+                    <p>
+                      <strong>Departamento:</strong> {pacienteSeleccionado.dpto || "No especificado"}
+                    </p>
+                    <p>
+                      <strong>Código Postal:</strong> {pacienteSeleccionado.codigoPostal || "No especificado"}
+                    </p>
+                    <p>
+                      <strong>Localidad:</strong> {pacienteSeleccionado.localidadNombre || "No especificado"}
+                    </p>
+                    <p>
+                      <strong>Provincia:</strong> {pacienteSeleccionado.provinciaNombre || "No especificado"}
+                    </p>
+                  </div>
+
+                  <div className="col-12">
+                    <h6 className="text-muted">Obra Social</h6>
+                    <hr />
+                    <p>
+                      <strong>Obra Social:</strong> {pacienteSeleccionado.obraSocialNombre || "No especificado"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={cerrarModal}>
+                  Cerrar
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => {
+                    cerrarModal()
+                    navigate(`/EditarPaciente/${pacienteSeleccionado.id}`)
+                  }}
+                >
+                  Editar Paciente
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </Fondo>
   )
 }
