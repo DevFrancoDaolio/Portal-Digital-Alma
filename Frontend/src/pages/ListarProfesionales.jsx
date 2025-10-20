@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useNavigate, useLocation } from "react-router-dom"
-import { getProfesionales } from "../services/profesionalesService"
+import { useNavigate } from "react-router-dom"
+import { getProfesionales, eliminarProfesional, reactivarProfesional } from "../services/profesionalesService"
 import "../styles/Profesionales.css"
 import NavBar from "../componentes/NavBar"
 import Fondo from "../componentes/Fondo"
@@ -21,69 +21,87 @@ const specialties = [
 
 export default function ClinicProfessionals() {
   const [filtro, setFiltro] = useState(null)
-  const [expandedId, setExpandedId] = useState(null)
   const [professionals, setProfessionals] = useState([])
   const [busqueda, setBusqueda] = useState("")
   const [modalEditar, setModalEditar] = useState(false)
   const [profesionalEditar, setProfesionalEditar] = useState(null)
-  const [isAdmin, setIsAdmin] = useState(true) // TODO: Replace with real authentication
+  const [isAdmin, setIsAdmin] = useState(true)
+  const [loading, setLoading] = useState(true)
 
   const navigate = useNavigate()
 
+  useEffect(() => {
+    cargarProfesionales()
+  }, [])
+
+  const cargarProfesionales = async () => {
+    setLoading(true)
+    try {
+      const response = await getProfesionales()
+      console.log("[v0] Profesionales cargados:", response.data)
+      setProfessionals(response.data || [])
+    } catch (error) {
+      console.error("Error al obtener profesionales:", error)
+      alert("Error al cargar los profesionales")
+      setProfessionals([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const filtrados = professionals.filter((p) => {
-    const matchEspecialidad = filtro ? p.especialidades.includes(filtro) : true
+    const especialidadesNombres = (p.especialidades || []).map((e) => e.nombre)
+    const matchEspecialidad = filtro ? especialidadesNombres.includes(filtro) : true
     const matchBusqueda = busqueda ? `${p.nombre} ${p.apellido}`.toLowerCase().includes(busqueda.toLowerCase()) : true
     return matchEspecialidad && matchBusqueda
   })
-
-  const location = useLocation()
-
-  useEffect(() => {
-    const profesionalesLocales = JSON.parse(localStorage.getItem("profesionales") || "[]")
-
-    getProfesionales()
-      .then((response) => {
-        const profesionalesAPI = response.data || []
-        const todosProfesionales = [...profesionalesLocales, ...profesionalesAPI]
-
-        const profesionalesUnicos = todosProfesionales.reduce((acc, prof) => {
-          if (!acc.find((p) => p.id === prof.id)) {
-            acc.push(prof)
-          }
-          return acc
-        }, [])
-
-        setProfessionals(profesionalesUnicos)
-      })
-      .catch((error) => {
-        console.error("Error al obtener profesionales:", error)
-        setProfessionals(profesionalesLocales)
-      })
-  }, [])
 
   const handleEditarClick = (prof) => {
     setProfesionalEditar(prof)
     setModalEditar(true)
   }
 
-  const handleGuardarEdicion = (profesionalEditado) => {
-    const profesionalesActualizados = professionals.map((p) =>
-      p.id === profesionalEditar.id ? { ...p, ...profesionalEditado } : p,
-    )
-
-    setProfessionals(profesionalesActualizados)
-
-    const profesionalesLocales = JSON.parse(localStorage.getItem("profesionales") || "[]")
-    const profesionalesLocalesActualizados = profesionalesLocales.map((p) =>
-      p.id === profesionalEditar.id ? { ...p, ...profesionalEditado } : p,
-    )
-    localStorage.setItem("profesionales", JSON.stringify(profesionalesLocalesActualizados))
-
-    console.log("Profesional editado:", profesionalEditado)
+  const handleGuardarEdicion = () => {
+    setModalEditar(false)
+    setProfesionalEditar(null)
+    cargarProfesionales()
   }
 
-  const toggleExpand = (profId) => {
-    setExpandedId(expandedId === profId ? null : profId)
+  const handleDarDeBajaClick = async (prof) => {
+    if (window.confirm(`¿Está seguro que desea dar de baja a ${prof.nombre} ${prof.apellido}?`)) {
+      try {
+        await eliminarProfesional(prof.id)
+        alert("Profesional dado de baja exitosamente")
+        cargarProfesionales()
+      } catch (error) {
+        console.error("Error al dar de baja profesional:", error)
+        alert("Error al dar de baja el profesional")
+      }
+    }
+  }
+
+  const handleReactivarClick = async (prof) => {
+    if (window.confirm(`¿Está seguro que desea reactivar a ${prof.nombre} ${prof.apellido}?`)) {
+      try {
+        await reactivarProfesional(prof.id)
+        alert("Profesional reactivado exitosamente")
+        cargarProfesionales()
+      } catch (error) {
+        console.error("Error al reactivar profesional:", error)
+        alert("Error al reactivar el profesional")
+      }
+    }
+  }
+
+  if (loading) {
+    return (
+      <Fondo>
+        <NavBar />
+        <div className="text-center mt-5">
+          <p>Cargando profesionales...</p>
+        </div>
+      </Fondo>
+    )
   }
 
   return (
@@ -137,27 +155,30 @@ export default function ClinicProfessionals() {
             </div>
 
             <div className="cards-container">
-              {filtrados.map((prof) => {
-                const isExpanded = expandedId === prof.id
+              {filtrados.length === 0 ? (
+                <p className="text-center">No se encontraron profesionales</p>
+              ) : (
+                filtrados.map((prof) => {
+                  const especialidadPrincipal = (prof.especialidades || []).find((e) => e.esPrincipal)
+                  const especialidadTexto = especialidadPrincipal
+                    ? especialidadPrincipal.nombre
+                    : (prof.especialidades || [])[0]?.nombre || "Sin especialidad"
 
-                return (
-                  <div
-                    key={prof.id}
-                    className={`professional-card ${isExpanded ? "expanded" : ""}`}
-                    onClick={() => toggleExpand(prof.id)}
-                  >
-                    <img
-                      src={prof.fotoUrl || "/doc1.png"}
-                      alt={`${prof.nombre} ${prof.apellido}`}
-                      className="doctor-photo"
-                    />
-                    <strong>
-                      {prof.nombre} {prof.apellido}
-                    </strong>
-                    <p className="especialidades-text">{prof.especialidades.join(", ")}</p>
+                  return (
+                    <div key={prof.id} className={`professional-card ${!prof.activo ? "inactive" : ""}`}>
+                      {!prof.activo && <div className="inactive-badge">Inactivo</div>}
 
-                    {isExpanded && (
-                      <div className="expanded-details">
+                      <img
+                        src={prof.fotoUrl || "/doc1.png"}
+                        alt={`${prof.nombre} ${prof.apellido}`}
+                        className="doctor-photo"
+                      />
+                      <strong>
+                        {prof.nombre} {prof.apellido}
+                      </strong>
+                      <p className="especialidades-text">{especialidadTexto}</p>
+
+                      <div className="basic-details">
                         <p className="detail-item">
                           <strong>Email:</strong> {prof.email}
                         </p>
@@ -165,52 +186,49 @@ export default function ClinicProfessionals() {
                           <strong>Teléfono:</strong> {prof.telefono}
                         </p>
                       </div>
-                    )}
 
-                    <div className="expand-indicator">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className={`chevron-icon ${isExpanded ? "rotated" : ""}`}
-                      >
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                      </svg>
+                      {isAdmin && (
+                        <div className="card-actions">
+                          <button
+                            className="btn btn-primary btn-sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleEditarClick(prof)
+                            }}
+                            title="Editar Profesional"
+                          >
+                            Editar
+                          </button>
+                        <div/>
+                          {prof.activo ? (
+                            <button
+                              className="btn btn-warning btn-sm"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleDarDeBajaClick(prof)
+                              }}
+                              title="Dar de Baja Temporal"
+                            >
+                              Dar de Baja
+                            </button>
+                          ) : (
+                            <button
+                              className="btn btn-success btn-sm"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleReactivarClick(prof)
+                              }}
+                              title="Reactivar Profesional"
+                            >
+                              Reactivar
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
-
-                    {isAdmin && (
-                      <button
-                        className="edit-icon-button"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleEditarClick(prof)
-                        }}
-                        title="Editar Profesional"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                )
-              })}
+                  )
+                })
+              )}
             </div>
           </main>
         </div>

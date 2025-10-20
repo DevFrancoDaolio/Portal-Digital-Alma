@@ -2,6 +2,14 @@
 
 import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
+import {
+  crearProfesional,
+  actualizarProfesional,
+  getProvincias,
+  getLocalidadesByProvincia,
+  getEspecialidades,
+  getProfesionales,
+} from "../services/profesionalesService"
 import "../styles/Profesionales.css"
 import NavBar from "../componentes/NavBar"
 import Fondo from "../componentes/Fondo"
@@ -9,131 +17,135 @@ import Fondo from "../componentes/Fondo"
 export default function AgregarProfesional({ isModal = false, onClose = null, profesional = null, onSave = null }) {
   const navigate = useNavigate()
   const { id } = useParams()
-  /* aca debería ser administrador */
   const modoEdicion = !!id || !!profesional
 
   const [especialidadesDisponibles, setEspecialidadesDisponibles] = useState([])
+  const [provincias, setProvincias] = useState([])
+  const [localidades, setLocalidades] = useState([])
   const [errors, setErrors] = useState({})
+  const [loading, setLoading] = useState(false)
 
   const [form, setForm] = useState({
-    foto: "",
     nombre: "",
     apellido: "",
     sexo: "",
     cuil: "",
-    fechaNacimiento: "",
     email: "",
     telefono: "",
-    direccion: {
-      calle: "",
-      numero: "",
-      codigoPostal: "",
-      piso: "",
-      dpto: "",
-      provincia: "",
-      localidad: "",
-    },
-    especialidades: [],
-    servicio: "",
+    calle: "",
+    numero: "",
+    codigoPostal: "",
+    piso: "",
+    departamento: "",
+    provinciaId: "",
+    localidadId: "",
+    especialidadesConMatricula: [],
   })
 
   useEffect(() => {
-    if (profesional) {
-      cargarDatosProfesional(profesional)
-    } else if (id) {
-      const profesionalesGuardados = JSON.parse(localStorage.getItem("profesionales") || "[]")
-      const profesionalEncontrado = profesionalesGuardados.find((p) => p.id === id)
-
-      if (profesionalEncontrado) {
-        cargarDatosProfesional(profesionalEncontrado)
-      } else {
-        alert("Profesional no encontrado")
-        navigate("/listarProfesionales")
+    const cargarCatalogos = async () => {
+      try {
+        const [especialidadesRes, provinciasRes] = await Promise.all([getEspecialidades(), getProvincias()])
+        setEspecialidadesDisponibles(especialidadesRes.data || [])
+        setProvincias(provinciasRes.data || [])
+      } catch (error) {
+        console.error("Error al cargar catálogos:", error)
+        alert("Error al cargar los datos necesarios")
       }
     }
-  }, [id, profesional, navigate])
+    cargarCatalogos()
+  }, [])
+
+  useEffect(() => {
+    const cargarLocalidades = async () => {
+      if (form.provinciaId) {
+        try {
+          const response = await getLocalidadesByProvincia(form.provinciaId)
+          setLocalidades(response.data || [])
+        } catch (error) {
+          console.error("Error al cargar localidades:", error)
+          setLocalidades([])
+        }
+      } else {
+        setLocalidades([])
+      }
+    }
+    cargarLocalidades()
+  }, [form.provinciaId])
+
+  useEffect(() => {
+    const cargarProfesional = async () => {
+      if (profesional) {
+        cargarDatosProfesional(profesional)
+      } else if (id) {
+        try {
+          const response = await getProfesionales()
+          const profesionalEncontrado = response.data.find((p) => p.id === Number.parseInt(id))
+
+          if (profesionalEncontrado) {
+            cargarDatosProfesional(profesionalEncontrado)
+          } else {
+            alert("Profesional no encontrado")
+            navigate("/listarProfesionales")
+          }
+        } catch (error) {
+          console.error("Error al cargar profesional:", error)
+          alert("Error al cargar el profesional")
+          navigate("/listarProfesionales")
+        }
+      }
+    }
+
+    if (especialidadesDisponibles.length > 0 && provincias.length > 0) {
+      cargarProfesional()
+    }
+  }, [id, profesional, navigate, especialidadesDisponibles, provincias])
 
   const cargarDatosProfesional = (prof) => {
-    const direccionParseada = parseDireccion(prof.direccion || "")
+    const especialidadesFormateadas = (prof.especialidades || [])
+      .map((esp) => {
+        const especialidad = especialidadesDisponibles.find((e) => e.nombre === esp.nombre)
+        return {
+          especialidadId: especialidad?.id || null,
+          matricula: esp.matricula || "",
+          esPrincipal: esp.esPrincipal || false,
+        }
+      })
+      .filter((e) => e.especialidadId !== null)
 
-    const especialidadesReconstruidas = (prof.especialidades || []).map((espNombre) => {
-      const especialidad = especialidadesDisponibles.find((e) => e.nombre === espNombre)
-      return {
-        especialidadId: especialidad?.id || espNombre.toLowerCase().replace(/\s+/g, "-"),
-        matricula: prof.matriculas?.[espNombre] || "",
-        esPrincipal: false,
-      }
-    })
+    const provincia = provincias.find((p) => p.nombre === prof.provincia)
 
     setForm({
       nombre: prof.nombre || "",
       apellido: prof.apellido || "",
-      sexo: prof.sexo || "",
+      sexo: prof.sexo?.toLowerCase() || "",
       cuil: prof.cuil || "",
       email: prof.email || "",
       telefono: prof.telefono || "",
-      direccion: direccionParseada,
-      especialidades: especialidadesReconstruidas,
-      servicio: prof.servicio || "",
+      calle: prof.calle || "",
+      numero: prof.numero || "",
+      codigoPostal: prof.codigoPostal || "",
+      piso: prof.piso || "",
+      departamento: prof.departamento || "",
+      provinciaId: provincia?.id || "",
+      localidadId: "",
+      especialidadesConMatricula: especialidadesFormateadas,
     })
   }
-
-  const parseDireccion = (direccionStr) => {
-    if (!direccionStr || typeof direccionStr !== "string") {
-      return {
-        calle: "",
-        numero: "",
-        codigoPostal: "",
-        piso: "",
-        dpto: "",
-        provincia: "",
-        localidad: "",
-      }
-    }
-
-    const partes = direccionStr.split(",").map((p) => p.trim())
-
-    return {
-      calle: partes[0]?.split(" ").slice(0, -1).join(" ") || "",
-      numero: partes[0]?.split(" ").pop() || "",
-      codigoPostal: "",
-      piso: partes[1]?.includes("Piso") ? partes[1].split("Piso")[1]?.trim().split(" ")[0] || "" : "",
-      dpto: partes[1]?.includes("Piso") ? partes[1].split("Piso")[1]?.trim().split(" ")[1] || "" : "",
-      provincia: "",
-      localidad: partes[2] || "",
-    }
-  }
-
-  useEffect(() => {
-    /* aca debo traer del back */
-    setEspecialidadesDisponibles([
-      { id: "cardiologia", nombre: "Cardiología" },
-      { id: "pediatria", nombre: "Pediatría" },
-      { id: "dermatologia", nombre: "Dermatología" },
-      { id: "neurologia", nombre: "Neurología" },
-      { id: "clinica", nombre: "Clínica Médica" },
-      { id: "kinesiologia", nombre: "Kinesiología" },
-      { id: "psicologia", nombre: "Psicología" },
-      { id: "fonoaudiologia", nombre: "Fonoaudiología" },
-      { id: "psiquiatria", nombre: "Psiquiatría" },
-      { id: "medico-clinico", nombre: "Médico Clínico" },
-      { id: "psicomotricidad", nombre: "Psicomotricidad" },
-    ])
-  }, [])
 
   const validateForm = () => {
     const newErrors = {}
 
-/*     if (!from.foto.trim()) {
-      newErrors.foto = "La foto es obligatoria"
-    } */
-
     if (!form.nombre.trim()) {
       newErrors.nombre = "El nombre es obligatorio"
+    } else if (!/^[A-Za-zÁÉÍÓÚÑáéíóúñ ]+$/.test(form.nombre)) {
+      newErrors.nombre = "El nombre solo puede contener letras"
     }
 
     if (!form.apellido.trim()) {
       newErrors.apellido = "El apellido es obligatorio"
+    } else if (!/^[A-Za-zÁÉÍÓÚÑáéíóúñ ]+$/.test(form.apellido)) {
+      newErrors.apellido = "El apellido solo puede contener letras"
     }
 
     if (!form.sexo) {
@@ -143,8 +155,8 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
     const cuilLimpio = form.cuil.replace(/[-\s]/g, "")
     if (!cuilLimpio) {
       newErrors.cuil = "El CUIL es obligatorio"
-    } else if (!/^\d{11}$/.test(cuilLimpio)) {
-      newErrors.cuil = "El CUIL debe tener 11 dígitos"
+    } else if (!/^\d{7,15}$/.test(cuilLimpio)) {
+      newErrors.cuil = "El CUIL debe tener entre 7 y 15 dígitos"
     }
 
     if (!form.email.trim()) {
@@ -156,11 +168,19 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
     const telefonoLimpio = form.telefono.replace(/[-\s()]/g, "")
     if (!telefonoLimpio) {
       newErrors.telefono = "El teléfono es obligatorio"
-    } else if (!/^\d{8,15}$/.test(telefonoLimpio)) {
-      newErrors.telefono = "El teléfono debe tener entre 8 y 15 dígitos"
+    } else if (!/^\d{6,15}$/.test(telefonoLimpio)) {
+      newErrors.telefono = "El teléfono debe tener entre 6 y 15 dígitos"
     }
 
-    if (form.especialidades.length === 0) {
+    if (!form.provinciaId) {
+      newErrors.provinciaId = "La provincia es obligatoria"
+    }
+
+    if (!form.localidadId) {
+      newErrors.localidadId = "La localidad es obligatoria"
+    }
+
+    if (form.especialidadesConMatricula.length === 0) {
       newErrors.especialidades = "Debe seleccionar al menos una especialidad"
     }
 
@@ -175,74 +195,50 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
     }
   }
 
-/*   const handleEspecialidadesChange = (e) => {
-    const seleccionadas = Array.from(e.target.selectedOptions, (opt) => opt.value)
-    const nuevas = seleccionadas.map((id) => {
-      const existente = form.especialidades.find((e) => e.especialidadId === id)
-      return existente ?? { especialidadId: id, matricula: "", esPrincipal: false }
-    })
-    setForm({ ...form, especialidades: nuevas })
-  }
-
-  const handleMatriculaChange = (index, value) => {
-    const copia = [...form.especialidades]
-    copia[index].matricula = value
-    setForm({ ...form, especialidades: copia })
-  }
-
-  const handlePrincipalChange = (id) => {
-    const actualizadas = form.especialidades.map((e) => ({
-      ...e,
-      esPrincipal: e.especialidadId === id,
-    }))
-    setForm({ ...form, especialidades: actualizadas })
-  } */
-
-  const handleAgregar = (e) => {
+  const handleAgregar = async (e) => {
     e.preventDefault()
 
-    if (validateForm()) {
+    if (!validateForm()) {
+      console.log("Formulario con errores:", errors)
+      return
+    }
+
+    setLoading(true)
+
+    try {
       const profesionalData = {
-        id: modoEdicion ? profesional?.id || id : Date.now().toString(),
-        nombre: form.nombre,
-        apellido: form.apellido,
-        sexo: form.sexo,
-        cuil: form.cuil,
-        email: form.email,
-        telefono: form.telefono,
-        direccion:
-          `${form.direccion.calle} ${form.direccion.numero}${form.direccion.piso ? `, Piso ${form.direccion.piso}` : ""}${form.direccion.dpto ? ` ${form.direccion.dpto}` : ""}, ${form.direccion.localidad || ""} ${form.direccion.provincia || ""}`.trim(),
-        especialidades: form.especialidades.map((esp) => {
-          const especialidad = especialidadesDisponibles.find((e) => e.id === esp.especialidadId)
-          return especialidad?.nombre || ""
-        }),
-        matriculas: form.especialidades.reduce((acc, esp) => {
-          const especialidad = especialidadesDisponibles.find((e) => e.id === esp.especialidadId)
-          if (especialidad && esp.matricula) {
-            acc[especialidad.nombre] = esp.matricula
-          }
-          return acc
-        }, {}),
-        fotoUrl: profesional?.fotoUrl || "/doc1.png",
+        nombre: form.nombre.trim(),
+        apellido: form.apellido.trim(),
+        sexo: form.sexo.toUpperCase(), // MASCULINO o FEMENINO
+        cuil: form.cuil.replace(/[-\s]/g, ""),
+        email: form.email.trim(),
+        telefono: form.telefono.replace(/[-\s()]/g, ""),
+        calle: form.calle.trim(),
+        numero: form.numero.trim(),
+        codigoPostal: form.codigoPostal.trim(),
+        piso: form.piso.trim(),
+        departamento: form.departamento.trim(),
+        provinciaId: Number.parseInt(form.provinciaId),
+        localidadId: Number.parseInt(form.localidadId),
+        especialidadesConMatricula: form.especialidadesConMatricula.map((esp) => ({
+          especialidadId: Number.parseInt(esp.especialidadId),
+          matricula: esp.matricula.trim(),
+          esPrincipal: esp.esPrincipal,
+        })),
       }
 
-      const profesionalesGuardados = JSON.parse(localStorage.getItem("profesionales") || "[]")
+      console.log("[v0] Enviando datos al backend:", profesionalData)
 
       if (modoEdicion) {
-        const profesionalesActualizados = profesionalesGuardados.map((p) =>
-          p.id === profesionalData.id ? { ...p, ...profesionalData } : p,
-        )
-        localStorage.setItem("profesionales", JSON.stringify(profesionalesActualizados))
-        console.log("Profesional actualizado:", profesionalData)
+        const profesionalId = profesional?.id || id
+        await actualizarProfesional(profesionalId, profesionalData)
         alert("Profesional actualizado exitosamente")
 
         if (onSave) {
-          onSave(profesionalData)
+          onSave({ ...profesionalData, id: profesionalId })
         }
       } else {
-        profesionalesGuardados.push(profesionalData)
-        localStorage.setItem("profesionales", JSON.stringify(profesionalesGuardados))
-        console.log("Nuevo profesional guardado:", profesionalData)
+        await crearProfesional(profesionalData)
         alert("Profesional registrado exitosamente")
       }
 
@@ -251,40 +247,13 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
       } else {
         navigate("/listarProfesionales")
       }
-    } else {
-      console.log("Formulario con errores:", errors)
+    } catch (error) {
+      console.error("Error al guardar profesional:", error)
+      const mensajeError = error.response?.data?.message || "Error al guardar el profesional"
+      alert(mensajeError)
+    } finally {
+      setLoading(false)
     }
-  }
-
-  const handleDireccionChange = (e) => {
-    const { name, value } = e.target
-    setForm({
-      ...form,
-      direccion: {
-        ...form.direccion,
-        [name]: value,
-        ...(name === "provincia" ? { localidad: "" } : {}),
-      },
-    })
-  }
-
-  const handleSeleccionarFoto = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFoto(file);
-    }
-  };}
-
-  const provincias = [
-    { id: "cordoba", nombre: "Córdoba" },
-    { id: "buenos_aires", nombre: "Buenos Aires" },
-    { id: "santa_fe", nombre: "Santa Fe" },
-  ]
-
-  const localidadesPorProvincia = {
-    cordoba: ["Córdoba Capital", "Villa María", "Río Cuarto"],
-    buenos_aires: ["La Plata", "Mar del Plata", "Bahía Blanca"],
-    santa_fe: ["Rosario", "Santa Fe Capital", "Rafaela"],
   }
 
   const formContent = (
@@ -294,9 +263,6 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
 
         <form className="mb-4" onSubmit={handleAgregar}>
           <div className="row mb-3">
-            <div>
-              <label className="form-label">Foto</label>
-            </div>
             <div className="col-md-6">
               <label className="form-label">Nombre *</label>
               <input
@@ -383,6 +349,7 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
             />
             {errors.email && <div className="invalid-feedback">{errors.email}</div>}
           </div>
+
           <div className="mb-3">
             <label className="form-label">Teléfono *</label>
             <input
@@ -405,9 +372,9 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
                   type="text"
                   name="calle"
                   className="form-control"
-                  placeholder="Ej: Av. Corrientes"
-                  value={form.direccion.calle}
-                  onChange={handleDireccionChange}
+                  placeholder="Calle"
+                  value={form.calle}
+                  onChange={handleChange}
                 />
               </div>
               <div className="col-md-3">
@@ -415,9 +382,9 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
                   type="text"
                   name="numero"
                   className="form-control"
-                  placeholder="Ej: 1234"
-                  value={form.direccion.numero}
-                  onChange={handleDireccionChange}
+                  placeholder="Número"
+                  value={form.numero}
+                  onChange={handleChange}
                 />
               </div>
               <div className="col-md-3">
@@ -425,9 +392,9 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
                   type="text"
                   name="codigoPostal"
                   className="form-control"
-                  placeholder="Ej: 5000"
-                  value={form.direccion.codigoPostal}
-                  onChange={handleDireccionChange}
+                  placeholder="Código Postal"
+                  value={form.codigoPostal}
+                  onChange={handleChange}
                 />
               </div>
             </div>
@@ -438,51 +405,58 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
                   type="text"
                   name="piso"
                   className="form-control"
-                  placeholder="Ej: 3"
-                  value={form.direccion.piso}
-                  onChange={handleDireccionChange}
+                  placeholder="Piso"
+                  value={form.piso}
+                  onChange={handleChange}
                 />
               </div>
               <div className="col-md-3">
                 <input
                   type="text"
-                  name="dpto"
+                  name="departamento"
                   className="form-control"
-                  placeholder="Ej: B"
-                  value={form.direccion.dpto}
-                  onChange={handleDireccionChange}
+                  placeholder="Depto"
+                  value={form.departamento}
+                  onChange={handleChange}
                 />
               </div>
               <div className="col-md-3">
                 <select
-                  name="provincia"
-                  className="form-select"
-                  value={form.direccion.provincia}
-                  onChange={handleDireccionChange}
+                  name="provinciaId"
+                  className={`form-select ${errors.provinciaId ? "is-invalid" : ""}`}
+                  value={form.provinciaId}
+                  onChange={(e) => {
+                    setForm({ ...form, provinciaId: e.target.value, localidadId: "" })
+                    if (errors.provinciaId) {
+                      setErrors({ ...errors, provinciaId: "" })
+                    }
+                  }}
                 >
-                  <option value="">Provincia</option>
+                  <option value="">Provincia *</option>
                   {provincias.map((prov) => (
                     <option key={prov.id} value={prov.id}>
                       {prov.nombre}
                     </option>
                   ))}
                 </select>
+                {errors.provinciaId && <div className="invalid-feedback">{errors.provinciaId}</div>}
               </div>
               <div className="col-md-3">
                 <select
-                  name="localidad"
-                  className="form-select"
-                  value={form.direccion.localidad}
-                  onChange={handleDireccionChange}
-                  disabled={!form.direccion.provincia}
+                  name="localidadId"
+                  className={`form-select ${errors.localidadId ? "is-invalid" : ""}`}
+                  value={form.localidadId}
+                  onChange={handleChange}
+                  disabled={!form.provinciaId}
                 >
-                  <option value="">Localidad</option>
-                  {(localidadesPorProvincia[form.direccion.provincia] || []).map((loc) => (
-                    <option key={loc} value={loc}>
-                      {loc}
+                  <option value="">Localidad *</option>
+                  {localidades.map((loc) => (
+                    <option key={loc.id} value={loc.id}>
+                      {loc.nombre}
                     </option>
                   ))}
                 </select>
+                {errors.localidadId && <div className="invalid-feedback">{errors.localidadId}</div>}
               </div>
             </div>
           </div>
@@ -499,7 +473,7 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
               </thead>
               <tbody>
                 {especialidadesDisponibles.map((esp) => {
-                  const seleccionada = form.especialidades.find((e) => e.especialidadId === esp.id)
+                  const seleccionada = form.especialidadesConMatricula.find((e) => e.especialidadId === esp.id)
                   return (
                     <tr key={esp.id}>
                       <td>
@@ -511,12 +485,12 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
                             onChange={() => {
                               const yaExiste = !!seleccionada
                               const nuevas = yaExiste
-                                ? form.especialidades.filter((e) => e.especialidadId !== esp.id)
+                                ? form.especialidadesConMatricula.filter((e) => e.especialidadId !== esp.id)
                                 : [
-                                    ...form.especialidades,
+                                    ...form.especialidadesConMatricula,
                                     { especialidadId: esp.id, matricula: "", esPrincipal: false },
                                   ]
-                              setForm({ ...form, especialidades: nuevas })
+                              setForm({ ...form, especialidadesConMatricula: nuevas })
                               if (nuevas.length > 0 && errors.especialidades) {
                                 setErrors({ ...errors, especialidades: "" })
                               }
@@ -533,10 +507,10 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
                             placeholder="Ej: MN 12345"
                             value={seleccionada.matricula}
                             onChange={(e) => {
-                              const actualizadas = form.especialidades.map((item) =>
+                              const actualizadas = form.especialidadesConMatricula.map((item) =>
                                 item.especialidadId === esp.id ? { ...item, matricula: e.target.value } : item,
                               )
-                              setForm({ ...form, especialidades: actualizadas })
+                              setForm({ ...form, especialidadesConMatricula: actualizadas })
                             }}
                           />
                         )}
@@ -548,11 +522,11 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
                             name="principal"
                             checked={seleccionada.esPrincipal}
                             onChange={() => {
-                              const actualizadas = form.especialidades.map((item) => ({
+                              const actualizadas = form.especialidadesConMatricula.map((item) => ({
                                 ...item,
                                 esPrincipal: item.especialidadId === esp.id,
                               }))
-                              setForm({ ...form, especialidades: actualizadas })
+                              setForm({ ...form, especialidadesConMatricula: actualizadas })
                             }}
                           />
                         )}
@@ -565,8 +539,8 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
             {errors.especialidades && <div className="text-danger small mt-1">{errors.especialidades}</div>}
           </div>
 
-          <button type="submit" className="btn btn-primary me-2">
-            {modoEdicion ? "Actualizar Profesional" : "Guardar"}
+          <button type="submit" className="btn btn-primary me-2" disabled={loading}>
+            {loading ? "Guardando..." : modoEdicion ? "Actualizar Profesional" : "Guardar"}
           </button>
           <button
             type="button"
@@ -578,6 +552,7 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
                 navigate("/listarProfesionales")
               }
             }}
+            disabled={loading}
           >
             Cancelar
           </button>
