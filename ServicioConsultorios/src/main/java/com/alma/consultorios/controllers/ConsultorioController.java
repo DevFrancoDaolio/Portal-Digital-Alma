@@ -1,11 +1,9 @@
 package com.alma.consultorios.controllers;
 
 import com.alma.consultorios.dtos.ConsultorioDTO;
-import com.alma.consultorios.mappers.ConsultorioMapper;
-import com.alma.consultorios.entities.Consultorio;
-import com.alma.consultorios.entities.Consultorio.EstadoConsultorio;
 import com.alma.consultorios.services.ConsultorioService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,68 +15,46 @@ import java.util.List;
 public class ConsultorioController {
 
     private final ConsultorioService service;
-    private final ConsultorioMapper mapper;
 
-    // 🔹 GET ALL
-    @GetMapping
-    public List<ConsultorioDTO> getAll() {
-        return service.getAll().stream()
-                .map(mapper::toDTO)
-                .toList();
+    // -------------------- CREAR --------------------
+    @PostMapping
+    public ResponseEntity<ConsultorioDTO> crear(@RequestBody ConsultorioDTO dto) {
+        ConsultorioDTO creado = service.crearConsultorio(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 
-    // 🔹 GET por número
-    @GetMapping("/numero/{numero}")
-    public List<ConsultorioDTO> getByNumero(@PathVariable Integer numero) {
-        return service.getByNumero(numero).stream()
-                .map(mapper::toDTO)
-                .toList();
-    }
-
-    // 🔹 GET por ubicación
-    @GetMapping("/ubicacion/{ubicacion}")
-    public List<ConsultorioDTO> getByUbicacion(@PathVariable String ubicacion) {
-        return service.getByUbicacion(ubicacion).stream()
-                .map(mapper::toDTO)
-                .toList();
-    }
-
-    // 🔹 GET por especialidad
-    @GetMapping("/especialidad/{idEspecialidad}")
-    public List<ConsultorioDTO> getByEspecialidad(@PathVariable Long idEspecialidad) {
-        return service.getByEspecialidad(idEspecialidad).stream()
-                .map(mapper::toDTO)
-                .toList();
-    }
-
-    // 🔹 Cambiar estado genérico
-    @PutMapping("/{id}/estado/{nuevoEstado}")
-    public ResponseEntity<ConsultorioDTO> cambiarEstado(
+    // -------------------- ACTUALIZAR --------------------
+    @PutMapping("/{id}")
+    public ResponseEntity<ConsultorioDTO> actualizar(
             @PathVariable Long id,
-            @PathVariable EstadoConsultorio nuevoEstado) {
-
-        Consultorio actualizado = service.cambiarEstado(id, nuevoEstado);
-        return ResponseEntity.ok(mapper.toDTO(actualizado));
+            @RequestBody ConsultorioDTO dto) {
+        ConsultorioDTO actualizado = service.actualizarConsultorio(id, dto);
+        return ResponseEntity.ok(actualizado);
     }
 
-    // 🔹 Cambiar de DISPONIBLE → OCUPADO
-    @PutMapping("/{id}/ocupar")
-    public ResponseEntity<ConsultorioDTO> marcarOcupado(@PathVariable Long id) {
-        Consultorio actualizado = service.marcarOcupado(id);
-        return ResponseEntity.ok(mapper.toDTO(actualizado));
-    }
-
-    // 🔹 Cambiar de OCUPADO o FUERA_DE_SERVICIO → DISPONIBLE
-    @PutMapping("/{id}/disponible")
-    public ResponseEntity<ConsultorioDTO> marcarDisponible(@PathVariable Long id) {
-        Consultorio actualizado = service.marcarDisponible(id);
-        return ResponseEntity.ok(mapper.toDTO(actualizado));
-    }
-
-    // 🔹 Cambiar de DISPONIBLE → FUERA_DE_SERVICIO
-    @PutMapping("/{id}/fuera-servicio")
+    // -------------------- MARCAR FUERA DE SERVICIO --------------------
+    @PutMapping("/{id}/fuera-de-servicio")
     public ResponseEntity<ConsultorioDTO> marcarFueraDeServicio(@PathVariable Long id) {
-        Consultorio actualizado = service.marcarFueraDeServicio(id);
-        return ResponseEntity.ok(mapper.toDTO(actualizado));
+        ConsultorioDTO actualizado = service.marcarFueraDeServicio(id);
+        return ResponseEntity.ok(actualizado);
+    }
+
+    // -------------------- LISTAR TODOS --------------------
+    @GetMapping
+    public ResponseEntity<List<ConsultorioDTO>> listarTodos() {
+        return ResponseEntity.ok(service.listarTodos());
+    }
+
+    // -------------------- BUSCAR POR UBICACION --------------------
+    @GetMapping("/buscar")
+    public ResponseEntity<List<ConsultorioDTO>> buscarPorUbicacion(
+            @RequestParam String ubicacion) {
+        return ResponseEntity.ok(service.buscarPorUbicacion(ubicacion));
+    }
+
+    // -------------------- OBTENER POR ID --------------------
+    @GetMapping("/{id}")
+    public ResponseEntity<ConsultorioDTO> obtenerPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(service.obtenerPorId(id));
     }
 }

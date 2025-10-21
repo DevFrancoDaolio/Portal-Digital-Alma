@@ -42,7 +42,6 @@ function App() {
         <Route path="/RegistrarHorario" element={<RegistrarHorario />} />
         <Route path="/CreateAccount" element={<CreateAccount />} />
 
-
               
       </Routes>
     </BrowserRouter>

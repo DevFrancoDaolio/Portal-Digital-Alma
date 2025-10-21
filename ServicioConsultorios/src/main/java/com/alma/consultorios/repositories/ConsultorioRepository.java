@@ -1,4 +1,4 @@
-package com.tuapp.consultorios.repository;
+package com.alma.consultorios.repositories;
 
 import com.alma.consultorios.entities.Consultorio;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,10 +8,5 @@ import java.util.List;
 
 @Repository
 public interface ConsultorioRepository extends JpaRepository<Consultorio, Long> {
-
-    List<Consultorio> findByNumero(Integer numero);
-
     List<Consultorio> findByUbicacionContainingIgnoreCase(String ubicacion);
-
-    List<Consultorio> findByEspecialidadIdsContaining(Long especialidadId);
 }

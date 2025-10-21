@@ -1,0 +1,473 @@
+.horario-container {
+  font-family: "Segoe UI", sans-serif;
+  min-height: 100vh;
+}
+
+/* Updated layout to match RegistrarHorario structure */
+.main-layout-horario-sin-sidebar {
+  display: flex;
+  gap: 0;
+  min-height: calc(100vh - 80px);
+}
+
+.main-layout-horario {
+  display: flex;
+  gap: 0;
+  min-height: calc(100vh - 80px);
+}
+
+/* Sidebar */
+.sidebar-horario {
+  width: 250px;
+  background: linear-gradient(180deg, #e3f2fd 0%, #bbdefb 100%);
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.logo-sidebar {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logo-turnify {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 0.5rem;
+}
+
+.logo-sidebar h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1976d2;
+  margin: 0;
+}
+
+.menu-sidebar {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+}
+
+.menu-sidebar li {
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.menu-sidebar li:hover {
+  background-color: rgba(255, 255, 255, 0.95);
+  transform: translateX(5px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.menu-sidebar .icon {
+  font-size: 1.2rem;
+}
+
+/* Contenido principal - matching RegistrarHorario background exactly */
+.contenido-horario {
+  flex: 1;
+  padding: 2rem;
+  background-color: rgba(255, 255, 255, 0.3);
+  position: relative;
+}
+
+.btn-volver {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  background-color: transparent;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #333;
+  transition: transform 0.2s ease;
+}
+
+.btn-volver:hover {
+  transform: scale(1.1);
+}
+
+/* Card principal */
+.card-horario {
+  max-width: 1000px;
+  margin: 0 auto;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.header-card {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.nombre-profesional {
+  font-size: 1rem;
+  color: #666;
+  margin: 0;
+}
+
+.titulo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.titulo-registro {
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #000;
+  margin: 0;
+}
+
+.btn-agregar-horario {
+  width: 40px;
+  height: 40px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-agregar-horario:hover {
+  background-color: #0056b3;
+  transform: scale(1.1);
+}
+
+/* Sin horarios */
+.sin-horarios {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.sin-horarios p {
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+/* Tabla de horarios */
+.tabla-horarios {
+  margin-bottom: 2rem;
+  overflow-x: auto;
+}
+
+.tabla-horarios table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tabla-horarios thead {
+  background-color: #007bff;
+  color: white;
+}
+
+.tabla-horarios th {
+  padding: 1rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.tabla-horarios td {
+  padding: 1rem;
+  text-align: center;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.tabla-horarios tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.acciones-btns {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.btn-editar,
+.btn-eliminar {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-editar:hover {
+  background-color: #e3f2fd;
+}
+
+.btn-eliminar:hover {
+  background-color: #ffebee;
+}
+
+/* Footer botones */
+.footer-botones-horarios {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.btn-ver-horario,
+.btn-registrar-horario {
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-ver-horario {
+  background-color: #90caf9;
+  color: #000;
+}
+
+.btn-ver-horario:hover {
+  background-color: #64b5f6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-registrar-horario {
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #90caf9;
+  color: #000;
+}
+
+.btn-registrar-horario:hover {
+  background-color: #64b5f6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.icon-plus {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.boton-agregar {
+  padding: 0.75rem 2rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.boton-agregar:hover {
+  background-color: #0056b3;
+}
+
+/* Added styles for calendar view */
+.card-horario-calendario {
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.titulo-calendario {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #000;
+  margin-bottom: 2rem;
+}
+
+.calendario-semanal {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  padding: 1rem 0;
+  justify-content: center;
+}
+
+.dias-container {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+  justify-content: center;
+}
+
+.columna-dia {
+  flex: 1;
+  min-width: 150px;
+  max-width: 200px;
+}
+
+.header-dia {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #666;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.slots-dia {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.slot-ocupado {
+  background-color: #007bff;
+  color: white;
+  padding: 0.75rem;
+  border-radius: 20px;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+}
+
+.resumen-horarios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+  padding: 1rem;
+}
+
+.pill-horario {
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pill-color-0 {
+  background-color: #90caf9;
+  color: #000;
+}
+
+.pill-color-1 {
+  background-color: #ce93d8;
+  color: #000;
+}
+
+.pill-color-2 {
+  background-color: #a5d6a7;
+  color: #000;
+}
+
+.footer-calendario {
+  text-align: center;
+}
+
+.btn-volver-lista {
+  padding: 0.75rem 2rem;
+  background-color: #90caf9;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-volver-lista:hover {
+  background-color: #64b5f6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main-layout-horario {
+    flex-direction: column;
+  }
+
+  /* Added responsive styles for new layout */
+  .main-layout-horario-sin-sidebar {
+    flex-direction: column;
+  }
+
+  .sidebar-horario {
+    width: 100%;
+    padding: 1rem;
+  }
+
+  .menu-sidebar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .menu-sidebar li {
+    flex: 1 1 calc(50% - 0.5rem);
+    min-width: 150px;
+  }
+
+  .contenido-horario {
+    padding: 1rem;
+  }
+
+  .card-horario {
+    padding: 1rem;
+  }
+
+  .titulo-registro {
+    font-size: 1.4rem;
+  }
+
+  .footer-botones-horarios {
+    flex-direction: column;
+  }
+
+  .btn-ver-horario,
+  .btn-registrar-horario {
+    width: 100%;
+    justify-content: center;
+  }
+}

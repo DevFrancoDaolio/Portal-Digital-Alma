@@ -1,4 +1,9 @@
+version: '3.9'
+
 services:
+  # ===============================
+  # SERVICIO PROFESIONALES
+  # ===============================
   servicioprofesionales:
     build:
       context: ./ServicioProfesionales
@@ -12,6 +17,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: password
     depends_on:
       - servicioprofesionales-db
+    networks:
+      - app-network
 
   servicioprofesionales-db:
     image: postgres:16
@@ -25,7 +32,46 @@ services:
       - "5433:5432"
     volumes:
       - servicioprofesionales_data:/var/lib/postgresql/data
+    networks:
+      - app-network
 
+  # ===============================
+  # SERVICIO CONSULTORIOS (nuevo)
+  # ===============================
+  servicioconsultorios:
+    build:
+      context: ./ServicioConsultorios
+      dockerfile: Dockerfile
+    container_name: servicioconsultorios
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://servicioconsultorios-db:5432/consultoriosdb
+      SPRING_DATASOURCE_USERNAME: consult_user
+      SPRING_DATASOURCE_PASSWORD: consult_pass
+    depends_on:
+      - servicioconsultorios-db
+    networks:
+      - app-network
+
+  servicioconsultorios-db:
+    image: postgres:16
+    container_name: servicioconsultorios-db
+    restart: always
+    environment:
+      POSTGRES_DB: consultoriosdb
+      POSTGRES_USER: consult_user
+      POSTGRES_PASSWORD: consult_pass
+    ports:
+      - "5434:5432"
+    volumes:
+      - servicioconsultorios_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  # ===============================
+  # FRONTEND
+  # ===============================
   frontend:
     build:
       context: ./frontend
@@ -35,6 +81,17 @@ services:
       - "3000:80"
     depends_on:
       - servicioprofesionales
+      - servicioconsultorios
+    networks:
+      - app-network
 
+# ===============================
+# VOLUMENES Y REDES
+# ===============================
 volumes:
   servicioprofesionales_data:
+  servicioconsultorios_data:
+
+networks:
+  app-network:
+    driver: bridge

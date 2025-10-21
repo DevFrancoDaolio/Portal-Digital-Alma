@@ -1,76 +1,75 @@
 package com.alma.consultorios.services;
 
+import com.alma.consultorios.dtos.ConsultorioDTO;
+import com.alma.consultorios.mappers.ConsultorioMapper;
 import com.alma.consultorios.entities.Consultorio;
 import com.alma.consultorios.entities.Consultorio.EstadoConsultorio;
-import com.tuapp.consultorios.repository.ConsultorioRepository;
+import com.alma.consultorios.repositories.ConsultorioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ConsultorioService {
+public class ConsultorioService implements IConsultorio {
 
     private final ConsultorioRepository repository;
+    private final ConsultorioMapper mapper;
 
-    // Obtener todos
-    public List<Consultorio> getAll() {
-        return repository.findAll();
+    @Override
+    public ConsultorioDTO crearConsultorio(ConsultorioDTO dto) {
+        Consultorio entidad = mapper.toEntity(dto);
+        entidad.getHorarios().forEach(h -> h.setConsultorio(entidad)); // establecer relación bidireccional
+        Consultorio guardado = repository.save(entidad);
+        return mapper.toDTO(guardado);
     }
 
-    // Filtro por número
-    public List<Consultorio> getByNumero(Integer numero) {
-        return repository.findByNumero(numero);
+    @Override
+    public ConsultorioDTO actualizarConsultorio(Long id, ConsultorioDTO dto) {
+        Consultorio existente = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Consultorio no encontrado con ID: " + id));
+
+        Consultorio actualizado = mapper.toEntity(dto);
+        actualizado.setId(id); // aseguramos que se actualice el existente
+        actualizado.getHorarios().forEach(h -> h.setConsultorio(actualizado)); // mantener relación
+
+        Consultorio guardado = repository.save(actualizado);
+        return mapper.toDTO(guardado);
     }
 
-    // Filtro por ubicación
-    public List<Consultorio> getByUbicacion(String ubicacion) {
-        return repository.findByUbicacionContainingIgnoreCase(ubicacion);
+    @Override
+    public ConsultorioDTO marcarFueraDeServicio(Long id) {
+        Consultorio consultorio = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Consultorio no encontrado con ID: " + id));
+
+        consultorio.setEstado(EstadoConsultorio.FUERA_DE_SERVICIO);
+        Consultorio actualizado = repository.save(consultorio);
+        return mapper.toDTO(actualizado);
     }
 
-    // Filtro por especialidad
-    public List<Consultorio> getByEspecialidad(Long especialidadId) {
-        return repository.findByEspecialidadIdsContaining(especialidadId);
+    @Override
+    public List<ConsultorioDTO> listarTodos() {
+        return repository.findAll()
+                .stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
     }
 
-    // Cambio de estado
-    public Consultorio cambiarEstado(Long id, EstadoConsultorio nuevoEstado) {
-        Consultorio c = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Consultorio no encontrado"));
-        c.setEstado(nuevoEstado);
-        return repository.save(c);
+    @Override
+    public List<ConsultorioDTO> buscarPorUbicacion(String ubicacion) {
+        return repository.findByUbicacionContainingIgnoreCase(ubicacion)
+                .stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
     }
 
-    // Métodos específicos de transición de estado
-    public Consultorio marcarOcupado(Long id) {
-        Consultorio c = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Consultorio no encontrado"));
-        if (c.getEstado() == EstadoConsultorio.DISPONIBLE) {
-            c.setEstado(EstadoConsultorio.OCUPADO);
-            return repository.save(c);
-        }
-        throw new RuntimeException("El consultorio no está disponible para ocupar");
-    }
-
-    public Consultorio marcarDisponible(Long id) {
-        Consultorio c = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Consultorio no encontrado"));
-        if (c.getEstado() == EstadoConsultorio.OCUPADO ||
-                c.getEstado() == EstadoConsultorio.FUERA_DE_SERVICIO) {
-            c.setEstado(EstadoConsultorio.DISPONIBLE);
-            return repository.save(c);
-        }
-        throw new RuntimeException("El consultorio ya está disponible");
-    }
-
-    public Consultorio marcarFueraDeServicio(Long id) {
-        Consultorio c = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Consultorio no encontrado"));
-        if (c.getEstado() == EstadoConsultorio.DISPONIBLE) {
-            c.setEstado(EstadoConsultorio.FUERA_DE_SERVICIO);
-            return repository.save(c);
-        }
-        throw new RuntimeException("Solo se puede poner fuera de servicio un consultorio disponible");
+    @Override
+    public ConsultorioDTO obtenerPorId(Long id) {
+        Consultorio consultorio = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Consultorio no encontrado con ID: " + id));
+        return mapper.toDTO(consultorio);
     }
 }
