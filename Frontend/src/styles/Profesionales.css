@@ -158,6 +158,66 @@ table td {
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Added custom button styles for Editar and Dar de Baja with flex: 1 */
+.btn-editar {
+  flex: 1;
+  padding: 0.5rem;
+  background-color: #ffc107;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.btn-editar:hover {
+  background-color: #e0a800;
+}
+
+.btn-baja {
+  flex: 1;
+  padding: 0.5rem;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.btn-baja:hover {
+  background-color: #c82333;
+}
+
+.btn-reactivar {
+  flex: 1;
+  padding: 0.5rem;
+  background-color: #28a745; /* verde tipo éxito */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.btn-reactivar:hover {
+  background-color: #218838;
+}
+
+
+/* Added container for buttons to use flexbox */
+.card-actions {
+  display: flex;
+  flex-direction: column; /* ← apila verticalmente */
+  gap: 0.5rem;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+
 /* Added styles for search container */
 .search-container {
   width: 100%;
@@ -181,6 +241,23 @@ table td {
   text-align: left;
   animation: slideDown 0.3s ease-out;
 }
+
+.btn-horarios {
+  flex: 1;
+  padding: 0.5rem;
+  background-color: #17a2b8; /* celeste */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.btn-horarios:hover {
+  background-color: #138496;
+}
+
 
 @keyframes slideDown {
   from {
@@ -336,7 +413,7 @@ table td {
   display: none; /* Hide duplicate title in modal */
 }
 
-/* Ensure table in modal doesn't get cut off */
+/* Fixed table column widths to prevent checkbox stretching */
 .modal-body-professional table {
   width: 100%;
   table-layout: fixed;
@@ -346,12 +423,60 @@ table td {
 .modal-body-professional table th {
   word-wrap: break-word;
   overflow-wrap: break-word;
+  padding: 8px;
 }
 
-/* Ensure matricula input is fully visible */
-.modal-body-professional table td input {
+/* Set specific widths for each column */
+.modal-body-professional table th:first-child,
+.modal-body-professional table td:first-child {
+  width: 45%;
+  text-align: left;
+}
+
+.modal-body-professional table th:nth-child(2),
+.modal-body-professional table td:nth-child(2) {
+  width: 40%;
+}
+
+.modal-body-professional table th:nth-child(3),
+.modal-body-professional table td:nth-child(3) {
+  width: 15%;
+  text-align: center;
+}
+
+/* Ensure checkbox and label don't stretch */
+.modal-body-professional table td .form-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.modal-body-professional table td .form-check-input {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
+.modal-body-professional table td .form-check-label {
+  flex: 1;
+  margin: 0;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+/* Ensure matricula input is fully visible and properly sized */
+.modal-body-professional table td input[type="text"] {
   width: 100%;
   min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Center radio buttons */
+.modal-body-professional table td input[type="radio"] {
+  margin: 0 auto;
+  display: block;
 }
 
 @keyframes modalSlideIn {
@@ -416,7 +541,6 @@ table td {
   margin: 0; /* elimina margen vertical si es necesario */
 }
 
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .main-layout {
@@ -450,6 +574,4 @@ table td {
   .modal-overlay {
     padding: 10px;
   }
-
-  
 }

@@ -2,17 +2,15 @@
 
 import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import {
-  crearProfesional,
-  actualizarProfesional,
-  getProvincias,
-  getLocalidadesByProvincia,
-  getEspecialidades,
-  getProfesionales,
-} from "../services/profesionalesService"
+
+import { crearProfesional, actualizarProfesional, getProvincias, getLocalidadesByProvincia, getProfesionales } from "../services/profesionalesService"
+import { getEspecialidades } from "../services/especialidadesService"
+
 import "../styles/Profesionales.css"
+
 import NavBar from "../componentes/NavBar"
 import Fondo from "../componentes/Fondo"
+
 
 export default function AgregarProfesional({ isModal = false, onClose = null, profesional = null, onSave = null }) {
   const navigate = useNavigate()

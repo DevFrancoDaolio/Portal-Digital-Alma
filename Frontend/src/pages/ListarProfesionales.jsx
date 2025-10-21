@@ -3,25 +3,16 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { getProfesionales, eliminarProfesional, reactivarProfesional } from "../services/profesionalesService"
+import { getEspecialidades } from "../services/especialidadesService"
 import "../styles/Profesionales.css"
 import NavBar from "../componentes/NavBar"
 import Fondo from "../componentes/Fondo"
 import EditarProfesionalModal from "./EditarProfesional"
 
-const specialties = [
-  "Kinesiología",
-  "Psicología",
-  "Cardiología",
-  "Pediatría",
-  "Fonoaudiología",
-  "Psiquiatría",
-  "Médico Clínico",
-  "Psicomotricidad",
-]
-
 export default function ClinicProfessionals() {
   const [filtro, setFiltro] = useState(null)
   const [professionals, setProfessionals] = useState([])
+  const [especialidades, setEspecialidades] = useState([])
   const [busqueda, setBusqueda] = useState("")
   const [modalEditar, setModalEditar] = useState(false)
   const [profesionalEditar, setProfesionalEditar] = useState(null)
@@ -32,7 +23,20 @@ export default function ClinicProfessionals() {
 
   useEffect(() => {
     cargarProfesionales()
+    cargarEspecialidades()
   }, [])
+
+  const cargarEspecialidades = async () => {
+    try {
+      const response = await getEspecialidades()
+      console.log("[v0] Especialidades cargadas:", response.data)
+      setEspecialidades(response.data || [])
+    } catch (error) {
+      console.error("Error al obtener especialidades:", error)
+      alert("Error al cargar las especialidades")
+      setEspecialidades([])
+    }
+  }
 
   const cargarProfesionales = async () => {
     setLoading(true)
@@ -113,13 +117,13 @@ export default function ClinicProfessionals() {
           <aside className="sidebar">
             <h3>Especialidades</h3>
             <ul className="specialty-list">
-              {specialties.map((esp) => (
-                <li key={esp}>
+              {especialidades.map((esp) => (
+                <li key={esp.id}>
                   <button
-                    className={`specialty-button ${filtro === esp ? "active" : ""}`}
-                    onClick={() => setFiltro(filtro === esp ? null : esp)}
+                    className={`specialty-button ${filtro === esp.nombre ? "active" : ""}`}
+                    onClick={() => setFiltro(filtro === esp.nombre ? null : esp.nombre)}
                   >
-                    {esp}
+                    {esp.nombre}
                   </button>
                 </li>
               ))}
@@ -190,7 +194,7 @@ export default function ClinicProfessionals() {
                       {isAdmin && (
                         <div className="card-actions">
                           <button
-                            className="btn btn-primary btn-sm"
+                            className="btn-editar"
                             onClick={(e) => {
                               e.stopPropagation()
                               handleEditarClick(prof)
@@ -199,21 +203,33 @@ export default function ClinicProfessionals() {
                           >
                             Editar
                           </button>
-                        <div/>
                           {prof.activo ? (
-                            <button
-                              className="btn btn-warning btn-sm"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleDarDeBajaClick(prof)
-                              }}
-                              title="Dar de Baja Temporal"
-                            >
-                              Dar de Baja
-                            </button>
+                            <>
+                              <button
+                                className="btn-baja"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleDarDeBajaClick(prof)
+                                }}
+                                title="Dar de Baja Temporal"
+                              >
+                                Dar de Baja
+                              </button>
+
+                              <button
+                                className="btn-horarios"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  navigate("/MisHorarios")
+                                }}
+                                title="Ver y editar horarios"
+                              >
+                                Mis horarios
+                              </button>
+                            </>
                           ) : (
                             <button
-                              className="btn btn-success btn-sm"
+                              className="btn-reactivar"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 handleReactivarClick(prof)

@@ -1,11 +1,6 @@
-// services/especialidad-service.js
+import api from "./api"
 
-export const getEspecialidades = () => {
-  return Promise.resolve([
-    { id: 1, nombre: "Cardiología" },
-    { id: 2, nombre: "Pediatría" },
-    { id: 3, nombre: "Dermatología" },
-    { id: 4, nombre: "Neurología" },
-    { id: 5, nombre: "Clínica Médica" },
-  ]);
-};
+export const getEspecialidades = () => api.get("/api/especialidades")
+export const createEspecialidad = (especialidad) => api.post("/api/especialidades", especialidad)
+export const updateEspecialidad = (id) => api.put(`/api/especialidades/${id}`)
+export const deleteEspecialidad = (id) => api.delete(`/api/especialidades/${id}`)

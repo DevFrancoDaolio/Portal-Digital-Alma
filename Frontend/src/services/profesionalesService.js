@@ -8,7 +8,4 @@ export const reactivarProfesional = (id) => api.put(`/profesionales/${id}/reacti
 export const buscarProfesionales = (params) => api.get("/profesionales/buscar", { params })
 
 export const getProvincias = () => api.get("/api/provincias")
-
 export const getLocalidadesByProvincia = (provinciaId) => api.get("/api/localidades", { params: { provinciaId } })
-
-export const getEspecialidades = () => api.get("/api/especialidades")
