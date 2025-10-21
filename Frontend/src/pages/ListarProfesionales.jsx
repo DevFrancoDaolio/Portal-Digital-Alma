@@ -194,7 +194,7 @@ export default function ClinicProfessionals() {
                       {isAdmin && (
                         <div className="card-actions">
                           <button
-                            className="btn-editar"
+                            className="btn-editar-P"
                             onClick={(e) => {
                               e.stopPropagation()
                               handleEditarClick(prof)

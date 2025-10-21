@@ -159,7 +159,7 @@ table td {
 }
 
 /* Added custom button styles for Editar and Dar de Baja with flex: 1 */
-.btn-editar {
+.btn-editar-P {
   flex: 1;
   padding: 0.5rem;
   background-color: #ffc107;
@@ -171,7 +171,7 @@ table td {
   transition: background-color 0.3s ease;
 }
 
-.btn-editar:hover {
+.btn-editar-P:hover {
   background-color: #e0a800;
 }
 
