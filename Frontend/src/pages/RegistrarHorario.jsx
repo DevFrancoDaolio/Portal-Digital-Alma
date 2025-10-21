@@ -4,14 +4,12 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import NavBar from "../componentes/NavBar"
 import Fondo from "../componentes/Fondo"
-import "../styles/Profesionales.css"
+import "../styles/RegistrarHorario.css"
 
 export default function RegistrarHorario() {
   const navigate = useNavigate()
   const [sesion, setSesion] = useState(null)
-  const [especialidades, setEspecialidades] = useState([])
   const [formData, setFormData] = useState({
-    especialidad: "",
     dia: "Lunes",
     horaInicio: "08:00",
     horaFin: "09:00",
@@ -19,18 +17,7 @@ export default function RegistrarHorario() {
   const [errors, setErrors] = useState({})
   const [vistaPrevia, setVistaPrevia] = useState(false)
 
-  const especialidadesDisponibles = [
-    "Kinesiología",
-    "Psicología",
-    "Cardiología",
-    "Pediatría",
-    "Fonoaudiología",
-    "Psiquiatría",
-    "Médico Clínico",
-    "Psicomotricidad",
-  ]
-
-  const diasSemana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+  const diasSemana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"]
 
   // Generar horarios en intervalos de 15 minutos
   const generarHorarios = () => {
@@ -48,16 +35,12 @@ export default function RegistrarHorario() {
   const horariosDisponibles = generarHorarios()
 
   useEffect(() => {
-    const sesionActual = localStorage.getItem("sesion")
-    if (!sesionActual) {
-      navigate("/login")
-      return
-    }
-    const sesionData = JSON.parse(sesionActual)
-    setSesion(sesionData)
-
-    // Cargar especialidades del profesional (simulado)
-    setEspecialidades(especialidadesDisponibles)
+    // Sesión de prueba para desarrollo
+    setSesion({
+      profesionalId: 1,
+      nombre: "Profesional",
+      apellido: "Demo",
+    })
   }, [navigate])
 
   const handleChange = (e) => {
@@ -69,12 +52,34 @@ export default function RegistrarHorario() {
   const validarFormulario = () => {
     const newErrors = {}
 
-    if (!formData.especialidad) {
-      newErrors.especialidad = "Debe seleccionar una especialidad"
-    }
-
     if (formData.horaInicio >= formData.horaFin) {
       newErrors.horaFin = "La hora de fin debe ser posterior a la hora de inicio"
+    }
+
+    const horariosExistentes = JSON.parse(localStorage.getItem("horarios") || "[]")
+    const conflicto = horariosExistentes.some((horario) => {
+      if (horario.dia !== formData.dia) return false
+
+      const [horaInicioExistenteH, horaInicioExistenteM] = horario.horaInicio.split(":").map(Number)
+      const [horaFinExistenteH, horaFinExistenteM] = horario.horaFin.split(":").map(Number)
+      const [horaInicioNuevaH, horaInicioNuevaM] = formData.horaInicio.split(":").map(Number)
+      const [horaFinNuevaH, horaFinNuevaM] = formData.horaFin.split(":").map(Number)
+
+      const inicioExistenteMinutos = horaInicioExistenteH * 60 + horaInicioExistenteM
+      const finExistenteMinutos = horaFinExistenteH * 60 + horaFinExistenteM
+      const inicioNuevaMinutos = horaInicioNuevaH * 60 + horaInicioNuevaM
+      const finNuevaMinutos = horaFinNuevaH * 60 + horaFinNuevaM
+
+      // Check if there's any overlap
+      return (
+        (inicioNuevaMinutos >= inicioExistenteMinutos && inicioNuevaMinutos < finExistenteMinutos) ||
+        (finNuevaMinutos > inicioExistenteMinutos && finNuevaMinutos <= finExistenteMinutos) ||
+        (inicioNuevaMinutos <= inicioExistenteMinutos && finNuevaMinutos >= finExistenteMinutos)
+      )
+    })
+
+    if (conflicto) {
+      newErrors.general = `Ya un horario registrado para ese dia y horario`
     }
 
     setErrors(newErrors)
@@ -93,9 +98,8 @@ export default function RegistrarHorario() {
 
     const nuevoHorario = {
       id: Date.now(),
-      profesionalId: sesion.profesionalId,
-      nombreProfesional: `${sesion.nombre} ${sesion.apellido}`,
-      especialidad: formData.especialidad,
+      profesionalId: sesion?.profesionalId || 1,
+      nombreProfesional: sesion ? `${sesion.nombre} ${sesion.apellido}` : "Profesional Demo",
       dia: formData.dia,
       horaInicio: formData.horaInicio,
       horaFin: formData.horaFin,
@@ -124,9 +128,6 @@ export default function RegistrarHorario() {
             >
               <h3 style={{ color: "#007bff", marginBottom: "15px" }}>Nuevo Horario</h3>
               <p>
-                <strong>Especialidad:</strong> {formData.especialidad}
-              </p>
-              <p>
                 <strong>Día:</strong> {formData.dia}
               </p>
               <p>
@@ -153,27 +154,21 @@ export default function RegistrarHorario() {
       <div className="main-layout">
         <div className="registro-card2">
           <h2>Registrar Nuevo Horario</h2>
-          <form onSubmit={handleVistaPrevia}>
-            <div className="form-group">
-              <label htmlFor="especialidad">Especialidad *</label>
-              <select
-                id="especialidad"
-                name="especialidad"
-                value={formData.especialidad}
-                onChange={handleChange}
-                className="form-control"
-                required
-              >
-                <option value="">Seleccione una especialidad</option>
-                {especialidades.map((esp) => (
-                  <option key={esp} value={esp}>
-                    {esp}
-                  </option>
-                ))}
-              </select>
-              {errors.especialidad && <span className="error-text">{errors.especialidad}</span>}
+          {errors.general && (
+            <div
+              style={{
+                backgroundColor: "#ffebee",
+                color: "#c62828",
+                padding: "12px",
+                borderRadius: "8px",
+                marginBottom: "15px",
+                border: "1px solid #ef5350",
+              }}
+            >
+              {errors.general}
             </div>
-
+          )}
+          <form onSubmit={handleVistaPrevia}>
             <div className="form-group">
               <label htmlFor="dia">Día de la Semana *</label>
               <select
