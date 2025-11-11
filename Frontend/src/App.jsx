@@ -15,6 +15,7 @@ import EditarConsultorio from "./pages/EditarConsultorio.jsx";
 import MisHorarios from "./pages/MisHorarios.jsx";
 import RegistrarHorario from "./pages/RegistrarHorario.jsx";
 import CreateAccount from "./pages/CreateAccount.jsx";
+import RegistrarTurno from "./pages/RegistrarTurno"
 //import Navbar from "./components/Navbar";
 
 
@@ -41,6 +42,7 @@ function App() {
         <Route path="/MisHorarios" element={<MisHorarios />} />
         <Route path="/RegistrarHorario" element={<RegistrarHorario />} />
         <Route path="/CreateAccount" element={<CreateAccount />} />
+        <Route path="/RegistrarTurno" element={<RegistrarTurno />} />
 
               
       </Routes>
