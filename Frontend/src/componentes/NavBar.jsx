@@ -42,8 +42,8 @@ const NavBar = () => {
         >
           <Link to="/ListarConsultorio">Consultorios</Link>
         </li>
-        <li className={location.pathname === "/Turnos" ? "active" : ""}>
-          <Link to="/Turnos">Turnos</Link>
+        <li className={location.pathname === "/ConsultarTurnos" ? "active" : ""}>
+          <Link to="/ConsultarTurnos">Turnos</Link>
         </li>
       </ul>
       <div className="nav-actions">

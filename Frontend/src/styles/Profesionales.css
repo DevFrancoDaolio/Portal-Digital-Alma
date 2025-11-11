@@ -541,6 +541,11 @@ table td {
   margin: 0; /* elimina margen vertical si es necesario */
 }
 
+.modal-body-especialidad {
+  padding: 30px;
+  box-sizing: border-box;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .main-layout {

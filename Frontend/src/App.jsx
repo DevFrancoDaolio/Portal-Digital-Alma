@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";  
 import Login from "./pages/Login.jsx";
-import Turnos from "./pages/Turnos.jsx";
+import ConsultarTurnos from "./pages/ConsultarTurnos.jsx";
 import ListarProfesionales from "./pages/ListarProfesionales.jsx";
 import RegistrarProfesional from "./pages/RegistrarProfesional.jsx";
 import AgregarEspecialidad from "./pages/AgregarEspecialidad.jsx";
@@ -28,7 +28,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/Test" element={<Test/>}/>
         <Route path="/login" element={<Login />} />
-        <Route path="/turnos" element={<Turnos />} />
+        <Route path="/ConsultarTurnos" element={<ConsultarTurnos />} />
         <Route path="/ListarProfesionales" element={<ListarProfesionales />} />
         <Route path="/RegistrarProfesional" element={<RegistrarProfesional />} />
         <Route path="/Especialidad" element={<AgregarEspecialidad />} />

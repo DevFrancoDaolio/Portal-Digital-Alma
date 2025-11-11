@@ -128,13 +128,6 @@ export default function ClinicProfessionals() {
                 </li>
               ))}
             </ul>
-            {isAdmin && (
-              <div className="mt-3">
-                <button type="button" className="boton-agregar w-100" onClick={() => navigate("/Especialidad")}>
-                  + Agregar especialidad
-                </button>
-              </div>
-            )}
           </aside>
 
           <main className="professional-list">

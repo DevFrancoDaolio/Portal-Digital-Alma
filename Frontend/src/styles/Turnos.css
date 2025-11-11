@@ -1,32 +1,362 @@
-h2 {
+.turnos-container {
+  display: flex;
+  height: calc(100vh - 60px);
+  background: #f5f5f5;
+  overflow: hidden;
+}
+
+.turnos-sidebar {
+  width: 280px;
+  background: white;
+  border-right: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  justify-content: space-between; /* ⬅️ empuja el calendario al fondo */
+}
+
+.doctor-profile {
+  padding: 20px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.doctor-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #e0e0e0;
+}
+
+.doctor-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.doctor-info h3 {
+  margin: 0;
+  font-size: 16px;
   font-weight: 600;
-  color: #343a40;
-}
-
-input::placeholder {
-  font-style: italic;
-}
-
-.registro-card {
-  max-width: 1100px;
-  margin: 40px auto;
-  padding: 32px;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-  font-family: 'Segoe UI', sans-serif;
-}
-
-.nav-links li {
-  padding-bottom: 4px;
-}
-
-.nav-links li.active {
-  border-bottom: 3px solid #007bff; /* Línea azul debajo */
-}
-
-.nav-links a {
-  text-decoration: none;
   color: #333;
+}
+
+.doctor-info p {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.menu-items {
+  flex: 1;
+  padding: 10px 0;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 13px;
+  color: #555;
+}
+
+.menu-item:hover {
+  background: #f5f5f5;
+}
+
+.menu-item.active {
+  background: #4dd4ac;
+  color: white;
   font-weight: 500;
+}
+
+.menu-icon {
+  font-size: 16px;
+}
+
+.calendar-widget {
+  padding: 15px;
+  border-top: 1px solid #e0e0e0;
+  background: white;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.calendar-month {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.calendar-nav-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+  padding: 4px 8px;
+}
+
+.calendar-nav-btn:hover {
+  color: #4dd4ac;
+}
+
+.calendar-grid {
+  font-size: 12px;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.calendar-weekday {
+  text-align: center;
+  font-weight: 600;
+  color: #666;
+  padding: 4px 0;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  height: 28px;
+  grid-template-columns: repeat(8, 1fr);
+  gap : 4px;
+  min-height: px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+  color: #333;
+}
+
+.calendar-day:hover:not(.empty) {
+  background: #f0f0f0;
+}
+
+.calendar-day.empty {
+  cursor: default;
+}
+
+.calendar-day.today {
+  background: #e3f2fd;
+  font-weight: 600;
+  color: #1976d2;
+}
+
+.calendar-day.selected {
+  background: #4dd4ac;
+  color: white;
+  font-weight: 600;
+}
+
+.turnos-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: white;
+}
+
+.week-header {
+  display: grid;
+  grid-template-columns: 80px repeat(5, 1fr); /* ahora incluye columna de horarios */
+  border-bottom: 2px solid #e0e0e0;
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+
+.week-day-header {
+  padding: 5px 10px;
+  height: 30px;
+  text-align: center;
+  border-right: 1px solid #e0e0e0;
+}
+
+.week-day-header:last-child {
+  border-right: none;
+}
+
+.day-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.schedule-grid {
+  display: grid;
+  grid-template-columns: 80px repeat(5, 1fr); /* 80px para la columna de horarios */
+  flex: 1;
+  overflow-y: auto;
+}
+
+
+.time-column {
+  width: 80px;
+  border-right: 2px solid #e0e0e0;
+  background: #fafafa;
+  flex-shrink: 0;
+}
+
+.time-slot {
+  height: 30px;
+  padding: 5px 10px;
+  font-size: 11px;
+  color: #666;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+}
+
+.day-column {
+  display: grid;
+  border-right: 1px solid #e0e0e0;
+  position: relative;
+}
+
+.day-column:last-child {
+  border-right: none;
+}
+
+.schedule-slot {
+  height: 30px;
+  border-bottom: 1px solid #e0e0e0;
+  position: relative;
+  overflow: hidden;
+}
+
+
+.appointment {
+  position: absolute;
+  top: 0px;
+  left: 2px;
+  right: 2px;
+  border-radius: 4px;
+  padding: 4px 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s;
+  z-index: 5;
+  max-height: 100%;
+}
+
+.appointment:hover {
+  transform: scale(1.02);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.appointment.normal {
+  background: #4dd4ac;
+  border-left: 3px solid #3ab892;
+}
+
+.appointment.blocked {
+  background: #e57373;
+  border-left: 3px solid #d32f2f;
+}
+
+.appointment-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.appointment-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appointment-time {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.boton-agregar {
+  background-color: #28a745;
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-baja {
+  padding: 0.5rem 1rem;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.sidebar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  background: white;
+}
+
+
+@media (max-width: 1200px) {
+  .turnos-sidebar {
+    width: 240px;
+  }
+
+  .menu-item {
+    font-size: 12px;
+    padding: 10px 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .turnos-container {
+    flex-direction: column;
+  }
+
+  .turnos-sidebar {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+  }
+
+  .calendar-widget {
+  padding: 15px;
+  border-top: 1px solid #e0e0e0;
+  background: white;
+  margin-top: auto; /* empuja hacia abajo */
+  }
+
 }
