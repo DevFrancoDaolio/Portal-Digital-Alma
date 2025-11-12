@@ -177,7 +177,7 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
 
     setLoadingEspecialidad(true)
     try {
-      const response = await crearEspecialidad({ nombre: nuevaEspecialidad.trim() })
+      const response = await createEspecialidad({ nombre: nuevaEspecialidad.trim() })
       const nuevaEsp = response.data
 
       // Update the list of available specialties
