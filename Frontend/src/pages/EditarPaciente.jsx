@@ -26,6 +26,7 @@ export default function EditarPaciente() {
     dpto: "",
     provincia: "",
     localidad: "",
+    observaciones: "", // Added observations field
   })
 
   const [errors, setErrors] = useState({})
@@ -50,62 +51,40 @@ export default function EditarPaciente() {
   const cargarDatos = async () => {
     try {
       setCargando(true)
-
       const [pacienteData, obrasSocialesData, provinciasData] = await Promise.all([
         pacienteService.obtenerPorId(id),
         pacienteService.obtenerObrasSociales(),
         pacienteService.obtenerProvincias(),
       ])
 
+      setForm({
+        nombre: pacienteData.nombre || "",
+        apellido: pacienteData.apellido || "",
+        dni: pacienteData.dni || "",
+        email: pacienteData.email || "",
+        telefono: pacienteData.telefono || "",
+        fechaNacimiento: pacienteData.fechaNacimiento || "",
+        obraSocial: pacienteData.obraSocialId || "",
+        calle: pacienteData.calle || "",
+        numero: pacienteData.numero || "",
+        codigoPostal: pacienteData.codigoPostal || "",
+        piso: pacienteData.piso || "",
+        dpto: pacienteData.dpto || "",
+        provincia: pacienteData.provinciaId || "",
+        localidad: pacienteData.localidadId || "",
+        observaciones: pacienteData.observaciones || "", // Load observations
+      })
+
       setObrasSociales(obrasSocialesData)
       setProvincias(provinciasData)
 
-      const obraSocialId = obrasSocialesData.find((o) => o.nombre === pacienteData.obraSocialNombre)?.id || ""
-      const provinciaId = provinciasData.find((p) => p.nombre === pacienteData.provinciaNombre)?.id || ""
-
-      if (provinciaId) {
-        const localidadesData = await pacienteService.obtenerLocalidades(provinciaId)
+      if (pacienteData.provinciaId) {
+        const localidadesData = await pacienteService.obtenerLocalidades(pacienteData.provinciaId)
         setLocalidades(localidadesData)
-
-        const localidadId = localidadesData.find((l) => l.nombre === pacienteData.localidadNombre)?.id || ""
-
-        setForm({
-          nombre: pacienteData.nombre || "",
-          apellido: pacienteData.apellido || "",
-          dni: pacienteData.dni || "",
-          email: pacienteData.email || "",
-          telefono: pacienteData.telefono || "",
-          fechaNacimiento: pacienteData.fechaNacimiento || "",
-          obraSocial: obraSocialId.toString(),
-          calle: pacienteData.calle || "",
-          numero: pacienteData.numero || "",
-          codigoPostal: pacienteData.codigoPostal || "",
-          piso: pacienteData.piso || "",
-          dpto: pacienteData.dpto || "",
-          provincia: provinciaId.toString(),
-          localidad: localidadId.toString(),
-        })
-      } else {
-        setForm({
-          nombre: pacienteData.nombre || "",
-          apellido: pacienteData.apellido || "",
-          dni: pacienteData.dni || "",
-          email: pacienteData.email || "",
-          telefono: pacienteData.telefono || "",
-          fechaNacimiento: pacienteData.fechaNacimiento || "",
-          obraSocial: obraSocialId.toString(),
-          calle: pacienteData.calle || "",
-          numero: pacienteData.numero || "",
-          codigoPostal: pacienteData.codigoPostal || "",
-          piso: pacienteData.piso || "",
-          dpto: pacienteData.dpto || "",
-          provincia: "",
-          localidad: "",
-        })
       }
     } catch (error) {
       console.error("Error al cargar datos:", error)
-      alert("Error al cargar el paciente. Volviendo a la lista.")
+      alert("Error al cargar los datos del paciente. Por favor, intente nuevamente.")
       navigate("/ListarPaciente")
     } finally {
       setCargando(false)
@@ -130,51 +109,9 @@ export default function EditarPaciente() {
     }
   }
 
-  const handleActualizar = async (e) => {
-    e.preventDefault()
-
-    if (!validarFormulario()) {
-      return
-    }
-
-    try {
-      setGuardando(true)
-
-      const pacienteDto = {
-        nombre: form.nombre.trim(),
-        apellido: form.apellido.trim(),
-        dni: form.dni.trim(),
-        email: form.email.trim(),
-        telefono: form.telefono.trim() || null,
-        fechaNacimiento: form.fechaNacimiento,
-        calle: form.calle.trim() || null,
-        numero: form.numero.trim() || null,
-        codigoPostal: form.codigoPostal.trim() || null,
-        piso: form.piso.trim() || null,
-        dpto: form.dpto.trim() || null,
-        provinciaId: Number.parseInt(form.provincia),
-        localidadId: Number.parseInt(form.localidad),
-        obraSocialId: Number.parseInt(form.obraSocial),
-      }
-
-      await pacienteService.actualizar(id, pacienteDto)
-      navigate("/ListarPaciente")
-    } catch (error) {
-      console.error("Error al actualizar paciente:", error)
-      if (error.message.includes("DNI")) {
-        setErrors({ ...errors, dni: "Ya existe otro paciente con este DNI" })
-      } else {
-        alert("Error al actualizar el paciente. Por favor, intente nuevamente.")
-      }
-    } finally {
-      setGuardando(false)
-    }
-  }
-
   const validarFormulario = () => {
     const nuevosErrores = {}
 
-    // Validaciones obligatorias
     if (!form.nombre.trim()) {
       nuevosErrores.nombre = "El nombre es obligatorio"
     } else if (!/^[A-Za-zÁÉÍÓÚÑáéíóúñ ]+$/.test(form.nombre)) {
@@ -225,7 +162,6 @@ export default function EditarPaciente() {
       nuevosErrores.localidad = "La localidad es obligatoria"
     }
 
-    // Validaciones opcionales (solo si tienen valor)
     if (form.telefono.trim() && !/^\d{6,15}$/.test(form.telefono)) {
       nuevosErrores.telefono = "El teléfono debe tener entre 6 y 15 dígitos"
     }
@@ -254,6 +190,46 @@ export default function EditarPaciente() {
     return Object.keys(nuevosErrores).length === 0
   }
 
+  const handleActualizar = async (e) => {
+    e.preventDefault()
+
+    if (!validarFormulario()) {
+      return
+    }
+
+    try {
+      setGuardando(true)
+
+      const pacienteDto = {
+        nombre: form.nombre.trim(),
+        apellido: form.apellido.trim(),
+        dni: form.dni.trim(),
+        email: form.email.trim(),
+        telefono: form.telefono.trim() || null,
+        fechaNacimiento: form.fechaNacimiento,
+        calle: form.calle.trim() || null,
+        numero: form.numero.trim() || null,
+        codigoPostal: form.codigoPostal.trim() || null,
+        piso: form.piso.trim() || null,
+        dpto: form.dpto.trim() || null,
+        provinciaId: Number.parseInt(form.provincia),
+        localidadId: Number.parseInt(form.localidad),
+        obraSocialId: Number.parseInt(form.obraSocial),
+        observaciones: form.observaciones.trim() || null, // Include observations
+      }
+
+      console.log("Actualizando paciente:", pacienteDto)
+
+      await pacienteService.actualizar(id, pacienteDto)
+      navigate("/ListarPaciente")
+    } catch (error) {
+      console.error("Error al actualizar paciente:", error)
+      alert("Error al actualizar el paciente. Por favor, intente nuevamente.")
+    } finally {
+      setGuardando(false)
+    }
+  }
+
   if (cargando) {
     return (
       <Fondo>
@@ -263,7 +239,7 @@ export default function EditarPaciente() {
             <div className="spinner-border text-primary" role="status">
               <span className="visually-hidden">Cargando...</span>
             </div>
-            <p className="mt-3">Cargando paciente...</p>
+            <p className="mt-3">Cargando formulario...</p>
           </div>
         </div>
       </Fondo>
@@ -282,7 +258,7 @@ export default function EditarPaciente() {
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label htmlFor="nombre" className="form-label">
-                  Nombre *
+                  Nombre
                 </label>
                 <input
                   type="text"
@@ -298,7 +274,7 @@ export default function EditarPaciente() {
 
               <div className="col-md-6 mb-3">
                 <label htmlFor="apellido" className="form-label">
-                  Apellido *
+                  Apellido
                 </label>
                 <input
                   type="text"
@@ -316,7 +292,7 @@ export default function EditarPaciente() {
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label htmlFor="dni" className="form-label">
-                  DNI *
+                  DNI
                 </label>
                 <input
                   type="text"
@@ -327,13 +303,14 @@ export default function EditarPaciente() {
                   onChange={handleChange}
                   placeholder="Ej: 12345678"
                   maxLength="15"
+                  disabled
                 />
                 {errors.dni && <div className="invalid-feedback">{errors.dni}</div>}
               </div>
 
               <div className="col-md-6 mb-3">
                 <label htmlFor="email" className="form-label">
-                  Email *
+                  Email
                 </label>
                 <input
                   type="email"
@@ -368,7 +345,7 @@ export default function EditarPaciente() {
 
               <div className="col-md-6 mb-3">
                 <label htmlFor="fechaNacimiento" className="form-label">
-                  Fecha de Nacimiento *
+                  Fecha de Nacimiento
                 </label>
                 <input
                   type="date"
@@ -384,7 +361,7 @@ export default function EditarPaciente() {
 
             <div className="mb-3">
               <label htmlFor="obraSocial" className="form-label">
-                Obra Social *
+                Obra Social
               </label>
               <select
                 id="obraSocial"
@@ -474,7 +451,7 @@ export default function EditarPaciente() {
                     value={form.provincia}
                     onChange={handleChange}
                   >
-                    <option value="">Provincia *</option>
+                    <option value="">Provincia</option>
                     {provincias.map((prov) => (
                       <option key={prov.id} value={prov.id}>
                         {prov.nombre}
@@ -491,7 +468,7 @@ export default function EditarPaciente() {
                     onChange={handleChange}
                     disabled={!form.provincia}
                   >
-                    <option value="">Localidad *</option>
+                    <option value="">Localidad</option>
                     {localidades.map((loc) => (
                       <option key={loc.id} value={loc.id}>
                         {loc.nombre}
@@ -503,9 +480,26 @@ export default function EditarPaciente() {
               </div>
             </div>
 
+            <div className="mb-3">
+              <label htmlFor="observaciones" className="form-label">
+                Observaciones
+              </label>
+              <textarea
+                id="observaciones"
+                name="observaciones"
+                className={`form-control ${errors.observaciones ? "is-invalid" : ""}`}
+                value={form.observaciones}
+                onChange={handleChange}
+                placeholder="Ingrese observaciones adicionales del paciente (opcional)"
+                rows="3"
+                maxLength="500"
+              />
+              {errors.observaciones && <div className="invalid-feedback">{errors.observaciones}</div>}
+            </div>
+
             <div className="d-flex gap-2">
-              <button type="submit" className="btn btn-primary" disabled={guardando}>
-                {guardando ? "Actualizando..." : "Actualizar"}
+              <button type="submit" className="boton-agregar" disabled={guardando}>
+                {guardando ? "Guardando..." : "Guardar Cambios"}
               </button>
               <button
                 type="button"
