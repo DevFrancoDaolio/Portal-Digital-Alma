@@ -25,6 +25,7 @@ export default function RegistrarPaciente() {
     dpto: "",
     provincia: "",
     localidad: "",
+    observaciones: "", // Added observations field
   })
 
   const [errors, setErrors] = useState({})
@@ -85,7 +86,6 @@ export default function RegistrarPaciente() {
   const validarFormulario = () => {
     const nuevosErrores = {}
 
-    // Validaciones obligatorias
     if (!form.nombre.trim()) {
       nuevosErrores.nombre = "El nombre es obligatorio"
     } else if (!/^[A-Za-zÁÉÍÓÚÑáéíóúñ ]+$/.test(form.nombre)) {
@@ -136,7 +136,6 @@ export default function RegistrarPaciente() {
       nuevosErrores.localidad = "La localidad es obligatoria"
     }
 
-    // Validaciones opcionales (solo si tienen valor)
     if (form.telefono.trim() && !/^\d{6,15}$/.test(form.telefono)) {
       nuevosErrores.telefono = "El teléfono debe tener entre 6 y 15 dígitos"
     }
@@ -190,6 +189,7 @@ export default function RegistrarPaciente() {
         provinciaId: Number.parseInt(form.provincia),
         localidadId: Number.parseInt(form.localidad),
         obraSocialId: Number.parseInt(form.obraSocial),
+        observaciones: form.observaciones.trim() || null, // Added observations
       }
 
       console.log("Registrando paciente:", pacienteDto)
@@ -236,7 +236,7 @@ export default function RegistrarPaciente() {
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label htmlFor="nombre" className="form-label">
-                  Nombre *
+                  Nombre
                 </label>
                 <input
                   type="text"
@@ -252,7 +252,7 @@ export default function RegistrarPaciente() {
 
               <div className="col-md-6 mb-3">
                 <label htmlFor="apellido" className="form-label">
-                  Apellido *
+                  Apellido
                 </label>
                 <input
                   type="text"
@@ -270,7 +270,7 @@ export default function RegistrarPaciente() {
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label htmlFor="dni" className="form-label">
-                  DNI *
+                  DNI
                 </label>
                 <input
                   type="text"
@@ -287,7 +287,7 @@ export default function RegistrarPaciente() {
 
               <div className="col-md-6 mb-3">
                 <label htmlFor="email" className="form-label">
-                  Email *
+                  Email
                 </label>
                 <input
                   type="email"
@@ -322,7 +322,7 @@ export default function RegistrarPaciente() {
 
               <div className="col-md-6 mb-3">
                 <label htmlFor="fechaNacimiento" className="form-label">
-                  Fecha de Nacimiento *
+                  Fecha de Nacimiento
                 </label>
                 <input
                   type="date"
@@ -338,7 +338,7 @@ export default function RegistrarPaciente() {
 
             <div className="mb-3">
               <label htmlFor="obraSocial" className="form-label">
-                Obra Social *
+                Obra Social
               </label>
               <select
                 id="obraSocial"
@@ -428,7 +428,7 @@ export default function RegistrarPaciente() {
                     value={form.provincia}
                     onChange={handleChange}
                   >
-                    <option value="">Provincia *</option>
+                    <option value="">Provincia</option>
                     {provincias.map((prov) => (
                       <option key={prov.id} value={prov.id}>
                         {prov.nombre}
@@ -445,7 +445,7 @@ export default function RegistrarPaciente() {
                     onChange={handleChange}
                     disabled={!form.provincia}
                   >
-                    <option value="">Localidad *</option>
+                    <option value="">Localidad</option>
                     {localidades.map((loc) => (
                       <option key={loc.id} value={loc.id}>
                         {loc.nombre}
@@ -455,6 +455,23 @@ export default function RegistrarPaciente() {
                   {errors.localidad && <div className="invalid-feedback">{errors.localidad}</div>}
                 </div>
               </div>
+            </div>
+
+            <div className="mb-3">
+              <label htmlFor="observaciones" className="form-label">
+                Observaciones
+              </label>
+              <textarea
+                id="observaciones"
+                name="observaciones"
+                className={`form-control ${errors.observaciones ? "is-invalid" : ""}`}
+                value={form.observaciones}
+                onChange={handleChange}
+                placeholder="Ingrese observaciones adicionales del paciente (opcional)"
+                rows="3"
+                maxLength="500"
+              />
+              {errors.observaciones && <div className="invalid-feedback">{errors.observaciones}</div>}
             </div>
 
             <div className="d-flex gap-2">

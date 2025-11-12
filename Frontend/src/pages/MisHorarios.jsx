@@ -46,7 +46,7 @@ export default function MisHorarios() {
 
   const generarHorariosDelDia = () => {
     const slots = []
-    for (let h = 7; h <= 22; h++) {
+    for (let h = 8; h <= 18; h++) {
       for (let m = 0; m < 60; m += 30) {
         const hora = h.toString().padStart(2, "0")
         const minuto = m.toString().padStart(2, "0")
@@ -67,14 +67,24 @@ export default function MisHorarios() {
       const finMinutos = horaFinH * 60 + horaFinM
       const actualMinutos = horaActualH * 60 + horaActualM
 
-      return actualMinutos >= inicioMinutos && actualMinutos < finMinutos
+      return actualMinutos >= inicioMinutos && actualMinutos <= finMinutos
     })
+  }
+
+  const obtenerColorHorario = (horaId) => {
+    const colores = ["#007bff", "#28a745", "#ffc107", "#dc3545", "#17a2b8", "#6f42c1"]
+    return colores[horaId % colores.length]
   }
 
   if (vistaCalendario) {
     const diasSemana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"]
     const diasAbrev = ["LUN", "MAR", "MIE", "JUE", "VIE"]
     const todosLosHorarios = generarHorariosDelDia()
+
+    const horariosPorDia = {}
+    diasSemana.forEach((dia) => {
+      horariosPorDia[dia] = horarios.filter((h) => h.dia === dia)
+    })
 
     return (
       <Fondo>
@@ -96,8 +106,16 @@ export default function MisHorarios() {
                       <div className="slots-dia">
                         {todosLosHorarios.map((hora) => {
                           const ocupado = estaOcupado(dia, hora)
+                          const horarioData = horarios.find((h) => h.dia === dia && estaOcupado(dia, hora))
                           return ocupado ? (
-                            <div key={hora} className="slot-ocupado">
+                            <div
+                              key={hora}
+                              className="slot-ocupado"
+                              style={{
+                                backgroundColor: horarioData ? obtenerColorHorario(horarioData.id) : "#007bff",
+                                color: "white",
+                              }}
+                            >
                               {hora}
                             </div>
                           ) : null
@@ -108,10 +126,28 @@ export default function MisHorarios() {
                 </div>
               </div>
 
-              <div className="resumen-horarios">
-                {horarios.map((horario, index) => (
-                  <div key={horario.id} className={`pill-horario pill-color-${index % 3}`}>
-                    {horario.dia} {horario.horaInicio}-{horario.horaFin}
+              <div className="resumen-detallado-columnas">
+                {diasSemana.map((dia) => (
+                  <div key={dia} className="columna-resumen-detallada">
+                    <div className="dia-titulo">{dia}</div>
+                    <div className="listado-horarios">
+                      {horariosPorDia[dia].length > 0 ? (
+                        horariosPorDia[dia].map((horario, idx) => (
+                          <div
+                            key={horario.id}
+                            className="card-horario-resumen"
+                            style={{
+                              borderLeftColor: obtenerColorHorario(horario.id),
+                            }}
+                          >
+                            <div className="horario-tiempo">{horario.horaInicio}</div>
+                            <div className="horario-hasta">hasta {horario.horaFin}</div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="sin-horarios-dia">Sin horarios</div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -197,10 +233,10 @@ export default function MisHorarios() {
 
             <div className="footer-botones-horarios">
               <button className="btn-ver-horario" onClick={() => setVistaCalendario(true)}>
-                Ver Horarios
+                Ver Horario
               </button>
               <button className="btn-registrar-horario" onClick={handleNuevoHorario}>
-                Registrar Nuevo Horario
+                Registrar un Nuevo Horario
               </button>
             </div>
           </div>

@@ -24,7 +24,7 @@ export default function AgregarEspecialidad() {
     try {
       await createEspecialidad(form)
       console.log("Especialidad creada:", form)
-      navigate("/ListarEspecialidades")
+      navigate("/ListarProfesionales")
     } catch (error) {
       console.error("Error al crear especialidad:", error)
       alert("Error al crear la especialidad")

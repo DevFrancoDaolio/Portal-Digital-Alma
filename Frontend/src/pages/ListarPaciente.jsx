@@ -319,14 +319,15 @@ export default function ListarPaciente() {
                     <p>
                       <strong>Provincia:</strong> {pacienteSeleccionado.provinciaNombre || "No especificado"}
                     </p>
-                  </div>
-
-                  <div className="col-12">
-                    <h6 className="text-muted">Obra Social</h6>
-                    <hr />
                     <p>
                       <strong>Obra Social:</strong> {pacienteSeleccionado.obraSocialNombre || "No especificado"}
                     </p>
+                  </div>
+
+                  <div className="col-12">
+                    <h6 className="text-muted">Observaciones</h6>
+                    <hr />
+                    <p>{pacienteSeleccionado.observaciones || "Sin observaciones registradas"}</p>
                   </div>
                 </div>
               </div>

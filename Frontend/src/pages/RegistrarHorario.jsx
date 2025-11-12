@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import NavBar from "../componentes/NavBar"
 import Fondo from "../componentes/Fondo"
+import "../styles/Profesionales.css"
 import "../styles/RegistrarHorario.css"
 
 export default function RegistrarHorario() {
@@ -22,7 +23,7 @@ export default function RegistrarHorario() {
   // Generar horarios en intervalos de 15 minutos
   const generarHorarios = () => {
     const horarios = []
-    for (let h = 0; h < 24; h++) {
+    for (let h = 8; h <= 18; h++) {
       for (let m = 0; m < 60; m += 15) {
         const hora = h.toString().padStart(2, "0")
         const minuto = m.toString().padStart(2, "0")
@@ -56,8 +57,8 @@ export default function RegistrarHorario() {
       newErrors.horaFin = "La hora de fin debe ser posterior a la hora de inicio"
     }
 
-    const horariosExistentes = JSON.parse(localStorage.getItem("horarios") || "[]")
-    const conflicto = horariosExistentes.some((horario) => {
+    const horarios = JSON.parse(localStorage.getItem("horarios") || "[]")
+    const conflicto = horarios.some((horario) => {
       if (horario.dia !== formData.dia) return false
 
       const [horaInicioExistenteH, horaInicioExistenteM] = horario.horaInicio.split(":").map(Number)
@@ -79,7 +80,7 @@ export default function RegistrarHorario() {
     })
 
     if (conflicto) {
-      newErrors.general = `Ya un horario registrado para ese dia y horario`
+      newErrors.general = `Ya existe un horario para el día ${formData.dia}`
     }
 
     setErrors(newErrors)
@@ -170,7 +171,7 @@ export default function RegistrarHorario() {
           )}
           <form onSubmit={handleVistaPrevia}>
             <div className="form-group">
-              <label htmlFor="dia">Día de la Semana *</label>
+              <label htmlFor="dia">Día de la Semana</label>
               <select
                 id="dia"
                 name="dia"
@@ -189,7 +190,7 @@ export default function RegistrarHorario() {
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="horaInicio">Hora de Inicio *</label>
+                <label htmlFor="horaInicio">Hora de Inicio</label>
                 <select
                   id="horaInicio"
                   name="horaInicio"
@@ -207,7 +208,7 @@ export default function RegistrarHorario() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="horaFin">Hora de Fin *</label>
+                <label htmlFor="horaFin">Hora de Fin</label>
                 <select
                   id="horaFin"
                   name="horaFin"

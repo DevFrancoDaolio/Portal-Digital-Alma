@@ -3,14 +3,19 @@
 import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 
-import { crearProfesional, actualizarProfesional, getProvincias, getLocalidadesByProvincia, getProfesionales } from "../services/profesionalesService"
-import { getEspecialidades } from "../services/especialidadesService"
+import {
+  crearProfesional,
+  actualizarProfesional,
+  getProvincias,
+  getLocalidadesByProvincia,
+  getProfesionales,
+} from "../services/profesionalesService"
+import { getEspecialidades, createEspecialidad } from "../services/especialidadesService"
 
 import "../styles/Profesionales.css"
 
 import NavBar from "../componentes/NavBar"
 import Fondo from "../componentes/Fondo"
-
 
 export default function AgregarProfesional({ isModal = false, onClose = null, profesional = null, onSave = null }) {
   const navigate = useNavigate()
@@ -22,6 +27,11 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
   const [localidades, setLocalidades] = useState([])
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
+  const [fotoPreview, setFotoPreview] = useState(null)
+  const [fotoFile, setFotoFile] = useState(null)
+  const [mostrarModalEspecialidad, setMostrarModalEspecialidad] = useState(false)
+  const [nuevaEspecialidad, setNuevaEspecialidad] = useState("")
+  const [loadingEspecialidad, setLoadingEspecialidad] = useState(false)
 
   const [form, setForm] = useState({
     nombre: "",
@@ -38,6 +48,7 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
     provinciaId: "",
     localidadId: "",
     especialidadesConMatricula: [],
+    fotoUrl: "", // added fotoUrl to form state
   })
 
   useEffect(() => {
@@ -113,6 +124,10 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
 
     const provincia = provincias.find((p) => p.nombre === prof.provincia)
 
+    if (prof.fotoUrl) {
+      setFotoPreview(prof.fotoUrl)
+    }
+
     setForm({
       nombre: prof.nombre || "",
       apellido: prof.apellido || "",
@@ -128,7 +143,64 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
       provinciaId: provincia?.id || "",
       localidadId: "",
       especialidadesConMatricula: especialidadesFormateadas,
+      fotoUrl: prof.fotoUrl || "", // load existing photo URL
     })
+  }
+
+  const handleFotoChange = (e) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("La imagen no debe superar 5MB")
+        return
+      }
+
+      if (!file.type.startsWith("image/")) {
+        alert("Por favor seleccione un archivo de imagen válido")
+        return
+      }
+
+      setFotoFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setFotoPreview(reader.result)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleAgregarEspecialidad = async () => {
+    if (!nuevaEspecialidad.trim()) {
+      alert("Por favor ingrese el nombre de la especialidad")
+      return
+    }
+
+    setLoadingEspecialidad(true)
+    try {
+      const response = await crearEspecialidad({ nombre: nuevaEspecialidad.trim() })
+      const nuevaEsp = response.data
+
+      // Update the list of available specialties
+      setEspecialidadesDisponibles([...especialidadesDisponibles, nuevaEsp])
+
+      // Automatically add it to the selected specialties
+      setForm({
+        ...form,
+        especialidadesConMatricula: [
+          ...form.especialidadesConMatricula,
+          { especialidadId: nuevaEsp.id, matricula: "", esPrincipal: false },
+        ],
+      })
+
+      alert("Especialidad agregada exitosamente")
+      setMostrarModalEspecialidad(false)
+      setNuevaEspecialidad("")
+    } catch (error) {
+      console.error("Error al crear especialidad:", error)
+      alert(error.response?.data?.message || "Error al crear la especialidad")
+    } finally {
+      setLoadingEspecialidad(false)
+    }
   }
 
   const validateForm = () => {
@@ -223,6 +295,7 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
           matricula: esp.matricula.trim(),
           esPrincipal: esp.esPrincipal,
         })),
+        fotoUrl: fotoPreview || form.fotoUrl, // include photo in data
       }
 
       console.log("[v0] Enviando datos al backend:", profesionalData)
@@ -260,6 +333,46 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
         <h2 className="text-center mb-4">{modoEdicion ? "Editar Profesional" : "Registrar Profesional"}</h2>
 
         <form className="mb-4" onSubmit={handleAgregar}>
+          <div className="mb-4 text-center">
+            <label className="form-label d-block">Foto del Profesional</label>
+            <div className="d-flex flex-column align-items-center gap-3">
+              <div className="position-relative" style={{ width: "150px", height: "150px" }}>
+                <img
+                  src={fotoPreview || "/doc1.png"}
+                  alt="Preview"
+                  className="rounded-circle object-fit-cover"
+                  style={{ width: "100%", height: "100%", border: "3px solid #dee2e6" }}
+                />
+              </div>
+              <div>
+                <input
+                  type="file"
+                  id="foto-upload"
+                  accept="image/*"
+                  onChange={handleFotoChange}
+                  style={{ display: "none" }}
+                />
+                <label htmlFor="foto-upload" className="btn btn-outline-primary btn-sm">
+                  {fotoPreview ? "Cambiar Foto" : "Cargar Foto"}
+                </label>
+                {fotoPreview && (
+                  <button
+                    type="button"
+                    className="btn btn-outline-danger btn-sm ms-2"
+                    onClick={() => {
+                      setFotoPreview(null)
+                      setFotoFile(null)
+                      setForm({ ...form, fotoUrl: "" })
+                    }}
+                  >
+                    Eliminar
+                  </button>
+                )}
+              </div>
+              <small className="text-muted">Formatos: JPG, PNG. Tamaño máximo: 5MB</small>
+            </div>
+          </div>
+
           <div className="row mb-3">
             <div className="col-md-6">
               <label className="form-label">Nombre *</label>
@@ -460,7 +573,16 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
           </div>
 
           <div className="mb-4">
-            <label className="form-label">Especialidades *</label>
+            <div className="d-flex justify-content-between align-items-center mb-2">
+              <label className="form-label mb-0">Especialidades *</label>
+              <button
+                type="button"
+                className="btn btn-success btn-sm"
+                onClick={() => setMostrarModalEspecialidad(true)}
+              >
+                + Agregar Nueva Especialidad
+              </button>
+            </div>
             <table className="table table-bordered">
               <thead>
                 <tr>
@@ -556,6 +678,74 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
           </button>
         </form>
       </div>
+
+      {mostrarModalEspecialidad && (
+        <div className="modal-overlay" onClick={() => setMostrarModalEspecialidad(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: "500px" }}>
+            <div className="modal-header">
+              <h3>Nueva Especialidad</h3>
+              <button className="close-button" onClick={() => setMostrarModalEspecialidad(false)}>
+                ×
+              </button>
+            </div>
+            <div className="modal-body-especialidad">
+              <div className="mb-3">
+                <label className="form-label">Nombre de la Especialidad *</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Ej: Cardiología"
+                  value={nuevaEspecialidad}
+                  onChange={(e) => setNuevaEspecialidad(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      handleAgregarEspecialidad()
+                    }
+                  }}
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Descripción *</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Ej: Trata enfermedades del corazón y del sistema circulatorio"
+                  value={nuevaEspecialidad}
+                  onChange={(e) => setNuevaEspecialidad(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      handleAgregarEspecialidad()
+                    }
+                  }}
+                />
+              </div>
+              <div className="d-flex gap-2 justify-content-end">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setMostrarModalEspecialidad(false)
+                    setNuevaEspecialidad("")
+                  }}
+                  disabled={loadingEspecialidad}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-success"
+                  onClick={handleAgregarEspecialidad}
+                  disabled={loadingEspecialidad || !nuevaEspecialidad.trim()}
+                >
+                  {loadingEspecialidad ? "Agregando..." : "Agregar"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 
