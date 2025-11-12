@@ -31,15 +31,16 @@ RUN ls -la /app/build-output
 FROM nginx:alpine
 WORKDIR /usr/share/nginx/html
 
-# Copiar la build uniforme
-COPY --from=build /app/build-output/ .
+# Limpia contenido previo del contenedor nginx
+RUN rm -rf ./*
 
-# Limpiar index.html por defecto (opcional)
-RUN rm -f /usr/share/nginx/html/index.html
+# Copiar los archivos del build
+COPY --from=build /app/build-output/ ./
+
+# Verificación: mostrar contenido final
+RUN ls -la /usr/share/nginx/html
 
 # Exponer puerto 80
 EXPOSE 80
 
-# Comando por defecto para iniciar Nginx
 CMD ["nginx", "-g", "daemon off;"]
-

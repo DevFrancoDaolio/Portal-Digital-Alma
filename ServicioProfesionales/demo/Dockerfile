@@ -23,10 +23,10 @@ FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
 
 # Copiamos el JAR desde la fase de build
-COPY --from=build /app/target/consultorios-*.jar app.jar
+COPY --from=build /app/target/demo-*.jar app.jar
 
 # Puerto interno del microservicio
-EXPOSE 8082
+EXPOSE 8080
 
 # Variables de memoria opcionales
 ENV JAVA_OPTS="-Xms256m -Xmx512m"

@@ -1,97 +1,164 @@
-version: '3.9'
+version: '3.8'
 
 services:
-  # ===============================
-  # SERVICIO PROFESIONALES
-  # ===============================
-  servicioprofesionales:
+
+  # ==========================
+  #  REGISTRO DE SERVICIOS (Eureka Server)
+  # ==========================
+  eureka-server:
     build:
-      context: ./ServicioProfesionales
+      context: ./EurekaServer
       dockerfile: Dockerfile
-    container_name: servicioprofesionales
+    container_name: eureka-server
     ports:
-      - "8080:8080"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://servicioprofesionales-db:5432/servicioprofesionalesdb
-      SPRING_DATASOURCE_USERNAME: user
-      SPRING_DATASOURCE_PASSWORD: password
-    depends_on:
-      - servicioprofesionales-db
-    networks:
-      - app-network
-
-  servicioprofesionales-db:
-    image: postgres:16
-    container_name: servicioprofesionales-db
+      - "8761:8761"
     restart: always
-    environment:
-      POSTGRES_DB: servicioprofesionalesdb
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-    ports:
-      - "5433:5432"
-    volumes:
-      - servicioprofesionales_data:/var/lib/postgresql/data
-    networks:
-      - app-network
 
-  # ===============================
-  # SERVICIO CONSULTORIOS (nuevo)
-  # ===============================
-  servicioconsultorios:
-    build:
-      context: ./ServicioConsultorios
-      dockerfile: Dockerfile
-    container_name: servicioconsultorios
-    ports:
-      - "8081:8080"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://servicioconsultorios-db:5432/consultoriosdb
-      SPRING_DATASOURCE_USERNAME: consult_user
-      SPRING_DATASOURCE_PASSWORD: consult_pass
-    depends_on:
-      - servicioconsultorios-db
-    networks:
-      - app-network
+  # ==========================
+  #  BASES DE DATOS (PostgreSQL) - ¡CON HEALTHCHECK!
+  # ==========================
 
-  servicioconsultorios-db:
+  db-profesionales:
     image: postgres:16
-    container_name: servicioconsultorios-db
-    restart: always
+    container_name: db-profesionales
     environment:
-      POSTGRES_DB: consultoriosdb
-      POSTGRES_USER: consult_user
-      POSTGRES_PASSWORD: consult_pass
+      POSTGRES_DB: profesionales_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
       - "5434:5432"
     volumes:
-      - servicioconsultorios_data:/var/lib/postgresql/data
-    networks:
-      - app-network
+      - db_profesionales_data:/var/lib/postgresql/data
+    healthcheck: # <--- AGREGADO PARA ASEGURAR DISPONIBILIDAD
+      test: ["CMD-SHELL", "pg_isready -U postgres -d profesionales_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  # ===============================
-  # FRONTEND
-  # ===============================
+  db-pacientes:
+    image: postgres:16
+    container_name: db-pacientes
+    environment:
+      POSTGRES_DB: pacientes_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5435:5432"
+    volumes:
+      - db_pacientes_data:/var/lib/postgresql/data
+    healthcheck: # <--- AGREGADO PARA ASEGURAR DISPONIBILIDAD
+      test: ["CMD-SHELL", "pg_isready -U postgres -d pacientes_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  db-consultorios:
+    image: postgres:16
+    container_name: db-consultorios
+    environment:
+      POSTGRES_DB: consultorios_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5436:5432"
+    volumes:
+      - db_consultorios_data:/var/lib/postgresql/data
+    healthcheck: # <--- AGREGADO PARA ASEGURAR DISPONIBILIDAD
+      test: ["CMD-SHELL", "pg_isready -U postgres -d consultorios_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ==========================
+  #  API GATEWAY
+  # ==========================
+  api-gateway:
+    build:
+      context: ./ApiGateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    depends_on:
+      eureka-server:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      SERVER_PORT: 8080
+      SPRING_APPLICATION_NAME: gateway-service
+    restart: always
+
+  # ==========================
+  #  MICROSERVICIOS JAVA (Spring Boot) - ¡CON ESPERA CONDICIONAL!
+  # ==========================
+
+  servicio-profesionales:
+    build:
+      context: ./ServicioProfesionales/demo
+      dockerfile: Dockerfile
+    container_name: SERVICIO-PROFESIONALES
+    depends_on:
+      db-profesionales:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    ports:
+      - "8082:8082"  # <--- Puerto expuesto al host
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-profesionales:5432/profesionales_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      SERVER_PORT: 8082
+    restart: always
+
+  servicio-pacientes:
+    build:
+      context: ./ServicioPacientes/demo
+      dockerfile: Dockerfile
+    container_name: SERVICIO-PACIENTES
+    depends_on:
+      db-pacientes:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+    ports:
+      - "8081:8081"  # <--- Puerto expuesto al host
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-pacientes:5432/pacientes_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      SERVER_PORT: 8081
+    restart: always
+
+  #  servicioconsultorios:
+  #    # ... (Si lo activas, debe tener las mismas condiciones)
+  #    depends_on:
+  #      db-consultorios:
+  #        condition: service_healthy
+  #      eureka-server:
+  #        condition: service_started
+
+  # ==========================
+  #  FRONTEND (Vite + Nginx)
+  # ==========================
+
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: frontend-app
-    ports:
-      - "3000:80"
+    container_name: frontend
     depends_on:
-      - servicioprofesionales
-      - servicioconsultorios
-    networks:
-      - app-network
+      - api-gateway
+    ports:
+      - "5173:80"
+    restart: always
 
-# ===============================
-# VOLUMENES Y REDES
-# ===============================
+# ==========================
+#  VOLÚMENES
+# ==========================
 volumes:
-  servicioprofesionales_data:
-  servicioconsultorios_data:
-
-networks:
-  app-network:
-    driver: bridge
+  db_profesionales_data:
+  db_pacientes_data:
+  db_consultorios_data:
