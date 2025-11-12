@@ -10,8 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
-//@CrossOrigin(origins = "http://localhost:5173")
-
 @RestController
 @RequestMapping("/profesionales")
 public class ProfesionalController {
@@ -45,27 +43,20 @@ public class ProfesionalController {
         return ResponseEntity.ok(service.actualizarProfesional(id, requestDto));
     }
 
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<String> eliminarProfesional(@PathVariable Long id) {
-//        service.eliminarProfesional(id);
-//        return ResponseEntity.ok("Profesional eliminado correctamente");
-//    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<String> darBaja(@PathVariable Long id) {
         service.darBajaProfesional(id);
         return ResponseEntity.ok("Profesional dado de baja correctamente.");
     }
 
-
     @GetMapping("/buscar")
     public ResponseEntity<List<ProfesionalResponseDto>> buscarProfesionales(
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) Long especialidadId,
-            @RequestParam(required = false) Long provinciaId,
-            @RequestParam(required = false) Long localidadId
+            @RequestParam(required = false) String provinciaNombre,
+            @RequestParam(required = false) String localidadNombre
     ) {
-        return ResponseEntity.ok(service.buscar(nombre, especialidadId, provinciaId, localidadId));
+        return ResponseEntity.ok(service.buscar(nombre, especialidadId, provinciaNombre, localidadNombre));
     }
 
     @GetMapping("/activos")
@@ -78,6 +69,4 @@ public class ProfesionalController {
         service.reactivarProfesional(id);
         return ResponseEntity.ok("Profesional reactivado correctamente.");
     }
-
-
 }

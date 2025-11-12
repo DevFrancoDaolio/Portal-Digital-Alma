@@ -1,9 +1,7 @@
 package com.example.demo.models.mapper;
 
 import com.example.demo.models.dto.*;
-import com.example.demo.models.entities.Localidad;
 import com.example.demo.models.entities.Profesional;
-import com.example.demo.models.entities.Provincia;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -11,8 +9,7 @@ import java.util.List;
 @Component
 public class ProfesionalMapper {
 
-    public  ProfesionalResponseDto toResponseDto(Profesional profesional) {
-
+    public ProfesionalResponseDto toResponseDto(Profesional profesional) {
         ProfesionalResponseDto dto = new ProfesionalResponseDto();
 
         dto.setId(profesional.getId());
@@ -28,15 +25,15 @@ public class ProfesionalMapper {
         dto.setCodigoPostal(profesional.getCodigoPostal());
         dto.setPiso(profesional.getPiso());
         dto.setDepartamento(profesional.getDepartamento());
-        dto.setActivo(profesional.isActivo());
 
-        dto.setProvincia(profesional.getProvincia().getNombre());
-        dto.setLocalidad(profesional.getLocalidad().getNombre());
+        dto.setProvinciaNombre(profesional.getProvinciaNombre());
+        dto.setLocalidadNombre(profesional.getLocalidadNombre());
+        dto.setFotoUrl(profesional.getFotoUrl());
+        dto.setActivo(profesional.isActivo());
 
         List<EspecialidadConMatriculaDtoResponse> especialidades = profesional.getEspecialidades().stream()
                 .map(ep -> {
                     EspecialidadConMatriculaDtoResponse ed = new EspecialidadConMatriculaDtoResponse();
-
                     ed.setNombre(ep.getEspecialidad().getNombre());
                     ed.setMatricula(ep.getMatricula());
                     ed.setEsPrincipal(ep.isEsPrincipal());
@@ -47,8 +44,7 @@ public class ProfesionalMapper {
         return dto;
     }
 
-
-    public  Profesional toEntity(ProfesionalRequestDto dto,Provincia provincia, Localidad localidad) {
+    public Profesional toEntity(ProfesionalRequestDto dto) {
         Profesional pr = new Profesional();
 
         pr.setNombre(dto.getNombre());
@@ -64,20 +60,13 @@ public class ProfesionalMapper {
         pr.setPiso(dto.getPiso());
         pr.setDepartamento(dto.getDepartamento());
 
-        pr.setProvincia(provincia);
-        pr.setLocalidad(localidad);
+        pr.setProvinciaNombre(dto.getProvinciaNombre());
+        pr.setLocalidadNombre(dto.getLocalidadNombre());
+        pr.setFotoUrl(dto.getFotoUrl());
 
         return pr;
     }
 
-
-    /**
-     *
-     * @param profesional
-     * @param dto
-     *
-     * setea todos los datos del dto al objeto profesional
-     */
     public void actualizarEntidadDesdeDto(Profesional profesional, ProfesionalRequestDto dto) {
         profesional.setNombre(dto.getNombre());
         profesional.setApellido(dto.getApellido());
@@ -92,8 +81,8 @@ public class ProfesionalMapper {
         profesional.setPiso(dto.getPiso());
         profesional.setDepartamento(dto.getDepartamento());
 
-
-        // No seteamos provincia ni localidad acá porque ya lo hacés en el servicio
+        profesional.setProvinciaNombre(dto.getProvinciaNombre());
+        profesional.setLocalidadNombre(dto.getLocalidadNombre());
+        profesional.setFotoUrl(dto.getFotoUrl());
     }
-
 }

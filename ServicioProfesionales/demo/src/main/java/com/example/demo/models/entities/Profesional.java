@@ -22,6 +22,9 @@ public class Profesional {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "foto_url")
+    private String fotoUrl;
+
     @Column(nullable = false)
     private String nombre;
 
@@ -57,14 +60,11 @@ public class Profesional {
     @Column
     private String departamento;
 
-    // Relaciones
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "provincia_id")
-    private Provincia provincia;
+    @Column(name = "provincia_nombre")
+    private String provinciaNombre;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "localidad_id")
-    private Localidad localidad;
+    @Column(name = "localidad_nombre")
+    private String localidadNombre;
 
     // Especialidades con matrícula
     @OneToMany(mappedBy = "profesional", cascade = CascadeType.ALL, orphanRemoval = true)

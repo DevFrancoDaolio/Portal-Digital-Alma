@@ -1,6 +1,13 @@
 import api from "./api"
 
-export const getEspecialidades = () => api.get("/api/especialidades")
-export const createEspecialidad = (especialidad) => api.post("/api/especialidades", especialidad)
-export const updateEspecialidad = (id) => api.put(`/api/especialidades/${id}`)
-export const deleteEspecialidad = (id) => api.delete(`/api/especialidades/${id}`)
+// Especialidades
+export const getEspecialidades = () => api.get("/especialidades")
+
+export const createEspecialidad = (especialidad) =>
+    api.post("/especialidades", especialidad)
+
+export const updateEspecialidad = (id, data) =>
+    api.put(`/especialidades/${id}`, data)
+
+export const deleteEspecialidad = (id) =>
+    api.delete(`/especialidades/${id}`)

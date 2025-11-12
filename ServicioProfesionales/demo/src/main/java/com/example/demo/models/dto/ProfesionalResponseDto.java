@@ -15,7 +15,6 @@ public class ProfesionalResponseDto {
     private String email;
     private String telefono;
 
-
     // Dirección
     private String calle;
     private String numero;
@@ -23,11 +22,14 @@ public class ProfesionalResponseDto {
     private String piso;
     private String departamento;
 
-    // Ubicación
-    private String provincia;
-    private String localidad;
+    // Ubicación (nombres en vez de entidades)
+    private String provinciaNombre;
+    private String localidadNombre;
 
-    // Especialidades con matrícula
+    // Foto del profesional
+    private String fotoUrl;
+
+    // Especialidades con matrícula y principal
     private List<EspecialidadConMatriculaDtoResponse> especialidades;
 
     private Boolean activo;
