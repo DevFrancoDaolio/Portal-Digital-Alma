@@ -1,8 +1,8 @@
 import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import "../styles/Login.css"
-import NavBar from "../componentes/NavBar"
+import { useNavigate, Link } from "react-router-dom"
+import { registroUsuario, guardarSesion } from "../services/loginService"
 import Fondo from "../componentes/Fondo"
+import NavBar from "../componentes/NavBar"
 
 export default function CreateAccount() {
   const navigate = useNavigate()
@@ -11,9 +11,10 @@ export default function CreateAccount() {
     apellido: "",
     email: "",
     password: "",
-    rol: "profesional", // Por defecto profesional
+    rol: "profesional",
   })
   const [mensaje, setMensaje] = useState("")
+  const [cargando, setCargando] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -21,54 +22,35 @@ export default function CreateAccount() {
     setMensaje("")
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setCargando(true)
 
-    // Obtener usuarios existentes
-    const usuarios = JSON.parse(localStorage.getItem("usuarios") || "[]")
+    try {
+      const response = await registroUsuario(formData)
 
-    // Verificar si el email ya existe
-    if (usuarios.some((u) => u.email === formData.email)) {
-      setMensaje("Este email ya está registrado")
-      return
-    }
+      if (response.data.success) {
+        const usuario = response.data.data
+        
+        // Guardar sesión automáticamente
+        guardarSesion(usuario)
 
-    // Crear nuevo usuario
-    const nuevoUsuario = {
-      id: Date.now(),
-      nombre: formData.nombre,
-      apellido: formData.apellido,
-      email: formData.email,
-      password: formData.password,
-      rol: formData.rol,
-      profesionalId: formData.rol === "profesional" ? Date.now() : null,
-    }
+        setMensaje("Cuenta creada exitosamente")
 
-    // Guardar usuario
-    usuarios.push(nuevoUsuario)
-    localStorage.setItem("usuarios", JSON.stringify(usuarios))
-
-    // Crear sesión automáticamente
-    const sesion = {
-      userId: nuevoUsuario.id,
-      nombre: nuevoUsuario.nombre,
-      apellido: nuevoUsuario.apellido,
-      email: nuevoUsuario.email,
-      rol: nuevoUsuario.rol,
-      profesionalId: nuevoUsuario.profesionalId,
-    }
-    localStorage.setItem("sesion", JSON.stringify(sesion))
-
-    setMensaje("Cuenta creada exitosamente")
-
-    // Redirigir después de 1 segundo
-    setTimeout(() => {
-      if (nuevoUsuario.rol === "profesional") {
-        navigate("/MisHorarios")
-      } else {
-        navigate("/Profesionales")
+        // Redirigir después de 1 segundo
+        setTimeout(() => {
+          if (usuario.rol === "profesional") {
+            navigate("/MisHorarios")
+          } else {
+            navigate("/ListarProfesionales")
+          }
+        }, 1000)
       }
-    }, 1000)
+    } catch (err) {
+      setMensaje(err.response?.data?.message || "Error al registrar usuario")
+    } finally {
+      setCargando(false)
+    }
   }
 
   return (
@@ -78,7 +60,11 @@ export default function CreateAccount() {
         <h2>Crear cuenta</h2>
         <p className="subtitle">Registrarse para solicitar o gestionar turnos</p>
 
-        {mensaje && <p className={mensaje.includes("exitosamente") ? "success-message" : "error-message"}>{mensaje}</p>}
+        {mensaje && (
+          <p className={mensaje.includes("exitosamente") ? "success-message" : "error-message"}>
+            {mensaje}
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="create-account-form">
           <input
@@ -88,6 +74,7 @@ export default function CreateAccount() {
             value={formData.nombre}
             onChange={handleChange}
             required
+            disabled={cargando}
           />
           <input
             type="text"
@@ -96,6 +83,7 @@ export default function CreateAccount() {
             value={formData.apellido}
             onChange={handleChange}
             required
+            disabled={cargando}
           />
           <input
             type="email"
@@ -104,6 +92,7 @@ export default function CreateAccount() {
             value={formData.email}
             onChange={handleChange}
             required
+            disabled={cargando}
           />
           <input
             type="password"
@@ -112,6 +101,7 @@ export default function CreateAccount() {
             value={formData.password}
             onChange={handleChange}
             required
+            disabled={cargando}
           />
           <select
             name="rol"
@@ -119,12 +109,13 @@ export default function CreateAccount() {
             onChange={handleChange}
             className="form-control"
             style={{ marginBottom: "15px", padding: "12px", borderRadius: "6px", border: "1px solid #ccc" }}
+            disabled={cargando}
           >
             <option value="profesional">Profesional</option>
-            <option value="admin">Administrador</option>
+            <option value="secretaria">Secretaria</option>
           </select>
-          <button type="submit" className="btn-primary">
-            Registrar
+          <button type="submit" className="btn-primary" disabled={cargando}>
+            {cargando ? "Registrando..." : "Registrar"}
           </button>
         </form>
         <p>

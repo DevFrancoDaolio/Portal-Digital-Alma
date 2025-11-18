@@ -1,10 +1,8 @@
-"use client"
-
 import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import "../styles/Login.css"
-import NavBar from "../componentes/NavBar"
+import { useNavigate, Link } from "react-router-dom"
+import { loginUsuario, guardarSesion } from "../services/loginService"
 import Fondo from "../componentes/Fondo"
+import NavBar from "../componentes/NavBar"
 
 export default function Login() {
   const navigate = useNavigate()
@@ -13,6 +11,7 @@ export default function Login() {
     password: "",
   })
   const [error, setError] = useState("")
+  const [cargando, setCargando] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -20,35 +19,30 @@ export default function Login() {
     setError("")
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setCargando(true)
 
-    // Obtener usuarios registrados
-    const usuarios = JSON.parse(localStorage.getItem("usuarios") || "[]")
+    try {
+      const response = await loginUsuario(formData.email, formData.password)
 
-    // Buscar usuario
-    const usuario = usuarios.find((u) => u.email === formData.email && u.password === formData.password)
+      if (response.data.success) {
+        const usuario = response.data.data
+        
+        // Guardar sesión
+        guardarSesion(usuario)
 
-    if (usuario) {
-      // Guardar sesión
-      const sesion = {
-        userId: usuario.id,
-        nombre: usuario.nombre,
-        apellido: usuario.apellido,
-        email: usuario.email,
-        rol: usuario.rol,
-        profesionalId: usuario.profesionalId || null,
+        // Redirigir según el rol
+        if (usuario.rol === "profesional") {
+          navigate("/MisHorarios")
+        } else {
+          navigate("/ListarProfesionales")
+        }
       }
-      localStorage.setItem("sesion", JSON.stringify(sesion))
-
-      // Redirigir según el rol
-      if (usuario.rol === "profesional") {
-        navigate("/MisHorarios")
-      } else {
-        navigate("/ListarProfesionales")
-      }
-    } else {
-      setError("Email o contraseña incorrectos")
+    } catch (err) {
+      setError(err.response?.data?.message || "Error al iniciar sesión")
+    } finally {
+      setCargando(false)
     }
   }
 
@@ -69,6 +63,7 @@ export default function Login() {
             value={formData.email}
             onChange={handleChange}
             required
+            disabled={cargando}
           />
           <input
             type="password"
@@ -77,13 +72,17 @@ export default function Login() {
             value={formData.password}
             onChange={handleChange}
             required
+            disabled={cargando}
           />
-          <button type="submit" className="btn-primary">
-            Iniciar sesión
+          <button type="submit" className="btn-primary" disabled={cargando}>
+            {cargando ? "Iniciando sesión..." : "Iniciar sesión"}
           </button>
         </form>
         <p>
           ¿No tenés cuenta? <Link to="/CreateAccount">Crear cuenta</Link>
+        </p>
+        <p>
+          ¿Olvidaste tu contraseña? <Link to="/RecuperarContrasena">Recuperarla aquí</Link>
         </p>
       </div>
     </Fondo>

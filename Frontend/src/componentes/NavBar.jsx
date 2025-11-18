@@ -1,9 +1,32 @@
-/* 🔷 Navbar con solapas */
 import { Link, useLocation } from "react-router-dom"
+import { useState, useEffect } from "react"
+import { obtenerSesion, logoutUsuario } from "../services/loginService"
 import "../styles/NavBar.css"
 
 const NavBar = () => {
   const location = useLocation()
+  const [usuarioActual, setUsuarioActual] = useState(null)
+
+  useEffect(() => {
+    // Cargar usuario al montar
+    const usuario = obtenerSesion()
+    setUsuarioActual(usuario)
+
+    // Escuchar cambios en localStorage
+    const handleStorageChange = () => {
+      const usuarioActualizado = obtenerSesion()
+      setUsuarioActual(usuarioActualizado)
+    }
+
+    window.addEventListener("storage", handleStorageChange)
+    return () => window.removeEventListener("storage", handleStorageChange)
+  }, [])
+
+  const handleLogout = () => {
+    logoutUsuario()
+    setUsuarioActual(null)
+    window.location.href = "/login"
+  }
 
   return (
     <nav className="navbar">
@@ -30,14 +53,22 @@ const NavBar = () => {
         </li>
         <li
           className={
-            location.pathname === "/ListarPaciente" || location.pathname === "/RegistrarPaciente" || location.pathname.startsWith("/EditarPaciente/") ? "active" : ""
+            location.pathname === "/ListarPaciente" ||
+            location.pathname === "/RegistrarPaciente" ||
+            location.pathname.startsWith("/EditarPaciente/")
+              ? "active"
+              : ""
           }
         >
           <Link to="/ListarPaciente">Pacientes</Link>
         </li>
         <li
           className={
-            location.pathname === "/ListarConsultorio" || location.pathname === "/AgregarConsultorio" || location.pathname.startsWith("/EditarConsultorio/") ? "active" : ""
+            location.pathname === "/ListarConsultorio" ||
+            location.pathname === "/AgregarConsultorio" ||
+            location.pathname.startsWith("/EditarConsultorio/")
+              ? "active"
+              : ""
           }
         >
           <Link to="/ListarConsultorio">Consultorios</Link>
@@ -47,11 +78,23 @@ const NavBar = () => {
         </li>
       </ul>
       <div className="nav-actions">
-        <Link to="/login" className="btn-primary">
-          Iniciar Sesión
-        </Link>
+        {usuarioActual ? (
+          <div className="user-section">
+            <span className="user-info">
+              {usuarioActual.nombre} {usuarioActual.apellido}
+            </span>
+            <button onClick={handleLogout} className="logout-btn">
+              Cerrar sesión
+            </button>
+          </div>
+        ) : (
+          <Link to="/login" className="btn-primary">
+            Iniciar Sesión
+          </Link>
+        )}
       </div>
     </nav>
   )
 }
+
 export default NavBar

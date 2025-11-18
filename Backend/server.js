@@ -172,6 +172,22 @@ let turnos = [
 
 let nextTurnoId = 2
 
+// 🔷 BASE DE DATOS EN MEMORIA - USUARIOS
+let usuarios = [
+  {
+    id: 1,
+    nombre: 'Admin',
+    apellido: 'Sistema',
+    email: 'admin@consultorio.com',
+    password: 'admin123', // En producción usar bcrypt
+    rol: 'secretaria',
+    activo: true,
+    fechaCreacion: new Date().toISOString(),
+  },
+]
+
+let nextUsuarioId = 2
+
 // 🔷 RUTAS API CONSULTORIOS
 
 // GET: Obtener todos los consultorios
@@ -1039,6 +1055,161 @@ app.delete('/api/turnos/:id', (req, res) => {
     success: true,
     message: 'Turno cancelado exitosamente',
     data: turnoEliminado[0],
+  })
+})
+
+// 🔷 RUTAS API AUTENTICACIÓN
+
+// POST: Registro de usuarios
+app.post('/api/auth/registro', (req, res) => {
+  const { nombre, apellido, email, password, rol } = req.body
+
+  // Validación
+  if (!nombre || !apellido || !email || !password || !rol) {
+    return res.status(400).json({
+      success: false,
+      message: 'Faltan campos requeridos',
+    })
+  }
+
+  // Validar que el email no exista
+  const emailExistente = usuarios.find((u) => u.email === email)
+  if (emailExistente) {
+    return res.status(400).json({
+      success: false,
+      message: 'Este email ya está registrado',
+    })
+  }
+
+  // Validar rol
+  if (!['profesional', 'secretaria'].includes(rol)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Rol no válido',
+    })
+  }
+
+  const nuevoUsuario = {
+    id: nextUsuarioId++,
+    nombre,
+    apellido,
+    email,
+    password, // En producción usar bcrypt
+    rol,
+    activo: true,
+    fechaCreacion: new Date().toISOString(),
+  }
+
+  usuarios.push(nuevoUsuario)
+
+  // Devolver usuario sin contraseña
+  const { password: _, ...usuarioSinPassword } = nuevoUsuario
+
+  res.status(201).json({
+    success: true,
+    message: 'Usuario registrado exitosamente',
+    data: usuarioSinPassword,
+  })
+})
+
+// POST: Login
+app.post('/api/auth/login', (req, res) => {
+  const { email, password } = req.body
+
+  // Validación
+  if (!email || !password) {
+    return res.status(400).json({
+      success: false,
+      message: 'Email y contraseña son requeridos',
+    })
+  }
+
+  // Buscar usuario
+  const usuario = usuarios.find((u) => u.email === email && u.password === password)
+
+  if (!usuario) {
+    return res.status(401).json({
+      success: false,
+      message: 'Email o contraseña incorrectos',
+    })
+  }
+
+  if (!usuario.activo) {
+    return res.status(401).json({
+      success: false,
+      message: 'Usuario desactivado',
+    })
+  }
+
+  // Devolver usuario sin contraseña
+  const { password: _, ...usuarioSinPassword } = usuario
+
+  res.json({
+    success: true,
+    message: 'Sesión iniciada exitosamente',
+    data: usuarioSinPassword,
+  })
+})
+
+// POST: Recuperar contraseña
+app.post('/api/auth/recuperar-contrasena', (req, res) => {
+  const { email } = req.body
+
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      message: 'El email es requerido',
+    })
+  }
+
+  const usuario = usuarios.find((u) => u.email === email)
+
+  if (!usuario) {
+    // No revelar si el email existe o no (seguridad)
+    return res.json({
+      success: true,
+      message: 'Si el email existe en nuestro sistema, recibirás un código de recuperación',
+    })
+  }
+
+  // Simular envío de email con código de recuperación
+  // En producción usar un servicio como SendGrid, Nodemailer, etc.
+  const codigoRecuperacion = Math.random().toString(36).substring(2, 8).toUpperCase()
+  const tokenRecuperacion = {
+    email,
+    codigo: codigoRecuperacion,
+    fechaCreacion: new Date(),
+    expiracion: new Date(Date.now() + 15 * 60 * 1000), // 15 minutos
+  }
+
+  // En producción guardar en base de datos
+  // Por ahora solo simulamos
+  console.log(`[EMAIL SIMULADO] Código de recuperación para ${email}: ${codigoRecuperacion}`)
+
+  res.json({
+    success: true,
+    message: 'Se ha enviado un código de recuperación al email',
+    // En producción no devolver el código
+    debug: codigoRecuperacion,
+  })
+})
+
+// GET: Validar sesión
+app.get('/api/auth/me', (req, res) => {
+  // En producción usar JWT tokens
+  const token = req.headers.authorization?.split(' ')[1]
+
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      message: 'No autorizado',
+    })
+  }
+
+  // En producción verificar JWT
+  res.json({
+    success: true,
+    message: 'Sesión válida',
   })
 })
 
