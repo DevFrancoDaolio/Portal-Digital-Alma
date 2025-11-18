@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom"
 import { loginUsuario, guardarSesion } from "../services/loginService"
 import Fondo from "../componentes/Fondo"
 import NavBar from "../componentes/NavBar"
+import "../styles/Login.css"
 
 export default function Login() {
   const navigate = useNavigate()

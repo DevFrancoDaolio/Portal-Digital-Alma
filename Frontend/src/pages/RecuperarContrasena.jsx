@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom"
 import { recuperarContrasena } from "../services/loginService"
 import Fondo from "../componentes/Fondo"
 import NavBar from "../componentes/NavBar"
-import "../styles/Login.css"
+import "../styles/Recuperar.css"
 
 const RecuperarContrasena = () => {
   const navigate = useNavigate()
@@ -37,39 +37,39 @@ const RecuperarContrasena = () => {
   return (
     <Fondo>
       <NavBar />
-      <div className="login-container">
-        <div className="login-form">
-          <h1>Recuperar Contraseña</h1>
-          <p>Ingresa tu email para recibir un código de recuperación</p>
 
-          {error && <div className="error-message">{error}</div>}
-          {mensaje && <div className="success-message">{mensaje}</div>}
+      {/* Cambié las clases aquí */}
+      <div className="recuperar-container">
+        <h1>Recuperar Contraseña</h1>
+        <p className="recuperar-subtitle">
+          Ingresa tu email para recibir un código de recuperación
+        </p>
 
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="tu@email.com"
-                required
-              />
-            </div>
+        {error && <div className="error-message">{error}</div>}
+        {mensaje && <div className="success-message">{mensaje}</div>}
 
-            <button
-              type="submit"
-              className="btn-login"
-              disabled={cargando}
-            >
-              {cargando ? "Enviando..." : "Enviar código"}
-            </button>
-          </form>
+        <form className="recuperar-form" onSubmit={handleSubmit}>
+          <label htmlFor="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="tu@email.com"
+            required
+          />
 
-          <div className="login-links">
-            <Link to="/login">Volver al login</Link>
-          </div>
+          <button
+            type="submit"
+            className="btn-primary"
+            disabled={cargando}
+          >
+            {cargando ? "Enviando..." : "Enviar código"}
+          </button>
+        </form>
+
+        <div className="volver-login">
+          <Link to="/login">Volver al login</Link>
         </div>
       </div>
     </Fondo>

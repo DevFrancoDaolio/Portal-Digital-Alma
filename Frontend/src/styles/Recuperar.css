@@ -1,0 +1,116 @@
+.pagina-con-fondo {
+  background-image: url("/fondo.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+}
+
+/* NAVBAR / LOGO */
+.logo a {
+  font-size: 24px;
+  font-weight: bold;
+  color: #007bff;
+  text-decoration: none;
+}
+
+/* BOTONES */
+.btn-outline {
+  padding: 8px 16px;
+  border: 1px solid #30008a;
+  border-radius: 6px;
+  background-color: white;
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.btn-primary {
+  padding: 8px 16px;
+  background-color: #000000;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: #004ea1;
+}
+
+/* CONTENEDOR PRINCIPAL */
+.recuperar-container {
+  max-width: 400px;
+  margin: 60px auto;
+  padding: 30px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* TITULOS */
+.recuperar-container h1 {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.recuperar-subtitle {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #666;
+}
+
+/* FORMULARIO */
+.recuperar-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.recuperar-form input {
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.2s;
+}
+
+.recuperar-form input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+/* LINKS */
+.recuperar-container a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.recuperar-container a:hover {
+  text-decoration: underline;
+}
+
+.recuperar-container .volver-login {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+/* MENSAJES */
+.error-message {
+  color: #dc3545;
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.success-message {
+  color: #28a745;
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
