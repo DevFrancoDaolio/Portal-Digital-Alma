@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import NavBar from "../componentes/NavBar"
+import { crearConsultorio, actualizarConsultorio, obtenerConsultorioPorId } from "../services/consultoriosService"
 import "../styles/Profesionales.css"
 
 const AgregarConsultorio = () => {
@@ -44,34 +45,40 @@ const AgregarConsultorio = () => {
   })
 
   const [especialidadesSeleccionadas, setEspecialidadesSeleccionadas] = useState([])
-
   const [horarios, setHorarios] = useState(horariosDisponibles)
-
   const [errors, setErrors] = useState({})
+  const [cargando, setCargando] = useState(false)
 
   useEffect(() => {
     if (modoEdicion) {
-      const consultoriosGuardados = JSON.parse(localStorage.getItem("consultorios") || "[]")
-      const consultorio = consultoriosGuardados.find((c) => c.id === Number.parseInt(id))
+      const cargarConsultorio = async () => {
+        try {
+          setCargando(true)
+          const consultorio = await obtenerConsultorioPorId(Number(id))
 
-      if (consultorio) {
-        setFormData({
-          numero: consultorio.numero,
-          nombre: consultorio.nombre,
-          piso: consultorio.piso,
-          ubicacion: consultorio.ubicacion,
-        })
-        setEspecialidadesSeleccionadas(consultorio.especialidades || [])
+          setFormData({
+            numero: consultorio.numero,
+            nombre: consultorio.nombre,
+            piso: consultorio.piso,
+            ubicacion: consultorio.ubicacion,
+          })
+          setEspecialidadesSeleccionadas(consultorio.especialidades || [])
 
-        const horariosActualizados = horariosDisponibles.map((h) => ({
-          ...h,
-          seleccionado: consultorio.horariosDisponibles?.includes(h.horario) || false,
-        }))
-        setHorarios(horariosActualizados)
-      } else {
-        alert("Consultorio no encontrado")
-        navigate("/ListarConsultorio")
+          const horariosActualizados = horariosDisponibles.map((h) => ({
+            ...h,
+            seleccionado: consultorio.horariosDisponibles?.includes(h.horario) || false,
+          }))
+          setHorarios(horariosActualizados)
+        } catch (error) {
+          console.error("Error al cargar consultorio:", error)
+          alert("Error al cargar consultorio")
+          navigate("/ListarConsultorio")
+        } finally {
+          setCargando(false)
+        }
       }
+
+      cargarConsultorio()
     }
   }, [id, modoEdicion, navigate])
 
@@ -156,63 +163,54 @@ const AgregarConsultorio = () => {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
     if (validateForm()) {
-      const horariosSeleccionados = horarios.filter((h) => h.seleccionado).map((h) => h.horario)
-
-      const consultoriosGuardados = JSON.parse(localStorage.getItem("consultorios") || "[]")
-
-      if (modoEdicion) {
-        const consultoriosActualizados = consultoriosGuardados.map((c) =>
-          c.id === Number.parseInt(id)
-            ? {
-                ...c,
-                numero: formData.numero,
-                nombre: formData.nombre,
-                especialidades: especialidadesSeleccionadas,
-                piso: formData.piso,
-                ubicacion: formData.ubicacion,
-                horariosDisponibles: horariosSeleccionados,
-                fechaModificacion: new Date().toISOString(),
-              }
-            : c,
-        )
-
-        localStorage.setItem("consultorios", JSON.stringify(consultoriosActualizados))
-        console.log(
-          "Consultorio actualizado:",
-          consultoriosActualizados.find((c) => c.id === Number.parseInt(id)),
-        )
-        alert("Consultorio actualizado exitosamente")
-      } else {
-        const nuevoId = consultoriosGuardados.length > 0 ? Math.max(...consultoriosGuardados.map((c) => c.id)) + 1 : 1
+      try {
+        setCargando(true)
+        const horariosSeleccionados = horarios.filter((h) => h.seleccionado).map((h) => h.horario)
 
         const consultorioData = {
-          id: nuevoId,
           numero: formData.numero,
           nombre: formData.nombre,
           especialidades: especialidadesSeleccionadas,
           piso: formData.piso,
           ubicacion: formData.ubicacion,
           horariosDisponibles: horariosSeleccionados,
-          estado: "disponible",
-          fechaCreacion: new Date().toISOString(),
         }
 
-        consultoriosGuardados.push(consultorioData)
-        localStorage.setItem("consultorios", JSON.stringify(consultoriosGuardados))
-        console.log("Consultorio guardado:", consultorioData)
-        alert("Consultorio registrado exitosamente")
-      }
+        if (modoEdicion) {
+          await actualizarConsultorio(Number(id), consultorioData)
+          alert("Consultorio actualizado exitosamente")
+        } else {
+          await crearConsultorio(consultorioData)
+          alert("Consultorio registrado exitosamente")
+        }
 
-      navigate("/ListarConsultorio")
+        navigate("/ListarConsultorio")
+      } catch (error) {
+        console.error("Error al guardar consultorio:", error)
+        alert("Error al guardar consultorio: " + error.message)
+      } finally {
+        setCargando(false)
+      }
     }
   }
 
   const handleCancel = () => {
     navigate("/ListarConsultorio")
+  }
+
+  if (cargando && modoEdicion) {
+    return (
+      <>
+        <NavBar />
+        <div className="registro-card2" style={{ textAlign: "center" }}>
+          <p>Cargando consultorio...</p>
+        </div>
+      </>
+    )
   }
 
   return (
@@ -359,11 +357,11 @@ const AgregarConsultorio = () => {
 
           <div className="row mt-4">
             <div className="col-12 d-flex gap-3 justify-content-end">
-              <button type="button" className="btn btn-secondary" onClick={handleCancel}>
+              <button type="button" className="btn btn-secondary" onClick={handleCancel} disabled={cargando}>
                 Cancelar
               </button>
-              <button type="submit" className="boton-agregar">
-                {modoEdicion ? "Actualizar Consultorio" : "Guardar Consultorio"}
+              <button type="submit" className="boton-agregar" disabled={cargando}>
+                {cargando ? "Guardando..." : modoEdicion ? "Actualizar Consultorio" : "Guardar Consultorio"}
               </button>
             </div>
           </div>

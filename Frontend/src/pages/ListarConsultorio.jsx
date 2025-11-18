@@ -1,63 +1,35 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import NavBar from "../componentes/NavBar"
+import { obtenerConsultorios, cambiarEstadoConsultorio, eliminarConsultorio } from "../services/consultoriosService"
 import "../styles/Profesionales.css"
 
 const ListarConsultorios = () => {
   const navigate = useNavigate()
-
-  const consultoriosIniciales = () => {
-    const guardados = localStorage.getItem("consultorios")
-    if (guardados) {
-      return JSON.parse(guardados)
-    }
-    // Datos de ejemplo si no hay nada guardado
-    return [
-      {
-        id: 1,
-        numero: "101",
-        nombre: "Consultorio de Cardiología",
-        especialidades: ["Cardiología"],
-        piso: "1",
-        ubicacion: "Ala Norte",
-        estado: "disponible",
-        horariosDisponibles: ["08:00-09:00", "09:00-10:00", "14:00-15:00", "15:00-16:00"],
-      },
-      {
-        id: 2,
-        numero: "102",
-        nombre: "Consultorio de Pediatría, Psicología",
-        especialidades: ["Pediatría", "Psicología"],
-        piso: "1",
-        ubicacion: "Ala Sur",
-        estado: "disponible",
-        horariosDisponibles: ["09:00-10:00", "10:00-11:00", "15:00-16:00", "16:00-17:00"],
-      },
-      {
-        id: 3,
-        numero: "201",
-        nombre: "Consultorio de Kinesiología",
-        especialidades: ["Kinesiología"],
-        piso: "2",
-        ubicacion: "Ala Norte",
-        estado: "no-disponible",
-        horariosDisponibles: ["08:00-09:00", "09:00-10:00"],
-      },
-    ]
-  }
-
-  const [consultorios, setConsultorios] = useState(consultoriosIniciales)
-
-  const actualizarConsultorios = (nuevosConsultorios) => {
-    setConsultorios(nuevosConsultorios)
-    localStorage.setItem("consultorios", JSON.stringify(nuevosConsultorios))
-  }
-
+  const [consultorios, setConsultorios] = useState([])
+  const [cargando, setCargando] = useState(true)
   const [filtroEstado, setFiltroEstado] = useState("todos")
   const [busqueda, setBusqueda] = useState("")
   const [modalBaja, setModalBaja] = useState({ visible: false, consultorio: null, tipo: "" })
+
+  useEffect(() => {
+    const cargarConsultorios = async () => {
+      try {
+        setCargando(true)
+        const data = await obtenerConsultorios()
+        setConsultorios(data)
+      } catch (error) {
+        console.error("Error al cargar consultorios:", error)
+        alert("Error al cargar consultorios")
+      } finally {
+        setCargando(false)
+      }
+    }
+
+    cargarConsultorios()
+  }, [])
 
   const consultoriosFiltrados = consultorios.filter((consultorio) => {
     const cumpleFiltroEstado = filtroEstado === "todos" || consultorio.estado === filtroEstado
@@ -70,36 +42,31 @@ const ListarConsultorios = () => {
   })
 
   const handleEditar = (id) => {
-    console.log("Editar consultorio:", id)
     navigate(`/EditarConsultorio/${id}`)
   }
 
   const handleDarDeBaja = (consultorio, tipo) => {
-    // HU4: Validar si hay turnos futuros antes de dar de baja
-    // En producción, esto vendría del backend
-    const hayTurnosFuturos = false // Simulación
-
-    if (hayTurnosFuturos) {
-      alert("No se puede dar de baja el consultorio porque tiene turnos asignados en el futuro.")
-      return
-    }
-
     setModalBaja({ visible: true, consultorio, tipo })
   }
 
-  const confirmarBaja = () => {
+  const confirmarBaja = async () => {
     const { consultorio, tipo } = modalBaja
 
-    const consultoriosActualizados = consultorios.map((c) =>
-      c.id === consultorio.id ? { ...c, estado: "no-disponible", tipoBaja: tipo } : c,
-    )
+    try {
+      await cambiarEstadoConsultorio(consultorio.id, "no-disponible", tipo)
 
-    actualizarConsultorios(consultoriosActualizados)
+      setConsultorios(
+        consultorios.map((c) =>
+          c.id === consultorio.id ? { ...c, estado: "no-disponible", tipoBaja: tipo } : c
+        )
+      )
 
-    console.log(`Consultorio ${consultorio.numero} dado de baja (${tipo})`)
-    alert(`Consultorio dado de baja ${tipo === "temporal" ? "temporalmente" : "permanentemente"}`)
-
-    setModalBaja({ visible: false, consultorio: null, tipo: "" })
+      alert(`Consultorio dado de baja ${tipo === "temporal" ? "temporalmente" : "permanentemente"}`)
+      setModalBaja({ visible: false, consultorio: null, tipo: "" })
+    } catch (error) {
+      console.error("Error al cambiar estado:", error)
+      alert("Error al cambiar estado: " + error.message)
+    }
   }
 
   const cancelarBaja = () => {
@@ -110,15 +77,45 @@ const ListarConsultorios = () => {
     navigate("/AgregarConsultorio")
   }
 
-  const handleHabilitar = (consultorio) => {
-    const consultoriosActualizados = consultorios.map((c) =>
-      c.id === consultorio.id ? { ...c, estado: "disponible", tipoBaja: null } : c,
+  const handleHabilitar = async (consultorio) => {
+    try {
+      await cambiarEstadoConsultorio(consultorio.id, "disponible")
+
+      setConsultorios(
+        consultorios.map((c) => (c.id === consultorio.id ? { ...c, estado: "disponible", tipoBaja: null } : c))
+      )
+
+      alert(`Consultorio ${consultorio.nombre} habilitado exitosamente`)
+    } catch (error) {
+      console.error("Error al habilitar:", error)
+      alert("Error al habilitar: " + error.message)
+    }
+  }
+
+  const handleEliminar = async (consultorio) => {
+    if (window.confirm(`¿Está seguro que desea eliminar permanentemente ${consultorio.nombre}?`)) {
+      try {
+        await eliminarConsultorio(consultorio.id)
+        setConsultorios(consultorios.filter((c) => c.id !== consultorio.id))
+        alert("Consultorio eliminado exitosamente")
+      } catch (error) {
+        console.error("Error al eliminar:", error)
+        alert("Error al eliminar: " + error.message)
+      }
+    }
+  }
+
+  if (cargando) {
+    return (
+      <>
+        <NavBar />
+        <div className="main-layout">
+          <div className="professional-list" style={{ textAlign: "center" }}>
+            <p>Cargando consultorios...</p>
+          </div>
+        </div>
+      </>
     )
-
-    actualizarConsultorios(consultoriosActualizados)
-
-    console.log(`Consultorio ${consultorio.numero} habilitado`)
-    alert(`Consultorio ${consultorio.nombre} habilitado exitosamente`)
   }
 
   return (
@@ -199,7 +196,6 @@ const ListarConsultorios = () => {
                         {consultorio.estado === "disponible" ? "Disponible" : "No Disponible"}
                       </span>
                     </p>
-                    {/* Reemplazado equipamiento por especialidades */}
                     <p>
                       <strong>Especialidades:</strong> {consultorio.especialidades.join(", ")}
                     </p>
@@ -228,7 +224,7 @@ const ListarConsultorios = () => {
                         </button>
                         <button
                           className="btn btn-danger btn-sm"
-                          onClick={() => handleDarDeBaja(consultorio, "permanente")}
+                          onClick={() => handleEliminar(consultorio)}
                         >
                           Eliminar
                         </button>

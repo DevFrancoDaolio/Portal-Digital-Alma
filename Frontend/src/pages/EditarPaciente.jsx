@@ -26,7 +26,7 @@ export default function EditarPaciente() {
     dpto: "",
     provincia: "",
     localidad: "",
-    observaciones: "", // Added observations field
+    observaciones: "",
   })
 
   const [errors, setErrors] = useState({})
@@ -72,7 +72,7 @@ export default function EditarPaciente() {
         dpto: pacienteData.dpto || "",
         provincia: pacienteData.provinciaId || "",
         localidad: pacienteData.localidadId || "",
-        observaciones: pacienteData.observaciones || "", // Load observations
+        observaciones: pacienteData.observaciones || "",
       })
 
       setObrasSociales(obrasSocialesData)
@@ -122,16 +122,10 @@ export default function EditarPaciente() {
 
     if (!form.apellido.trim()) {
       nuevosErrores.apellido = "El apellido es obligatorio"
-    } else if (!/^[A-Za-zÁÉÍÓÚÑáéíóúñ ]+$/.test(form.apellido)) {
+    } else if (!/^[A-Za-zÁÓÚÑáéíóúñ ]+$/.test(form.apellido)) {
       nuevosErrores.apellido = "El apellido solo puede contener letras"
     } else if (form.apellido.trim().length < 2 || form.apellido.trim().length > 50) {
       nuevosErrores.apellido = "El apellido debe tener entre 2 y 50 caracteres"
-    }
-
-    if (!form.dni.trim()) {
-      nuevosErrores.dni = "El DNI es obligatorio"
-    } else if (!/^[0-9]{7,15}$/.test(form.dni)) {
-      nuevosErrores.dni = "El DNI debe tener entre 7 y 15 dígitos"
     }
 
     if (!form.email.trim()) {
@@ -203,7 +197,6 @@ export default function EditarPaciente() {
       const pacienteDto = {
         nombre: form.nombre.trim(),
         apellido: form.apellido.trim(),
-        dni: form.dni.trim(),
         email: form.email.trim(),
         telefono: form.telefono.trim() || null,
         fechaNacimiento: form.fechaNacimiento,
@@ -215,10 +208,8 @@ export default function EditarPaciente() {
         provinciaId: Number.parseInt(form.provincia),
         localidadId: Number.parseInt(form.localidad),
         obraSocialId: Number.parseInt(form.obraSocial),
-        observaciones: form.observaciones.trim() || null, // Include observations
+        observaciones: form.observaciones.trim() || null,
       }
-
-      console.log("Actualizando paciente:", pacienteDto)
 
       await pacienteService.actualizar(id, pacienteDto)
       navigate("/ListarPaciente")

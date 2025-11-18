@@ -48,7 +48,7 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
     provinciaNombre: "",
     localidadNombre: "",
     especialidadesConMatricula: [],
-    fotoUrl: "", // added fotoUrl to form state
+    fotoUrl: "",
   })
 
   useEffect(() => {
@@ -56,8 +56,7 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
       try {
         const [especialidadesRes, provinciasRes] = await Promise.all([getEspecialidades(), getProvincias()])
         setEspecialidadesDisponibles(especialidadesRes.data || [])
-          setProvincias(provinciasRes.data.provincias || [])
-
+        setProvincias(provinciasRes.data.provincias || [])
       } catch (error) {
         console.error("Error al cargar catálogos:", error)
         alert("Error al cargar los datos necesarios")
@@ -66,25 +65,29 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
     cargarCatalogos()
   }, [])
 
-    useEffect(() => {
-        const cargarLocalidades = async () => {
-            if (form.provinciaNombre) {
-                try {
-                    const response = await getLocalidadesByProvincia(form.provinciaNombre)
-                    setLocalidades(response.data.localidades || [])
-                } catch (error) {
-                    console.error("Error al cargar localidades:", error)
-                    setLocalidades([])
-                }
-            } else {
-                setLocalidades([])
-            }
+  useEffect(() => {
+    const cargarLocalidades = async () => {
+      if (form.provinciaNombre) {
+        try {
+          // Find the provincia object to get its ID
+          const provinciaBuscada = provincias.find(p => p.nombre === form.provinciaNombre)
+          if (provinciaBuscada) {
+            const response = await getLocalidadesByProvincia(provinciaBuscada.id)
+            setLocalidades(response.data.localidades || [])
+            console.log("[v0] Localidades cargadas:", response.data.localidades)
+          }
+        } catch (error) {
+          console.error("Error al cargar localidades:", error)
+          setLocalidades([])
         }
-        cargarLocalidades()
-    }, [form.provinciaNombre])
+      } else {
+        setLocalidades([])
+      }
+    }
+    cargarLocalidades()
+  }, [form.provinciaNombre, provincias])
 
-
-    useEffect(() => {
+  useEffect(() => {
     const cargarProfesional = async () => {
       if (profesional) {
         cargarDatosProfesional(profesional)
@@ -143,7 +146,7 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
       piso: prof.piso || "",
       departamento: prof.departamento || "",
       provinciaId: provincia?.id || "",
-      localidadId: "",
+      localidadNombre: prof.localidad || "", // Changed from localidadId to localidadNombre
       especialidadesConMatricula: especialidadesFormateadas,
       fotoUrl: prof.fotoUrl || "", // load existing photo URL
     })
@@ -244,13 +247,13 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
       newErrors.telefono = "El teléfono debe tener entre 6 y 15 dígitos"
     }
 
-      if (!form.provinciaNombre) {
-          newErrors.provinciaNombre = "La Provincia es obligatoria"
-      }
+    if (!form.provinciaNombre) {
+      newErrors.provinciaNombre = "La Provincia es obligatoria"
+    }
 
-      if (!form.localidadNombre) {
-          newErrors.localidadNombre = "La Localidad es obligatoria"
-      }
+    if (!form.localidadNombre) {
+      newErrors.localidadNombre = "La Localidad es obligatoria"
+    }
 
     if (form.especialidadesConMatricula.length === 0) {
       newErrors.especialidades = "Debe seleccionar al menos una especialidad"
@@ -278,10 +281,20 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
     setLoading(true)
 
     try {
+      let fotoUrlFinal = '/doc1.png'
+      
+      // Use the preview (which is base64) if a photo was selected
+      if (fotoPreview) {
+        fotoUrlFinal = fotoPreview
+      } else if (form.fotoUrl && form.fotoUrl.startsWith('data:')) {
+        // If already has base64 data, use it
+        fotoUrlFinal = form.fotoUrl
+      }
+
       const profesionalData = {
         nombre: form.nombre.trim(),
         apellido: form.apellido.trim(),
-        sexo: form.sexo.toUpperCase(), // MASCULINO o FEMENINO
+        sexo: form.sexo.toUpperCase(),
         cuil: form.cuil.replace(/[-\s]/g, ""),
         email: form.email.trim(),
         telefono: form.telefono.replace(/[-\s()]/g, ""),
@@ -290,17 +303,20 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
         codigoPostal: form.codigoPostal.trim(),
         piso: form.piso.trim(),
         departamento: form.departamento.trim(),
-          provinciaNombre: form.provinciaNombre,
-          localidadNombre: form.localidadNombre,
-          especialidadesConMatricula: form.especialidadesConMatricula.map((esp) => ({
+        provinciaNombre: form.provinciaNombre,
+        localidadNombre: form.localidadNombre,
+        especialidadesConMatricula: form.especialidadesConMatricula.map((esp) => ({
           especialidadId: Number.parseInt(esp.especialidadId),
           matricula: esp.matricula.trim(),
           esPrincipal: esp.esPrincipal,
         })),
-        fotoUrl: fotoPreview || form.fotoUrl, // include photo in data
+        fotoUrl: fotoUrlFinal,
       }
 
-      console.log("[v0] Enviando datos al backend:", profesionalData)
+      console.log("[v0] Enviando datos al backend:", {
+        ...profesionalData,
+        fotoUrl: profesionalData.fotoUrl ? 'foto_present' : 'sin_foto'
+      })
 
       if (modoEdicion) {
         const profesionalId = profesional?.id || id
@@ -534,36 +550,33 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
                 />
               </div>
               <div className="col-md-3">
-                  <select
-                      name="provinciaNombre"
-                      className={`form-select ${errors.provinciaNombre ? "is-invalid" : ""}`}
-                      value={form.provinciaNombre}
-                      onChange={(e) => {
-                          setForm({ ...form, provinciaNombre: e.target.value, localidadNombre: "" })
-                          if (errors.provinciaNombre) {
-                              setErrors({ ...errors, provinciaNombre: "" })
-                          }
-                      }}
-                  >
-                      <option value="">Provincia *</option>
-                      {provincias.map((prov) => (
-                          <option key={prov.id} value={prov.nombre}>
-                              {prov.nombre}
-                          </option>
-                      ))}
-                  </select>
-
-                  {errors.provinciaNombre && <div className="invalid-feedback">{errors.provinciaNombre}</div>}
-
-
+                <select
+                  name="provinciaNombre"
+                  className={`form-select ${errors.provinciaNombre ? "is-invalid" : ""}`}
+                  value={form.provinciaNombre}
+                  onChange={(e) => {
+                    setForm({ ...form, provinciaNombre: e.target.value, localidadNombre: "" })
+                    if (errors.provinciaNombre) {
+                      setErrors({ ...errors, provinciaNombre: "" })
+                    }
+                  }}
+                >
+                  <option value="">Provincia *</option>
+                  {provincias.map((prov) => (
+                    <option key={prov.id} value={prov.nombre}>
+                      {prov.nombre}
+                    </option>
+                  ))}
+                </select>
+                {errors.provinciaNombre && <div className="invalid-feedback">{errors.provinciaNombre}</div>}
               </div>
               <div className="col-md-3">
                 <select
-                  name="localidadId"
-                  className={`form-select ${errors.localidadId ? "is-invalid" : ""}`}
-                  value={form.localidadId}
+                  name="localidadNombre"
+                  className={`form-select ${errors.localidadNombre ? "is-invalid" : ""}`}
+                  value={form.localidadNombre}
                   onChange={handleChange}
-                  disabled={!form.provinciaId}
+                  disabled={!form.provinciaNombre || localidades.length === 0}
                 >
                   <option value="">Localidad *</option>
                   {localidades.map((loc) => (
@@ -572,7 +585,7 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
                     </option>
                   ))}
                 </select>
-                {errors.localidadId && <div className="invalid-feedback">{errors.localidadId}</div>}
+                {errors.localidadNombre && <div className="invalid-feedback">{errors.localidadNombre}</div>}
               </div>
             </div>
           </div>

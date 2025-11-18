@@ -5,194 +5,7 @@ import { useNavigate } from "react-router-dom"
 import "../styles/TurnosReg.css"
 import NavBar from "../componentes/NavBar"
 import Fondo from "../componentes/Fondo"
-
-const PACIENTES_MOCK = [
-  {
-    id: 1,
-    nombre: "Juan",
-    apellido: "Pérez",
-    dni: "12345678",
-    email: "juan@mail.com",
-    telefono: "3511234567",
-    obraSocial: "OSDE",
-  },
-  {
-    id: 2,
-    nombre: "María",
-    apellido: "González",
-    dni: "23456789",
-    email: "maria@mail.com",
-    telefono: "3517654321",
-    obraSocial: "Swiss Medical",
-  },
-  {
-    id: 3,
-    nombre: "Carlos",
-    apellido: "López",
-    dni: "34567890",
-    email: "carlos@mail.com",
-    telefono: "3519876543",
-    obraSocial: "Galeno",
-  },
-  {
-    id: 4,
-    nombre: "Ana",
-    apellido: "Martínez",
-    dni: "45678901",
-    email: "ana@mail.com",
-    telefono: "3513456789",
-    obraSocial: "Medifé",
-  },
-]
-
-const ESPECIALIDADES_MOCK = [
-  { id: 1, nombre: "Cardiología" },
-  { id: 2, nombre: "Pediatría" },
-  { id: 3, nombre: "Traumatología" },
-  { id: 4, nombre: "Dermatología" },
-]
-
-const PROFESIONALES_MOCK = [
-  {
-    id: 1,
-    nombre: "Laura",
-    apellido: "Fernández",
-    email: "laura@clinic.com",
-    telefono: "3511111111",
-    especialidades: [{ id: 1, nombre: "Cardiología" }],
-  },
-  {
-    id: 2,
-    nombre: "Roberto",
-    apellido: "Sánchez",
-    email: "roberto@clinic.com",
-    telefono: "3512222222",
-    especialidades: [{ id: 2, nombre: "Pediatría" }],
-  },
-  {
-    id: 3,
-    nombre: "Patricia",
-    apellido: "Rodríguez",
-    email: "patricia@clinic.com",
-    telefono: "3513333333",
-    especialidades: [{ id: 3, nombre: "Traumatología" }],
-  },
-  {
-    id: 4,
-    nombre: "Miguel",
-    apellido: "Torres",
-    email: "miguel@clinic.com",
-    telefono: "3514444444",
-    especialidades: [{ id: 4, nombre: "Dermatología" }],
-  },
-]
-
-const CONSULTORIOS_MOCK = [
-  {
-    id: 1,
-    numero: "101",
-    nombre: "Consultorio de Cardiología",
-    especialidades: ["Cardiología"],
-    piso: "1",
-    ubicacion: "Ala Norte",
-    estado: "disponible",
-  },
-  {
-    id: 2,
-    numero: "102",
-    nombre: "Consultorio de Pediatría, Psicología",
-    especialidades: ["Pediatría", "Psicología"],
-    piso: "1",
-    ubicacion: "Ala Sur",
-    estado: "disponible",
-  },
-  {
-    id: 3,
-    numero: "201",
-    nombre: "Consultorio de Kinesiología",
-    especialidades: ["Kinesiología"],
-    piso: "2",
-    ubicacion: "Ala Norte",
-    estado: "disponible",
-  },
-  {
-    id: 4,
-    numero: "202",
-    nombre: "Consultorio de Traumatología",
-    especialidades: ["Traumatología"],
-    piso: "2",
-    ubicacion: "Ala Sur",
-    estado: "disponible",
-  },
-]
-
-const TURNOS_EXISTENTES = [
-  {
-    id: 1,
-    fecha: "2025-01-13",
-    horaInicio: "09:00",
-    horaFin: "10:00",
-    paciente: "Juan Pérez",
-    profesional: "Dr/a. Fernández",
-    profesionalId: 1,
-    especialidad: "Cardiología",
-    consultorio: "101",
-    estado: "confirmado",
-    motivoConsulta: "Consulta rutinaria",
-  },
-  {
-    id: 2,
-    fecha: "2025-01-13",
-    horaInicio: "10:00",
-    horaFin: "11:00",
-    paciente: "María González",
-    profesional: "Dr/a. Sánchez",
-    profesionalId: 2,
-    especialidad: "Pediatría",
-    consultorio: "102",
-    estado: "confirmado",
-    motivoConsulta: "Consulta de chequeo",
-  },
-  {
-    id: 3,
-    fecha: "2025-01-14",
-    horaInicio: "14:00",
-    horaFin: "15:00",
-    paciente: "Carlos López",
-    profesional: "Dr/a. Rodríguez",
-    profesionalId: 3,
-    especialidad: "Traumatología",
-    consultorio: "202",
-    estado: "pendiente",
-    motivoConsulta: "Consulta por lesión",
-  },
-  {
-    id: 4,
-    fecha: "2025-01-15",
-    horaInicio: "11:00",
-    horaFin: "12:00",
-    paciente: "Ana Martínez",
-    profesional: "Dr/a. Torres",
-    profesionalId: 4,
-    especialidad: "Dermatología",
-    consultorio: "101",
-    estado: "confirmado",
-    motivoConsulta: "Consulta por acne",
-  },
-  {
-    id: 5,
-    fecha: "2025-01-13",
-    horaInicio: "15:00",
-    horaFin: "16:00",
-    paciente: "Pedro Gómez",
-    profesional: "Dr/a. Fernández",
-    profesionalId: 1,
-    especialidad: "Cardiología",
-    consultorio: "101",
-    estado: "confirmado",
-    motivoConsulta: "Consulta por presión alta",
-  },
-]
+import * as turnosService from "../services/turnosService"
 
 const HORARIOS_DISPONIBLES = [
   "08:00",
@@ -226,13 +39,20 @@ export default function RegistrarTurno() {
   const navigate = useNavigate()
   const [semanaActual, setSemanaActual] = useState(new Date())
   const [mesCalendario, setMesCalendario] = useState(new Date())
-  const [turnosProgramados, setTurnosProgramados] = useState(TURNOS_EXISTENTES)
+  const [turnosProgramados, setTurnosProgramados] = useState([])
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [turnoSeleccionado, setTurnoSeleccionado] = useState(null)
   const [modoEdicion, setModoEdicion] = useState(false)
   const [diaSeleccionado, setDiaSeleccionado] = useState(null)
   const [horaSeleccionada, setHoraSeleccionada] = useState(null)
   const [diaSeleccionadoCalendario, setDiaSeleccionadoCalendario] = useState(null)
+
+  const [pacientes, setPacientes] = useState([])
+  const [profesionales, setProfesionales] = useState([])
+  const [especialidades, setEspecialidades] = useState([])
+  const [consultorios, setConsultorios] = useState([])
+  const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState(null)
 
   const [form, setForm] = useState({
     pacienteId: "",
@@ -252,15 +72,42 @@ export default function RegistrarTurno() {
   const [profesionalSeleccionado, setProfesionalSeleccionado] = useState(null)
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setCargando(true)
+        const [turnosRes, pacientesRes, profesionalesRes, especialidadesRes, consultoriosRes] = await Promise.all([
+          turnosService.obtenerTurnos(),
+          turnosService.obtenerPacientes(),
+          turnosService.obtenerProfesionales(),
+          turnosService.obtenerEspecialidades(),
+          turnosService.obtenerConsultorios(),
+        ])
+
+        setTurnosProgramados(turnosRes.data.data || [])
+        setPacientes(pacientesRes.data.data || [])
+        setProfesionales(profesionalesRes.data.data || [])
+        setEspecialidades(especialidadesRes.data.data || [])
+        setConsultorios(consultoriosRes.data.data || [])
+      } catch (err) {
+        console.error("Error fetching data:", err)
+        setError("Error al cargar los datos")
+      } finally {
+        setCargando(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  useEffect(() => {
     if (form.especialidadId) {
-      const filtrados = PROFESIONALES_MOCK.filter((prof) =>
+      const filtrados = profesionales.filter((prof) =>
         prof.especialidades?.some((esp) => esp.id === Number.parseInt(form.especialidadId)),
       )
       setProfesionalesFiltrados(filtrados)
 
-      // Filtrar consultorios por especialidad
-      const especialidad = ESPECIALIDADES_MOCK.find((e) => e.id === Number.parseInt(form.especialidadId))
-      const consultoriosFilt = CONSULTORIOS_MOCK.filter(
+      const especialidad = especialidades.find((e) => e.id === Number.parseInt(form.especialidadId))
+      const consultoriosFilt = consultorios.filter(
         (c) => c.especialidades.includes(especialidad?.nombre) && c.estado === "disponible",
       )
       setConsultoriosFiltrados(consultoriosFilt)
@@ -269,7 +116,7 @@ export default function RegistrarTurno() {
       setConsultoriosFiltrados([])
       setForm((prevForm) => ({ ...prevForm, profesionalId: "", consultorioId: "", horaInicio: "", horaFin: "" }))
     }
-  }, [form.especialidadId])
+  }, [form.especialidadId, profesionales, especialidades, consultorios])
 
   const obtenerDiasSemana = (fecha) => {
     const dia = fecha.getDay()
@@ -365,7 +212,7 @@ export default function RegistrarTurno() {
     }
 
     if (name === "pacienteId") {
-      const paciente = PACIENTES_MOCK.find((p) => p.id === Number.parseInt(value))
+      const paciente = pacientes.find((p) => p.id === Number.parseInt(value))
       setPacienteSeleccionado(paciente || null)
     }
 
@@ -398,90 +245,77 @@ export default function RegistrarTurno() {
       nuevosErrores.motivoConsulta = "El motivo no puede superar los 200 caracteres"
     }
 
-
     setErrors(nuevosErrores)
     return Object.keys(nuevosErrores).length === 0
   }
 
-  const handleRegistrar = (e) => {
+  const handleRegistrar = async (e) => {
     e.preventDefault()
 
     if (!validarFormulario()) return
 
-    const paciente = PACIENTES_MOCK.find((p) => p.id === Number.parseInt(form.pacienteId))
-    const profesional = profesionalesFiltrados.find((p) => p.id === Number.parseInt(form.profesionalId))
-    const especialidad = ESPECIALIDADES_MOCK.find((e) => e.id === Number.parseInt(form.especialidadId))
-    const consultorio = CONSULTORIOS_MOCK.find((c) => c.id === Number.parseInt(form.consultorioId))
-
-    if (modoEdicion && turnoSeleccionado) {
-      const turnosActualizados = turnosProgramados.map((t) => {
-        if (t.id === turnoSeleccionado.id) {
-          return {
-            ...t,
-            fecha: form.fecha,
-            horaInicio: form.horaInicio,
-            horaFin: form.horaFin,
-            paciente: `${paciente.nombre} ${paciente.apellido}`,
-            profesional: `Dr/a. ${profesional.apellido}`,
-            profesionalId: profesional.id,
-            especialidad: especialidad.nombre,
-            consultorio: consultorio.numero,
-            motivoConsulta: form.motivoConsulta,
-          }
-        }
-        return t
-      })
-
-      setTurnosProgramados(turnosActualizados)
-      alert("Turno actualizado exitosamente")
-      setTurnoSeleccionado(null)
-    } else {
-      // Crear nuevo turno
-      const nuevoTurno = {
-        id: turnosProgramados.length + 1,
-        fecha: form.fecha,
-        horaInicio: form.horaInicio,
-        horaFin: form.horaFin,
-        paciente: `${paciente.nombre} ${paciente.apellido}`,
-        profesional: `Dr/a. ${profesional.apellido}`,
-        profesionalId: profesional.id,
-        especialidad: especialidad.nombre,
-        consultorio: consultorio.numero,
-        estado: "confirmado",
-        motivoConsulta: form.motivoConsulta,
+    try {
+      if (modoEdicion && turnoSeleccionado) {
+        await turnosService.actualizarTurno(turnoSeleccionado.id, {
+          fecha: form.fecha,
+          horaInicio: form.horaInicio,
+          horaFin: form.horaFin,
+          pacienteId: Number.parseInt(form.pacienteId),
+          profesionalId: Number.parseInt(form.profesionalId),
+          especialidadId: Number.parseInt(form.especialidadId),
+          consultorioId: Number.parseInt(form.consultorioId),
+          motivoConsulta: form.motivoConsulta,
+        })
+        alert("Turno actualizado exitosamente")
+      } else {
+        await turnosService.crearTurno({
+          fecha: form.fecha,
+          horaInicio: form.horaInicio,
+          horaFin: form.horaFin,
+          pacienteId: Number.parseInt(form.pacienteId),
+          profesionalId: Number.parseInt(form.profesionalId),
+          especialidadId: Number.parseInt(form.especialidadId),
+          consultorioId: Number.parseInt(form.consultorioId),
+          motivoConsulta: form.motivoConsulta,
+        })
+        alert("Turno registrado exitosamente")
       }
 
-      setTurnosProgramados([...turnosProgramados, nuevoTurno])
-      alert("Turno registrado exitosamente")
-    }
+      // Refresh turnos
+      const turnosRes = await turnosService.obtenerTurnos()
+      setTurnosProgramados(turnosRes.data.data || [])
 
-    setForm({
-      pacienteId: "",
-      profesionalId: "",
-      especialidadId: "",
-      consultorioId: "",
-      fecha: "",
-      horaInicio: "",
-      horaFin: "",
-      motivoConsulta: "",
-    })
-    setPacienteSeleccionado(null)
-    setProfesionalSeleccionado(null)
-    setMostrarFormulario(false)
-    setModoEdicion(false)
+      setForm({
+        pacienteId: "",
+        profesionalId: "",
+        especialidadId: "",
+        consultorioId: "",
+        fecha: "",
+        horaInicio: "",
+        horaFin: "",
+        motivoConsulta: "",
+      })
+      setPacienteSeleccionado(null)
+      setProfesionalSeleccionado(null)
+      setMostrarFormulario(false)
+      setModoEdicion(false)
+    } catch (err) {
+      console.error("Error registrando turno:", err)
+      alert("Error al registrar el turno")
+    }
   }
 
   const handleEditarTurno = () => {
     if (!turnoSeleccionado) return
 
-    const paciente = PACIENTES_MOCK.find((p) => `${p.nombre} ${p.apellido}` === turnoSeleccionado.paciente)
-    const especialidad = ESPECIALIDADES_MOCK.find((e) => e.nombre === turnoSeleccionado.especialidad)
+    const paciente = pacientes.find((p) => p.id === turnoSeleccionado.pacienteId)
+    const especialidad = especialidades.find((e) => e.id === turnoSeleccionado.especialidadId)
 
     setForm({
       pacienteId: paciente?.id.toString() || "",
       profesionalId: turnoSeleccionado.profesionalId.toString(),
       especialidadId: especialidad?.id.toString() || "",
-      consultorioId: CONSULTORIOS_MOCK.find((c) => c.numero === turnoSeleccionado.consultorio)?.id.toString() || "",
+      consultorioId: turnoSeleccionado.consultorioId.toString() || "",
       fecha: turnoSeleccionado.fecha,
       horaInicio: turnoSeleccionado.horaInicio,
       horaFin: turnoSeleccionado.horaFin,
@@ -493,38 +327,46 @@ export default function RegistrarTurno() {
     setMostrarFormulario(true)
   }
 
-  const handleEliminarTurnoDesdeModal = () => {
+  const handleEliminarTurnoDesdeModal = async () => {
     if (!turnoSeleccionado) return
     if (window.confirm("¿Está seguro que desea cancelar este turno?")) {
-      setTurnosProgramados(turnosProgramados.filter((t) => t.id !== turnoSeleccionado.id))
-      setTurnoSeleccionado(null)
-      alert("Turno cancelado exitosamente")
+      try {
+        await turnosService.cancelarTurno(turnoSeleccionado.id)
+        setTurnosProgramados(turnosProgramados.filter((t) => t.id !== turnoSeleccionado.id))
+        setTurnoSeleccionado(null)
+        alert("Turno cancelado exitosamente")
+      } catch (err) {
+        console.error("Error cancelando turno:", err)
+        alert("Error al cancelar el turno")
+      }
     }
   }
 
-  const handleCancelarTurno = (turnoId) => {
+  const handleCancelarTurno = async (turnoId) => {
     if (window.confirm("¿Está seguro que desea cancelar este turno?")) {
-      setTurnosProgramados(turnosProgramados.filter((t) => t.id !== turnoId))
-      alert("Turno cancelado exitosamente")
+      try {
+        await turnosService.cancelarTurno(turnoId)
+        setTurnosProgramados(turnosProgramados.filter((t) => t.id !== turnoId))
+        alert("Turno cancelado exitosamente")
+      } catch (err) {
+        console.error("Error cancelando turno:", err)
+        alert("Error al cancelar el turno")
+      }
     }
   }
 
-const ALTURA_POR_INTERVALO = 25; 
 
-const calcularAlturaTurno = (horaInicio, horaFin) => {
-    const indexInicio = HORARIOS_DISPONIBLES.indexOf(horaInicio);
-    const indexFin = HORARIOS_DISPONIBLES.indexOf(horaFin);
+  const ALTURA_POR_INTERVALO = 25
 
-    // Si no encuentra los horarios, devuelve la altura mínima de 1 hora (50px).
-    if (indexInicio === -1 || indexFin === -1) return 50;
+  const calcularAlturaTurno = (horaInicio, horaFin) => {
+    const indexInicio = HORARIOS_DISPONIBLES.indexOf(horaInicio)
+    const indexFin = HORARIOS_DISPONIBLES.indexOf(horaFin)
 
-    // Calcula cuántos intervalos de 30 minutos hay entre la hora de inicio y la hora de fin.
-    // Para 12:00 (índice 8) a 14:00 (índice 12) -> 12 - 8 = 4 intervalos.
-    const intervalos = indexFin - indexInicio; 
-    
-    // Altura: 4 intervalos * 25px/intervalo = 100px. (¡Correcto para 2 horas!)
-    return intervalos * ALTURA_POR_INTERVALO;
-};
+    if (indexInicio === -1 || indexFin === -1) return 50
+
+    const intervalos = indexFin - indexInicio
+    return intervalos * ALTURA_POR_INTERVALO
+  }
 
   const calcularTopOffset = (horaInicio) => {
     const [hora, minutos] = horaInicio.split(":").map(Number)
@@ -583,6 +425,28 @@ const calcularAlturaTurno = (horaInicio, horaFin) => {
     const turnosDelDia = turnosProgramados.filter((t) => t.fecha === fechaStr)
 
     return turnosDelDia.length > 0 && !esDiaLleno(fecha)
+  }
+
+  if (cargando) {
+    return (
+      <Fondo>
+        <NavBar />
+        <div className="turnos-container">
+          <div style={{ textAlign: "center", padding: "40px" }}>Cargando datos...</div>
+        </div>
+      </Fondo>
+    )
+  }
+
+  if (error) {
+    return (
+      <Fondo>
+        <NavBar />
+        <div className="turnos-container">
+          <div style={{ textAlign: "center", padding: "40px", color: "red" }}>{error}</div>
+        </div>
+      </Fondo>
+    )
   }
 
   return (
@@ -843,7 +707,7 @@ const calcularAlturaTurno = (horaInicio, horaFin) => {
                   onChange={handleChange}
                 >
                   <option value="">Seleccione un paciente</option>
-                  {PACIENTES_MOCK.map((paciente) => (
+                  {pacientes.map((paciente) => (
                     <option key={paciente.id} value={paciente.id}>
                       {paciente.apellido}, {paciente.nombre} - DNI: {paciente.dni}
                     </option>
@@ -855,7 +719,7 @@ const calcularAlturaTurno = (horaInicio, horaFin) => {
                   <div className="info-box mt-2">
                     <small>
                       <strong>Email:</strong> {pacienteSeleccionado.email} | <strong>Teléfono:</strong>{" "}
-                      {pacienteSeleccionado.telefono} | <strong>Obra Social:</strong> {pacienteSeleccionado.obraSocial}
+                      {pacienteSeleccionado.telefono} | <strong>Obra Social:</strong> {pacienteSeleccionado.obraSocialNombre}
                     </small>
                   </div>
                 )}
@@ -873,7 +737,7 @@ const calcularAlturaTurno = (horaInicio, horaFin) => {
                   onChange={handleChange}
                 >
                   <option value="">Seleccione una especialidad</option>
-                  {ESPECIALIDADES_MOCK.map((especialidad) => (
+                  {especialidades.map((especialidad) => (
                     <option key={especialidad.id} value={especialidad.id}>
                       {especialidad.nombre}
                     </option>
@@ -986,8 +850,8 @@ const calcularAlturaTurno = (horaInicio, horaFin) => {
                           Number.parseInt(form.profesionalId),
                         )
                       return (
-                        <option key={index} value={horario} >
-                          {horario} 
+                        <option key={index} value={horario} disabled={ocupado}>
+                          {horario} {ocupado ? "(Ocupado)" : ""}
                         </option>
                       )
                     })}

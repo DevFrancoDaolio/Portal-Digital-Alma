@@ -25,7 +25,7 @@ export default function RegistrarPaciente() {
     dpto: "",
     provincia: "",
     localidad: "",
-    observaciones: "", // Added observations field
+    observaciones: "",
   })
 
   const [errors, setErrors] = useState({})
@@ -189,10 +189,8 @@ export default function RegistrarPaciente() {
         provinciaId: Number.parseInt(form.provincia),
         localidadId: Number.parseInt(form.localidad),
         obraSocialId: Number.parseInt(form.obraSocial),
-        observaciones: form.observaciones.trim() || null, // Added observations
+        observaciones: form.observaciones.trim() || null,
       }
-
-      console.log("Registrando paciente:", pacienteDto)
 
       await pacienteService.crear(pacienteDto)
       navigate("/ListarPaciente")
