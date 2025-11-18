@@ -17,16 +17,20 @@ import CreateAccount from "./pages/CreateAccount.jsx"
 import RegistrarTurno from "./pages/RegistrarTurno"
 import ProtectedRoute from "./componentes/ProtectedRoute"
 import RecuperarContrasena from "./pages/RecuperarContrasena.jsx"
+import Perfil from "./pages/Perfil.jsx"
+import Inicio from "./pages/Inicio.jsx" 
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Inicio />} />
         <Route path="/Test" element={<Test />} />
         <Route path="/login" element={<Login />} />
         <Route path="/CreateAccount" element={<CreateAccount />} />
         <Route path="/RecuperarContrasena" element={<RecuperarContrasena />} />
+        <Route path="/Perfil" element={<Perfil />} />
+        <Route path="/Inicio" element={<Inicio />} />
 
 
         <Route

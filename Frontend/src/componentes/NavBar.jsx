@@ -22,6 +22,12 @@ const NavBar = () => {
     return () => window.removeEventListener("storage", handleStorageChange)
   }, [])
 
+  const handleVerPerfil = () => {
+    if (usuarioActual) {
+      window.location.href = "/Perfil"
+    }
+  }
+
   const handleLogout = () => {
     logoutUsuario()
     setUsuarioActual(null)
@@ -33,7 +39,7 @@ const NavBar = () => {
       <div className="logo">
         <Link to="/">
           <span>Turnify </span>
-          <img src={"/LogoSinLetras.png"} style={{ height: "45px", width: "40px" }} />
+          <img src={"/LogoSinLetras.png"} style={{ height: "45px", width: "40px" }} alt="Logo" />
         </Link>
       </div>
       <ul className="nav-links">
@@ -83,6 +89,9 @@ const NavBar = () => {
             <span className="user-info">
               {usuarioActual.nombre} {usuarioActual.apellido}
             </span>
+            <button onClick={handleVerPerfil} className="profile-btn">
+              Ver Perfil
+            </button>
             <button onClick={handleLogout} className="logout-btn">
               Cerrar sesión
             </button>
