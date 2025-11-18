@@ -56,10 +56,7 @@ export default function Perfil() {
                 <label>Email:</label>
                 <p>{usuario.email}</p>
               </div>
-              <div className="info-item">
-                <label>Rol:</label>
-                <p className="rol-text">{usuario.rol}</p>
-              </div>
+              
             </div>
 
             <div className="perfil-info-group">

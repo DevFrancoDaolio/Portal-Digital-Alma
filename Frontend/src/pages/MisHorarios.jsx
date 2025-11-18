@@ -98,34 +98,6 @@ export default function MisHorarios() {
             <div className="card-horario-calendario">
               <h1 className="titulo-calendario">Mis Horarios</h1>
 
-              <div className="calendario-semanal">
-                <div className="dias-container">
-                  {diasSemana.map((dia, index) => (
-                    <div key={dia} className="columna-dia">
-                      <div className="header-dia">{diasAbrev[index]}</div>
-                      <div className="slots-dia">
-                        {todosLosHorarios.map((hora) => {
-                          const ocupado = estaOcupado(dia, hora)
-                          const horarioData = horarios.find((h) => h.dia === dia && estaOcupado(dia, hora))
-                          return ocupado ? (
-                            <div
-                              key={hora}
-                              className="slot-ocupado"
-                              style={{
-                                backgroundColor: horarioData ? obtenerColorHorario(horarioData.id) : "#007bff",
-                                color: "white",
-                              }}
-                            >
-                              {hora}
-                            </div>
-                          ) : null
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               <div className="resumen-detallado-columnas">
                 {diasSemana.map((dia) => (
                   <div key={dia} className="columna-resumen-detallada">

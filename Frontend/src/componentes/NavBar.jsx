@@ -34,6 +34,13 @@ const NavBar = () => {
     window.location.href = "/login"
   }
 
+  const handleProfesionalesClick = (e) => {
+    if (usuarioActual && usuarioActual.rol === "profesional") {
+      e.preventDefault()
+      window.location.href = "/MisHorarios"
+    }
+  }
+
   return (
     <nav className="navbar">
       <div className="logo">
@@ -50,12 +57,18 @@ const NavBar = () => {
           className={
             location.pathname === "/ListarProfesionales" ||
             location.pathname === "/RegistrarProfesional" ||
-            location.pathname === "/Especialidad"
+            location.pathname === "/Especialidad" ||
+            location.pathname === "/MisHorarios"
               ? "active"
               : ""
           }
         >
-          <Link to="/ListarProfesionales">Profesionales</Link>
+          <Link 
+            to={usuarioActual?.rol === "profesional" ? "/MisHorarios" : "/ListarProfesionales"}
+            onClick={handleProfesionalesClick}
+          >
+            Profesionales
+          </Link>
         </li>
         <li
           className={

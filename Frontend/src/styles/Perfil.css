@@ -33,7 +33,7 @@
 .role-badge {
   background: rgba(255, 255, 255, 0.2);
   padding: 8px 16px;
-  border-radius: 20px;
+  border-radius: 10px;
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
@@ -41,13 +41,13 @@
 }
 
 .role-badge.role-profesional {
-  background: rgba(16, 185, 129, 0.2);
-  border: 1px solid rgba(16, 185, 129, 0.5);
+  background: rgb(1, 163, 212);
+  border: 1px solid rgb(255, 255, 255);
 }
 
 .role-badge.role-secretaria {
-  background: rgba(251, 191, 36, 0.2);
-  border: 1px solid rgba(251, 191, 36, 0.5);
+  background: rgb(212, 68, 212);
+  border: 1px solid rgb(255, 255, 255);
 }
 
 .perfil-content {

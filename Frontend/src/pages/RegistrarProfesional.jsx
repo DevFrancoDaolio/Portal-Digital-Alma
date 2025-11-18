@@ -725,19 +725,7 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
               </div>
               <div className="mb-3">
                 <label className="form-label">Descripción *</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Ej: Trata enfermedades del corazón y del sistema circulatorio"
-                  value={nuevaEspecialidad}
-                  onChange={(e) => setNuevaEspecialidad(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault()
-                      handleAgregarEspecialidad()
-                    }
-                  }}
-                />
+                {/* Description will be added through the dedicated page */}
               </div>
               <div className="d-flex gap-2 justify-content-end">
                 <button
