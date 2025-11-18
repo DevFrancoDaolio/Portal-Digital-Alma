@@ -4,23 +4,13 @@ import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import NavBar from "../componentes/NavBar"
 import { crearConsultorio, actualizarConsultorio, obtenerConsultorioPorId } from "../services/consultoriosService"
+import { getEspecialidades } from "../services/especialidadesService"
 import "../styles/Profesionales.css"
 
 const AgregarConsultorio = () => {
   const navigate = useNavigate()
   const { id } = useParams()
   const modoEdicion = !!id
-
-  const especialidadesDisponibles = [
-    "Kinesiología",
-    "Psicología",
-    "Cardiología",
-    "Pediatría",
-    "Fonoaudiología",
-    "Psiquiatría",
-    "Médico Clínico",
-    "Psicomotricidad",
-  ]
 
   const horariosDisponibles = [
     { id: 1, horario: "08:00-09:00", seleccionado: false },
@@ -48,6 +38,20 @@ const AgregarConsultorio = () => {
   const [horarios, setHorarios] = useState(horariosDisponibles)
   const [errors, setErrors] = useState({})
   const [cargando, setCargando] = useState(false)
+  const [especialidadesDisponibles, setEspecialidadesDisponibles] = useState([])
+
+  useEffect(() => {
+    const cargarEspecialidades = async () => {
+      try {
+        const response = await getEspecialidades()
+        setEspecialidadesDisponibles(response.data || [])
+      } catch (error) {
+        console.error("Error al cargar especialidades:", error)
+        alert("Error al cargar especialidades")
+      }
+    }
+    cargarEspecialidades()
+  }, [])
 
   useEffect(() => {
     if (modoEdicion) {
@@ -242,7 +246,7 @@ const AgregarConsultorio = () => {
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
                 {especialidadesDisponibles.map((especialidad) => (
                   <label
-                    key={especialidad}
+                    key={especialidad.id}
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -250,18 +254,18 @@ const AgregarConsultorio = () => {
                       border: "1px solid #ddd",
                       borderRadius: "8px",
                       cursor: "pointer",
-                      backgroundColor: especialidadesSeleccionadas.includes(especialidad) ? "#007bff" : "white",
-                      color: especialidadesSeleccionadas.includes(especialidad) ? "white" : "#333",
+                      backgroundColor: especialidadesSeleccionadas.includes(especialidad.nombre) ? "#007bff" : "white",
+                      color: especialidadesSeleccionadas.includes(especialidad.nombre) ? "white" : "#333",
                       transition: "all 0.2s",
                     }}
                   >
                     <input
                       type="checkbox"
-                      checked={especialidadesSeleccionadas.includes(especialidad)}
-                      onChange={() => handleEspecialidadChange(especialidad)}
+                      checked={especialidadesSeleccionadas.includes(especialidad.nombre)}
+                      onChange={() => handleEspecialidadChange(especialidad.nombre)}
                       style={{ marginRight: "0.5rem" }}
                     />
-                    {especialidad}
+                    {especialidad.nombre}
                   </label>
                 ))}
               </div>
