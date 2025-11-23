@@ -1,15 +1,17 @@
 import express from 'express'
 import cors from 'cors'
+import axios from 'axios'
 
 const app = express()
 const PORT = 5000
+const API_GOBIERNO_BASE_URL = 'https://apis.datos.gob.ar/georef/api'
 
 // Middleware
 app.use(cors())
 app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ limit: '50mb', extended: true }))
 
-// 🔷 BASE DE DATOS EN MEMORIA
+// 🔷 BASE DE DATOS EN MEMORIA - CONSULTORIOS
 let consultorios = [
   {
     id: 1,
@@ -48,7 +50,7 @@ let consultorios = [
 
 let nextId = 4
 
-// 🔷 BASE DE DATOS EN MEMORIA - PACIENTES
+// 🔷 BASE DE DATOS EN MEMORIA - PACIENTES (CORREGIDO: IDs de provincia/localidad como string)
 let pacientes = [
   {
     id: 1,
@@ -63,9 +65,9 @@ let pacientes = [
     codigoPostal: '5000',
     piso: '2',
     dpto: 'A',
-    provinciaId: 1,
+    provinciaId: '14', // ID de Córdoba (string, según API Georef)
     provincianombre: 'Córdoba',
-    localidadId: 1,
+    localidadId: '14028', // ID de Córdoba Capital (string, según API Georef)
     localidadnombre: 'Córdoba Capital',
     obraSocialId: 1,
     obraSocialNombre: 'OSDE',
@@ -121,32 +123,6 @@ const obrasSociales = [
   { id: 5, nombre: 'GALENO' },
 ]
 
-const provincias = [
-  { id: 1, nombre: 'Córdoba' },
-  { id: 2, nombre: 'Buenos Aires' },
-  { id: 3, nombre: 'Santa Fe' },
-  { id: 4, nombre: 'Mendoza' },
-  { id: 5, nombre: 'Entre Ríos' },
-]
-
-const localidadesPorProvincia = {
-  1: [
-    { id: 1, nombre: 'Córdoba Capital' },
-    { id: 2, nombre: 'La Calera' },
-    { id: 3, nombre: 'Villa María' },
-  ],
-  2: [
-    { id: 4, nombre: 'La Plata' },
-    { id: 5, nombre: 'Mar del Plata' },
-    { id: 6, nombre: 'Bahía Blanca' },
-  ],
-  3: [
-    { id: 7, nombre: 'Rosario' },
-    { id: 8, nombre: 'Santa Fe' },
-    { id: 9, nombre: 'Paraná' },
-  ],
-}
-
 let nextPacienteId = 2
 
 // 🔷 BASE DE DATOS EN MEMORIA - TURNOS
@@ -159,9 +135,10 @@ let turnos = [
     pacienteId: 1,
     paciente: 'Juan Pérez',
     profesionalId: 1,
-    profesional: 'Dr/a. García',
     especialidadId: 1,
     especialidad: 'Cardiología',
+    consultorioId: 1,
+    consultorio: '101',
     estado: 'confirmado',
     motivoConsulta: 'Consulta rutinaria',
     fechaCreacion: new Date().toISOString(),
@@ -187,6 +164,7 @@ let usuarios = [
 let nextUsuarioId = 2
 
 // 🔷 RUTAS API CONSULTORIOS
+// ... (Rutas de consultorios sin cambios)
 
 // GET: Obtener todos los consultorios
 app.get('/api/consultorios', (req, res) => {
@@ -353,8 +331,8 @@ app.get('/api/pacientes/:id', (req, res) => {
   })
 })
 
-// POST: Crear nuevo paciente
-app.post('/api/pacientes', (req, res) => {
+// POST: Crear nuevo paciente (CORREGIDO: Usa llamadas a la API de Gobierno)
+app.post('/api/pacientes', async (req, res) => {
   const {
     nombre,
     apellido,
@@ -390,9 +368,34 @@ app.post('/api/pacientes', (req, res) => {
     })
   }
 
-  const provincia = provincias.find((p) => p.id === Number(provinciaId))
-  const localidad = localidadesPorProvincia[provinciaId]?.find((l) => l.id === Number(localidadId))
-  const obraSocial = obrasSociales.find((o) => o.id === Number(obraSocialId))
+  let provinciaNombre = ''
+  let localidadNombre = ''
+  let obraSocial = obrasSociales.find((o) => o.id === Number(obraSocialId))
+
+  if (!obraSocial) {
+    return res.status(400).json({
+      success: false,
+      message: 'Obra Social no válida',
+    })
+  }
+
+  try {
+    // 1. OBTENER NOMBRE DE LA PROVINCIA por ID (provinciaId viene como string del frontend)
+    const resProvincia = await axios.get(`${API_GOBIERNO_BASE_URL}/provincias?id=${provinciaId}&campos=nombre&max=1`)
+    provinciaNombre = resProvincia.data.provincias[0]?.nombre || 'Desconocida'
+
+    // 2. OBTENER NOMBRE DE LA LOCALIDAD/MUNICIPIO por ID
+    const resLocalidad = await axios.get(`${API_GOBIERNO_BASE_URL}/municipios?id=${localidadId}&campos=nombre&max=1`)
+    localidadNombre = resLocalidad.data.municipios[0]?.nombre || 'Desconocida'
+  } catch (error) {
+    console.error('Error al obtener nombres de geolocalización:', error.message)
+    // Devolver un error específico para evitar el 500
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Error al validar provincia/localidad. Asegúrese de usar IDs válidos de la API del Gobierno.' 
+    })
+  }
+
 
   const nuevoPaciente = {
     id: nextPacienteId++,
@@ -407,10 +410,11 @@ app.post('/api/pacientes', (req, res) => {
     codigoPostal: codigoPostal || null,
     piso: piso || null,
     dpto: dpto || null,
-    provinciaId: Number(provinciaId),
-    provinciaNombre: provincia?.nombre || '',
-    localidadId: Number(localidadId),
-    localidadNombre: localidad?.nombre || '',
+    // Usamos los strings ID que vienen del frontend
+    provinciaId: provinciaId,
+    provinciaNombre: provinciaNombre,
+    localidadId: localidadId,
+    localidadNombre: localidadNombre,
     obraSocialId: Number(obraSocialId),
     obraSocialNombre: obraSocial?.nombre || '',
     observaciones: observaciones || null,
@@ -426,8 +430,8 @@ app.post('/api/pacientes', (req, res) => {
   })
 })
 
-// PUT: Actualizar paciente
-app.put('/api/pacientes/:id', (req, res) => {
+// PUT: Actualizar paciente (CORREGIDO: Usa llamadas a la API de Gobierno)
+app.put('/api/pacientes/:id', async (req, res) => {
   const { id } = req.params
   const {
     nombre,
@@ -455,9 +459,43 @@ app.put('/api/pacientes/:id', (req, res) => {
     })
   }
 
-  const provincia = provincias.find((p) => p.id === Number(provinciaId))
-  const localidad = localidadesPorProvincia[provinciaId]?.find((l) => l.id === Number(localidadId))
-  const obraSocial = obrasSociales.find((o) => o.id === Number(obraSocialId))
+  let provinciaNombre = null
+  let localidadNombre = null
+  let obraSocial = null
+
+  try {
+    // 1. Si el cliente envió un nuevo provinciaId, obtenemos el nombre
+    if (provinciaId && provinciaId !== paciente.provinciaId) {
+      const resProvincia = await axios.get(`${API_GOBIERNO_BASE_URL}/provincias?id=${provinciaId}&campos=nombre&max=1`)
+      provinciaNombre = resProvincia.data.provincias[0]?.nombre
+      if (!provinciaNombre) {
+        return res.status(400).json({ success: false, message: 'ID de Provincia no válido' })
+      }
+    }
+
+    // 2. Si el cliente envió un nuevo localidadId, obtenemos el nombre
+    if (localidadId && localidadId !== paciente.localidadId) {
+      const resLocalidad = await axios.get(`${API_GOBIERNO_BASE_URL}/municipios?id=${localidadId}&campos=nombre&max=1`)
+      localidadNombre = resLocalidad.data.municipios[0]?.nombre
+      if (!localidadNombre) {
+        return res.status(400).json({ success: false, message: 'ID de Localidad no válido' })
+      }
+    }
+  } catch (error) {
+    console.error('Error al obtener nombres de geolocalización en PUT:', error.message)
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Error al validar geolocalización. Asegúrese de usar IDs válidos.' 
+    })
+  }
+
+  // 3. Buscar Obra Social (siempre en memoria)
+  if (obraSocialId) {
+    obraSocial = obrasSociales.find((o) => o.id === Number(obraSocialId))
+    if (!obraSocial) {
+      return res.status(400).json({ success: false, message: 'Obra Social no válida' })
+    }
+  }
 
   // Actualizar campos
   if (nombre) paciente.nombre = nombre
@@ -470,18 +508,22 @@ app.put('/api/pacientes/:id', (req, res) => {
   if (codigoPostal !== undefined) paciente.codigoPostal = codigoPostal
   if (piso !== undefined) paciente.piso = piso
   if (dpto !== undefined) paciente.dpto = dpto
-  if (provinciaId) {
-    paciente.provinciaId = Number(provinciaId)
-    paciente.provinciaNombre = provincia?.nombre || ''
+
+  // Actualizar Georeferencia si se enviaron IDs nuevos y se obtuvieron los nombres
+  if (provinciaId && provinciaNombre) {
+    paciente.provinciaId = provinciaId
+    paciente.provinciaNombre = provinciaNombre
   }
-  if (localidadId) {
-    paciente.localidadId = Number(localidadId)
-    paciente.localidadNombre = localidad?.nombre || ''
+  if (localidadId && localidadNombre) {
+    paciente.localidadId = localidadId
+    paciente.localidadNombre = localidadNombre
   }
-  if (obraSocialId) {
+  
+  if (obraSocialId && obraSocial) {
     paciente.obraSocialId = Number(obraSocialId)
-    paciente.obraSocialNombre = obraSocial?.nombre || ''
+    paciente.obraSocialNombre = obraSocial.nombre
   }
+  
   if (observaciones !== undefined) paciente.observaciones = observaciones
 
   paciente.fechaModificacion = new Date().toISOString()
@@ -516,6 +558,7 @@ app.delete('/api/pacientes/:id', (req, res) => {
 })
 
 // 🔷 RUTAS API PROFESIONALES
+// ... (Rutas de profesionales sin cambios)
 // GET: Obtener todos los profesionales
 app.get('/api/profesionales', (req, res) => {
   res.json({
@@ -771,26 +814,67 @@ app.get('/api/referencia/obras-sociales', (req, res) => {
   })
 })
 
-// GET: Obtener provincias
-app.get('/api/referencia/provincias', (req, res) => {
-  res.json({
-    success: true,
-    data: provincias,
-  })
+// 🔄 GET: Obtener provincias (desde API del Gobierno)
+app.get('/api/referencia/provincias', async (req, res) => {
+  try {
+    // La API del gobierno devuelve 'provincias'.
+    const response = await axios.get(`${API_GOBIERNO_BASE_URL}/provincias?campos=id,nombre&max=150`)
+
+    // Mapear la respuesta para que coincida con tu formato esperado (id, nombre)
+    const provinciasOficiales = response.data.provincias.map(p => ({
+      id: p.id, // ID es un STRING (ej: '14')
+      nombre: p.nombre,
+    }))
+
+    res.json({
+      success: true,
+      data: provinciasOficiales,
+    })
+  } catch (error) {
+    console.error('Error al obtener provincias de la API del Gobierno:', error.message)
+    // Fallback o mensaje de error al cliente
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener provincias. Inténtalo de nuevo más tarde.',
+    })
+  }
 })
 
 // GET: Obtener localidades por provincia
-app.get('/api/referencia/localidades/:provinciaId', (req, res) => {
+// 🔄 GET: Obtener localidades/municipios por provincia (desde API del Gobierno)
+// Nota: Usamos "departamentos" o "municipios" según la API externa. Aquí usamos "municipios".
+app.get('/api/referencia/localidades/:provinciaId', async (req, res) => {
   const { provinciaId } = req.params
-  const localidades = localidadesPorProvincia[provinciaId] || []
 
-  res.json({
-    success: true,
-    data: localidades,
-  })
+  if (!provinciaId) {
+    return res.status(400).json({ success: false, message: 'ID de provincia requerido' })
+  }
+
+  try {
+    // Obtenemos municipios/localidades para el ID de provincia
+    const response = await axios.get(`${API_GOBIERNO_BASE_URL}/municipios?provincia=${provinciaId}&campos=id,nombre&max=500&orden=nombre`)
+
+    // Mapear la respuesta para que coincida con tu formato esperado (id, nombre)
+    const localidadesOficiales = response.data.municipios.map(m => ({
+      id: m.id, // ID es un STRING (ej: '14028')
+      nombre: m.nombre,
+    }))
+
+    res.json({
+      success: true,
+      data: localidadesOficiales,
+    })
+  } catch (error) {
+    console.error(`Error al obtener localidades para ${provinciaId} de la API del Gobierno:`, error.message)
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener localidades. Inténtalo de nuevo más tarde.',
+    })
+  }
 })
 
 // 🔷 RUTAS API TURNOS
+// ... (Rutas de turnos sin cambios)
 // GET: Obtener todos los turnos
 app.get('/api/turnos', (req, res) => {
   res.json({
@@ -848,11 +932,12 @@ app.post('/api/turnos', (req, res) => {
     pacienteId,
     profesionalId,
     especialidadId,
+    consultorioId,
     motivoConsulta,
   } = req.body
 
   // Validación de campos requeridos
-  if (!fecha || !horaInicio || !horaFin || !pacienteId || !profesionalId || !especialidadId) {
+  if (!fecha || !horaInicio || !horaFin || !pacienteId || !profesionalId || !especialidadId || !consultorioId) {
     return res.status(400).json({
       success: false,
       message: 'Faltan campos requeridos',
@@ -875,8 +960,9 @@ app.post('/api/turnos', (req, res) => {
   const paciente = pacientes.find((p) => p.id === Number(pacienteId))
   const profesional = profesionales.find((p) => p.id === Number(profesionalId))
   const especialidad = especialidades.find((e) => e.id === Number(especialidadId))
+  const consultorio = consultorios.find((c) => c.id === Number(consultorioId))
 
-  if (!paciente || !profesional || !especialidad) {
+  if (!paciente || !profesional || !especialidad || !consultorio) {
     return res.status(400).json({
       success: false,
       message: 'Datos relacionados no válidos',
@@ -894,6 +980,8 @@ app.post('/api/turnos', (req, res) => {
     profesional: `Dr/a. ${profesional.apellido}`,
     especialidadId: Number(especialidadId),
     especialidad: especialidad.nombre,
+    consultorioId: Number(consultorioId),
+    consultorio: consultorio.numero,
     estado: 'confirmado',
     motivoConsulta: motivoConsulta || null,
     fechaCreacion: new Date().toISOString(),
@@ -911,7 +999,7 @@ app.post('/api/turnos', (req, res) => {
 // PUT: Actualizar turno
 app.put('/api/turnos/:id', (req, res) => {
   const { id } = req.params
-  const { fecha, horaInicio, horaFin, pacienteId, profesionalId, especialidadId, motivoConsulta } =
+  const { fecha, horaInicio, horaFin, pacienteId, profesionalId, especialidadId, consultorioId, motivoConsulta } =
     req.body
 
   const turno = turnos.find((t) => t.id === Number(id))
@@ -945,6 +1033,7 @@ app.put('/api/turnos/:id', (req, res) => {
   let paciente = pacientes.find((p) => p.id === turno.pacienteId)
   let profesional = profesionales.find((p) => p.id === turno.profesionalId)
   let especialidad = especialidades.find((e) => e.id === turno.especialidadId)
+  let consultorio = consultorios.find((c) => c.id === turno.consultorioId)
 
   if (pacienteId) {
     paciente = pacientes.find((p) => p.id === Number(pacienteId))
@@ -967,6 +1056,13 @@ app.put('/api/turnos/:id', (req, res) => {
     }
   }
 
+  if (consultorioId) {
+    consultorio = consultorios.find((c) => c.id === Number(consultorioId))
+    if (!consultorio) {
+      return res.status(400).json({ success: false, message: 'Consultorio no válido' })
+    }
+  }
+
   // Actualizar campos
   if (fecha) turno.fecha = fecha
   if (horaInicio) turno.horaInicio = horaInicio
@@ -982,6 +1078,10 @@ app.put('/api/turnos/:id', (req, res) => {
   if (especialidadId) {
     turno.especialidadId = Number(especialidadId)
     turno.especialidad = especialidad.nombre
+  }
+  if (consultorioId) {
+    turno.consultorioId = Number(consultorioId)
+    turno.consultorio = consultorio.numero
   }
   if (motivoConsulta !== undefined) turno.motivoConsulta = motivoConsulta
 
@@ -1041,7 +1141,7 @@ app.delete('/api/turnos/:id', (req, res) => {
 })
 
 // 🔷 RUTAS API AUTENTICACIÓN
-
+// ... (Rutas de autenticación sin cambios)
 // POST: Registro de usuarios
 app.post('/api/auth/registro', (req, res) => {
   const { nombre, apellido, email, password, rol } = req.body
