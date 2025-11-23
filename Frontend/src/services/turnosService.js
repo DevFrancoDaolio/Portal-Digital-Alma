@@ -30,8 +30,6 @@ export const obtenerProfesionales = () => api.get('/profesionales')
 
 export const obtenerEspecialidades = () => api.get('/especialidades')
 
-export const obtenerConsultorios = () => api.get('/consultorios')
-
 export const obtenerPacientes = () => api.get('/pacientes')
 
 export default api

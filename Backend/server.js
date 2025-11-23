@@ -162,8 +162,6 @@ let turnos = [
     profesional: 'Dr/a. García',
     especialidadId: 1,
     especialidad: 'Cardiología',
-    consultorioId: 1,
-    consultorio: '101',
     estado: 'confirmado',
     motivoConsulta: 'Consulta rutinaria',
     fechaCreacion: new Date().toISOString(),
@@ -850,12 +848,11 @@ app.post('/api/turnos', (req, res) => {
     pacienteId,
     profesionalId,
     especialidadId,
-    consultorioId,
     motivoConsulta,
   } = req.body
 
   // Validación de campos requeridos
-  if (!fecha || !horaInicio || !horaFin || !pacienteId || !profesionalId || !especialidadId || !consultorioId) {
+  if (!fecha || !horaInicio || !horaFin || !pacienteId || !profesionalId || !especialidadId) {
     return res.status(400).json({
       success: false,
       message: 'Faltan campos requeridos',
@@ -878,9 +875,8 @@ app.post('/api/turnos', (req, res) => {
   const paciente = pacientes.find((p) => p.id === Number(pacienteId))
   const profesional = profesionales.find((p) => p.id === Number(profesionalId))
   const especialidad = especialidades.find((e) => e.id === Number(especialidadId))
-  const consultorio = consultorios.find((c) => c.id === Number(consultorioId))
 
-  if (!paciente || !profesional || !especialidad || !consultorio) {
+  if (!paciente || !profesional || !especialidad) {
     return res.status(400).json({
       success: false,
       message: 'Datos relacionados no válidos',
@@ -898,8 +894,6 @@ app.post('/api/turnos', (req, res) => {
     profesional: `Dr/a. ${profesional.apellido}`,
     especialidadId: Number(especialidadId),
     especialidad: especialidad.nombre,
-    consultorioId: Number(consultorioId),
-    consultorio: consultorio.numero,
     estado: 'confirmado',
     motivoConsulta: motivoConsulta || null,
     fechaCreacion: new Date().toISOString(),
@@ -917,7 +911,7 @@ app.post('/api/turnos', (req, res) => {
 // PUT: Actualizar turno
 app.put('/api/turnos/:id', (req, res) => {
   const { id } = req.params
-  const { fecha, horaInicio, horaFin, pacienteId, profesionalId, especialidadId, consultorioId, motivoConsulta } =
+  const { fecha, horaInicio, horaFin, pacienteId, profesionalId, especialidadId, motivoConsulta } =
     req.body
 
   const turno = turnos.find((t) => t.id === Number(id))
@@ -951,7 +945,6 @@ app.put('/api/turnos/:id', (req, res) => {
   let paciente = pacientes.find((p) => p.id === turno.pacienteId)
   let profesional = profesionales.find((p) => p.id === turno.profesionalId)
   let especialidad = especialidades.find((e) => e.id === turno.especialidadId)
-  let consultorio = consultorios.find((c) => c.id === turno.consultorioId)
 
   if (pacienteId) {
     paciente = pacientes.find((p) => p.id === Number(pacienteId))
@@ -974,13 +967,6 @@ app.put('/api/turnos/:id', (req, res) => {
     }
   }
 
-  if (consultorioId) {
-    consultorio = consultorios.find((c) => c.id === Number(consultorioId))
-    if (!consultorio) {
-      return res.status(400).json({ success: false, message: 'Consultorio no válido' })
-    }
-  }
-
   // Actualizar campos
   if (fecha) turno.fecha = fecha
   if (horaInicio) turno.horaInicio = horaInicio
@@ -996,10 +982,6 @@ app.put('/api/turnos/:id', (req, res) => {
   if (especialidadId) {
     turno.especialidadId = Number(especialidadId)
     turno.especialidad = especialidad.nombre
-  }
-  if (consultorioId) {
-    turno.consultorioId = Number(consultorioId)
-    turno.consultorio = consultorio.numero
   }
   if (motivoConsulta !== undefined) turno.motivoConsulta = motivoConsulta
 

@@ -6,39 +6,37 @@ import "../styles/TurnosReg.css"
 import NavBar from "../componentes/NavBar"
 import Fondo from "../componentes/Fondo"
 import * as turnosService from "../services/turnosService"
+import DatePicker from "react-datepicker"
+import "react-datepicker/dist/react-datepicker.css"
 
-const HORARIOS_DISPONIBLES = [
-  "08:00",
-  "08:30",
-  "09:00",
-  "09:30",
-  "10:00",
-  "10:30",
-  "11:00",
-  "11:30",
-  "12:00",
-  "12:30",
-  "13:00",
-  "13:30",
-  "14:00",
-  "14:30",
-  "15:00",
-  "15:30",
-  "16:00",
-  "16:30",
-  "17:00",
-  "17:30",
-  "18:00",
-  "18:30",
-  "19:00",
-  "19:30",
-  "20:00",
-]
+//configuración de horarios calendario
+const HORARIO_INICIO = "08:00"
+const HORARIO_FIN = "20:00"
+const INTERVALO_MIN = 30
+
+function generarHorariosDisponibles(horaInicio = HORARIO_INICIO, horaFin = HORARIO_FIN, intervaloMin = INTERVALO_MIN) {
+  const horarios = []
+  let [hora, minuto] = horaInicio.split(":").map(Number)
+  const [horaFinNum, minutoFinNum] = horaFin.split(":").map(Number)
+
+  while (hora < horaFinNum || (hora === horaFinNum && minuto < minutoFinNum)) {
+    horarios.push(`${hora.toString().padStart(2, "0")}:${minuto.toString().padStart(2, "0")}`)
+    minuto += intervaloMin
+    if (minuto >= 60) {
+      minuto = minuto % 60
+      hora++
+    }
+  }
+
+  return horarios
+}
+
 
 export default function RegistrarTurno() {
   const navigate = useNavigate()
   const [semanaActual, setSemanaActual] = useState(new Date())
   const [mesCalendario, setMesCalendario] = useState(new Date())
+
   const [turnosProgramados, setTurnosProgramados] = useState([])
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [turnoSeleccionado, setTurnoSeleccionado] = useState(null)
@@ -50,7 +48,6 @@ export default function RegistrarTurno() {
   const [pacientes, setPacientes] = useState([])
   const [profesionales, setProfesionales] = useState([])
   const [especialidades, setEspecialidades] = useState([])
-  const [consultorios, setConsultorios] = useState([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(null)
 
@@ -58,7 +55,6 @@ export default function RegistrarTurno() {
     pacienteId: "",
     profesionalId: "",
     especialidadId: "",
-    consultorioId: "",
     fecha: "",
     horaInicio: "",
     horaFin: "",
@@ -67,27 +63,27 @@ export default function RegistrarTurno() {
 
   const [errors, setErrors] = useState({})
   const [profesionalesFiltrados, setProfesionalesFiltrados] = useState([])
-  const [consultoriosFiltrados, setConsultoriosFiltrados] = useState([])
   const [pacienteSeleccionado, setPacienteSeleccionado] = useState(null)
   const [profesionalSeleccionado, setProfesionalSeleccionado] = useState(null)
+
+  const HORARIOS_DISPONIBLES = generarHorariosDisponibles()
+
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setCargando(true)
-        const [turnosRes, pacientesRes, profesionalesRes, especialidadesRes, consultoriosRes] = await Promise.all([
+        const [turnosRes, pacientesRes, profesionalesRes, especialidadesRes] = await Promise.all([
           turnosService.obtenerTurnos(),
           turnosService.obtenerPacientes(),
           turnosService.obtenerProfesionales(),
           turnosService.obtenerEspecialidades(),
-          turnosService.obtenerConsultorios(),
         ])
 
         setTurnosProgramados(turnosRes.data.data || [])
         setPacientes(pacientesRes.data.data || [])
         setProfesionales(profesionalesRes.data.data || [])
         setEspecialidades(especialidadesRes.data.data || [])
-        setConsultorios(consultoriosRes.data.data || [])
       } catch (err) {
         console.error("Error fetching data:", err)
         setError("Error al cargar los datos")
@@ -107,16 +103,11 @@ export default function RegistrarTurno() {
       setProfesionalesFiltrados(filtrados)
 
       const especialidad = especialidades.find((e) => e.id === Number.parseInt(form.especialidadId))
-      const consultoriosFilt = consultorios.filter(
-        (c) => c.especialidades.includes(especialidad?.nombre) && c.estado === "disponible",
-      )
-      setConsultoriosFiltrados(consultoriosFilt)
     } else {
       setProfesionalesFiltrados([])
-      setConsultoriosFiltrados([])
-      setForm((prevForm) => ({ ...prevForm, profesionalId: "", consultorioId: "", horaInicio: "", horaFin: "" }))
+      setForm((prevForm) => ({ ...prevForm, profesionalId: "", horaInicio: "", horaFin: "" }))
     }
-  }, [form.especialidadId, profesionales, especialidades, consultorios])
+  }, [form.especialidadId, profesionales, especialidades])
 
   const obtenerDiasSemana = (fecha) => {
     const dia = fecha.getDay()
@@ -124,7 +115,7 @@ export default function RegistrarTurno() {
     lunes.setDate(fecha.getDate() - dia + (dia === 0 ? -6 : 1))
 
     const dias = []
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 6; i++) {
       const nuevaFecha = new Date(lunes)
       nuevaFecha.setDate(lunes.getDate() + i)
       dias.push(nuevaFecha)
@@ -226,10 +217,37 @@ export default function RegistrarTurno() {
     if (!profesionalId) return false
 
     const fechaStr = formatearFecha(fecha)
-    return turnosProgramados.some(
-      (t) => t.fecha === fechaStr && t.profesionalId === profesionalId && t.horaInicio === hora,
-    )
+    const indexHora = HORARIOS_DISPONIBLES.indexOf(hora)
+
+    return turnosProgramados.some((t) => {
+      if (t.fecha !== fechaStr || t.profesionalId !== profesionalId) return false
+
+      const indexInicio = HORARIOS_DISPONIBLES.indexOf(t.horaInicio)
+      const indexFin = HORARIOS_DISPONIBLES.indexOf(t.horaFin)
+
+      return indexHora >= indexInicio && indexHora < indexFin
+    })
   }
+
+
+  const rangoDisponible = (fecha, horaInicio, horaFin, profesionalId) => {
+  if (!profesionalId || !fecha || !horaInicio || !horaFin) return false
+
+  const fechaStr = formatearFecha(fecha)
+  const indexInicio = HORARIOS_DISPONIBLES.indexOf(horaInicio)
+  const indexFin = HORARIOS_DISPONIBLES.indexOf(horaFin)
+
+  return !turnosProgramados.some((t) => {
+    if (t.fecha !== fechaStr || t.profesionalId !== profesionalId) return false
+
+    const tInicio = HORARIOS_DISPONIBLES.indexOf(t.horaInicio)
+    const tFin = HORARIOS_DISPONIBLES.indexOf(t.horaFin)
+
+    // Verifica si hay solapamiento
+    return indexInicio < tFin && indexFin > tInicio
+  })
+}
+
 
   const validarFormulario = () => {
     const nuevosErrores = {}
@@ -237,7 +255,6 @@ export default function RegistrarTurno() {
     if (!form.pacienteId) nuevosErrores.pacienteId = "Debe seleccionar un paciente"
     if (!form.especialidadId) nuevosErrores.especialidadId = "Debe seleccionar una especialidad"
     if (!form.profesionalId) nuevosErrores.profesionalId = "Debe seleccionar un profesional"
-    if (!form.consultorioId) nuevosErrores.consultorioId = "Debe seleccionar un consultorio"
     if (!form.fecha) nuevosErrores.fecha = "Debe seleccionar una fecha"
     if (!form.horaInicio) nuevosErrores.horaInicio = "Debe seleccionar un horario de inicio"
     if (!form.horaFin) nuevosErrores.horaFin = "Debe seleccionar un horario de fin"
@@ -263,7 +280,6 @@ export default function RegistrarTurno() {
           pacienteId: Number.parseInt(form.pacienteId),
           profesionalId: Number.parseInt(form.profesionalId),
           especialidadId: Number.parseInt(form.especialidadId),
-          consultorioId: Number.parseInt(form.consultorioId),
           motivoConsulta: form.motivoConsulta,
         })
         alert("Turno actualizado exitosamente")
@@ -275,7 +291,6 @@ export default function RegistrarTurno() {
           pacienteId: Number.parseInt(form.pacienteId),
           profesionalId: Number.parseInt(form.profesionalId),
           especialidadId: Number.parseInt(form.especialidadId),
-          consultorioId: Number.parseInt(form.consultorioId),
           motivoConsulta: form.motivoConsulta,
         })
         alert("Turno registrado exitosamente")
@@ -289,7 +304,6 @@ export default function RegistrarTurno() {
         pacienteId: "",
         profesionalId: "",
         especialidadId: "",
-        consultorioId: "",
         fecha: "",
         horaInicio: "",
         horaFin: "",
@@ -315,7 +329,6 @@ export default function RegistrarTurno() {
       pacienteId: paciente?.id.toString() || "",
       profesionalId: turnoSeleccionado.profesionalId.toString(),
       especialidadId: especialidad?.id.toString() || "",
-      consultorioId: turnoSeleccionado.consultorioId.toString() || "",
       fecha: turnoSeleccionado.fecha,
       horaInicio: turnoSeleccionado.horaInicio,
       horaFin: turnoSeleccionado.horaFin,
@@ -356,29 +369,29 @@ export default function RegistrarTurno() {
   }
 
 
-  const ALTURA_POR_INTERVALO = 25
+  // Cada celda de la grilla (turno-celda) mide 50px y representa 30 minutos
+  const ALTURA_CELDA = 50
 
   const calcularAlturaTurno = (horaInicio, horaFin) => {
     const indexInicio = HORARIOS_DISPONIBLES.indexOf(horaInicio)
     const indexFin = HORARIOS_DISPONIBLES.indexOf(horaFin)
 
-    if (indexInicio === -1 || indexFin === -1) return 50
+    if (indexInicio === -1 || indexFin === -1) return ALTURA_CELDA
 
-    const intervalos = indexFin - indexInicio
-    return intervalos * ALTURA_POR_INTERVALO
+    // cantidad de intervalos de 30 min * alto de cada intervalo
+    return (indexFin - indexInicio) * ALTURA_CELDA
   }
 
-  const calcularTopOffset = (horaInicio) => {
-    const [hora, minutos] = horaInicio.split(":").map(Number)
-    const horaBase = `${hora.toString().padStart(2, "0")}:00`
+  const calcularTopTurno = (horaInicio) => {
+    const indexInicio = HORARIOS_DISPONIBLES.indexOf(horaInicio)
 
-    const horasCompletas = HORARIOS_DISPONIBLES.filter((h) => h.endsWith(":00"))
-    const indexHoraBase = horasCompletas.indexOf(horaBase)
+    if (indexInicio === -1) return 0
 
-    const offset = minutos === 30 ? 25 : 0
-
-    return { row: indexHoraBase, offset }
+    // desplazamiento desde la primera celda (08:00)
+    return indexInicio * ALTURA_CELDA
   }
+
+
 
   const nombresMeses = [
     "Enero",
@@ -394,7 +407,7 @@ export default function RegistrarTurno() {
     "Noviembre",
     "Diciembre",
   ]
-  const diasSemana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"]
+  const diasSemana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]
   const diasSemanaCortos = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
 
   const diasSemanaActual = obtenerDiasSemana(semanaActual)
@@ -469,8 +482,8 @@ export default function RegistrarTurno() {
                   ← Semana Anterior
                 </button>
                 <div className="semana-actual-texto">
-                  {diasSemanaActual[0].getDate()}/{diasSemanaActual[0].getMonth() + 1} - {diasSemanaActual[4].getDate()}
-                  /{diasSemanaActual[4].getMonth() + 1}/{diasSemanaActual[4].getFullYear()}
+                  {diasSemanaActual[0].getDate()}/{diasSemanaActual[0].getMonth() + 1} - 
+                  {diasSemanaActual[5].getDate()}/{diasSemanaActual[5].getMonth() + 1}/{diasSemanaActual[5].getFullYear()}
                 </div>
                 <button className="btn-nav-semana" onClick={() => cambiarSemana(1)}>
                   Semana Siguiente →
@@ -491,72 +504,77 @@ export default function RegistrarTurno() {
 
               <div className="semana-grid">
                 <div className="horarios-columna-separada">
-                  {HORARIOS_DISPONIBLES.filter((h) => h.endsWith(":00")).map((hora, index) => (
+                  {HORARIOS_DISPONIBLES.map((hora, index) => (
                     <div key={index} className="horario-celda">
                       {hora}
                     </div>
                   ))}
                 </div>
+                  <div className="dias-grid-container">
+                    {diasSemanaActual.map((dia, diaIndex) => (
+                      <div
+                        key={diaIndex}
+                        className="dia-columna"
+                        style={{ position: "relative" }} // IMPORTANTE
+                      >
 
-                <div className="dias-grid-container">
-                  {diasSemanaActual.map((dia, diaIndex) => (
-                    <div key={diaIndex} className="dia-columna">
-                      {HORARIOS_DISPONIBLES.filter((h) => h.endsWith(":00")).map((hora, horaIndex) => {
-                        const turnosDelDia = obtenerTurnosDelDia(dia)
-                        const horaConMedia = [hora, hora.replace(":00", ":30")]
-                        const turnosEnEstaHora = turnosDelDia.filter((t) => horaConMedia.includes(t.horaInicio))
-                        const esPasado = dia < new Date() && !esHoy(dia)
+                        {/* Render de celdas horarias */}
+                        {HORARIOS_DISPONIBLES.map((hora, horaIndex) => {
+                          const esPasado = dia < new Date() && !esHoy(dia)
 
-                        return (
-                          <div
-                            key={horaIndex}
-                            className={`turno-celda ${esPasado ? "pasado" : ""}`}
-                            onClick={() => !esPasado && handleClickCeldaTurno(dia, hora)}
-                          >
-                            {turnosEnEstaHora.map((turno) => {
-                              const { row, offset } = calcularTopOffset(turno.horaInicio)
-                              const altura = calcularAlturaTurno(turno.horaInicio, turno.horaFin)
+                          return (
+                            <div
+                              key={horaIndex}
+                              className={`turno-celda ${esPasado ? "pasado" : ""}`}
+                              onClick={() => !esPasado && handleClickCeldaTurno(dia, hora)}
+                            />
+                          )
+                        })}
 
-                              if (row !== horaIndex) return null
+                        {/* Render de los turnos (UNA sola vez por día) */}
+                        {obtenerTurnosDelDia(dia).map((turno) => {
+                          const top = calcularTopTurno(turno.horaInicio);
+                          const altura = calcularAlturaTurno(turno.horaInicio, turno.horaFin);
 
-                              return (
-                                <div
-                                  key={turno.id}
-                                  className={`turno-bloque ${turno.estado}`}
-                                  style={{
-                                    height: `${altura}px`,
-                                    top: `${offset}px`,
-                                  }}
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleClickTurno(turno)
-                                  }}
-                                >
-                                  <button
-                                    className="btn-cancelar-turno"
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      handleCancelarTurno(turno.id)
-                                    }}
-                                    title="Cancelar turno"
-                                  >
-                                    ✕
-                                  </button>
-                                  <div className="turno-hora-bloque">
-                                    {turno.horaInicio} - {turno.horaFin}
-                                  </div>
-                                  <div className="turno-paciente">{turno.paciente}</div>
-                                  <div className="turno-especialidad">{turno.especialidad}</div>
-                                  <div className="turno-consultorio">Cons. {turno.consultorio}</div>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  ))}
-                </div>
+                          return (
+                            <div
+                              key={turno.id}
+                              className={`turno-bloque ${turno.estado}`}
+                              style={{
+                                position: "absolute",
+                                top: `${top}px`,
+                                height: `${altura}px`,
+                                left: "2px",
+                                right: "2px",
+                                zIndex: 5,
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleClickTurno(turno);
+                              }}
+                            >
+                              <button
+                                className="btn-cancelar-turno"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCancelarTurno(turno.id);
+                                }}
+                              >
+                                ✕
+                              </button>
+
+                              <div className="turno-hora-bloque">
+                                {turno.horaInicio} - {turno.horaFin}
+                              </div>
+                              <div className="turno-paciente">{turno.paciente}</div>
+                              <div className="turno-especialidad">{turno.especialidad}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+
               </div>
             </div>
 
@@ -637,15 +655,22 @@ export default function RegistrarTurno() {
 
               <div className="detalle-seccion">
                 <h4>Información del Turno</h4>
-                <div className="detalle-item">
-                  <strong>Fecha:</strong>{" "}
-                  {new Date(turnoSeleccionado.fecha + "T12:00:00").toLocaleDateString("es-AR", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </div>
+                
+                {(() => {
+                  const [año, mes, dia] = turnoSeleccionado.fecha.split("-").map(Number)
+                  const fechaLocal = new Date(año, mes - 1, dia)
+                  return (
+                    <div className="detalle-item">
+                      <strong>Fecha:</strong>{" "}
+                      {fechaLocal.toLocaleDateString("es-AR", {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </div>
+                  )
+                })()}
                 <div className="detalle-item">
                   <strong>Horario:</strong> {turnoSeleccionado.horaInicio} - {turnoSeleccionado.horaFin}
                 </div>
@@ -654,9 +679,6 @@ export default function RegistrarTurno() {
                 </div>
                 <div className="detalle-item">
                   <strong>Especialidad:</strong> {turnoSeleccionado.especialidad}
-                </div>
-                <div className="detalle-item">
-                  <strong>Consultorio:</strong> {turnoSeleccionado.consultorio}
                 </div>
                 <div className="detalle-item">
                   <strong>Estado:</strong>
@@ -783,49 +805,27 @@ export default function RegistrarTurno() {
                 )}
               </div>
 
-              <div className="mb-3">
-                <label htmlFor="consultorioId" className="form-label fw-bold">
-                  Consultorio *
-                </label>
-                <select
-                  id="consultorioId"
-                  name="consultorioId"
-                  className={`form-control ${errors.consultorioId ? "is-invalid" : ""}`}
-                  value={form.consultorioId}
-                  onChange={handleChange}
-                  disabled={!form.especialidadId}
-                >
-                  <option value="">
-                    {!form.especialidadId
-                      ? "Primero seleccione una especialidad"
-                      : consultoriosFiltrados.length === 0
-                        ? "No hay consultorios disponibles"
-                        : "Seleccione un consultorio"}
-                  </option>
-                  {consultoriosFiltrados.map((consultorio) => (
-                    <option key={consultorio.id} value={consultorio.id}>
-                      {consultorio.nombre} - Piso {consultorio.piso} - {consultorio.ubicacion}
-                    </option>
-                  ))}
-                </select>
-                {errors.consultorioId && <div className="invalid-feedback">{errors.consultorioId}</div>}
-              </div>
-
               <div className="row">
                 <div className="col-md-4 mb-3">
                   <label htmlFor="fecha" className="form-label fw-bold">
                     Fecha *
                   </label>
-                  <input
-                    type="date"
-                    id="fecha"
-                    name="fecha"
-                    className={`form-control ${errors.fecha ? "is-invalid" : ""}`}
-                    value={form.fecha}
-                    onChange={handleChange}
-                    min={new Date().toISOString().split("T")[0]}
-                  />
-                  {errors.fecha && <div className="invalid-feedback">{errors.fecha}</div>}
+                <DatePicker
+                  selected={form.fecha ? new Date(form.fecha) : null}
+                  onChange={(date) => {
+                    if (date.getDay() === 0) {
+                      alert("No se pueden registrar turnos los domingos")
+                      return
+                    }
+                    setForm({ ...form, fecha: date.toISOString().split("T")[0] })
+                  }}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="dd/mm/aaaa"
+                  minDate={new Date()}
+                  filterDate={(date) => date.getDay() !== 0} // bloquea domingos visualmente
+                  className={`form-control ${errors.fecha ? "is-invalid" : ""}`}
+                />
+                {errors.fecha && <div className="invalid-feedback">{errors.fecha}</div>}
                 </div>
 
                 <div className="col-md-4 mb-3">
@@ -837,25 +837,36 @@ export default function RegistrarTurno() {
                     name="horaInicio"
                     className={`form-control ${errors.horaInicio ? "is-invalid" : ""}`}
                     value={form.horaInicio}
-                    onChange={handleChange}
+                    onChange={(e) => {
+                      setForm({ ...form, horaInicio: e.target.value, horaFin: "" });
+                    }}
                   >
                     <option value="">Seleccione hora</option>
-                    {HORARIOS_DISPONIBLES.map((horario, index) => {
-                      const ocupado =
-                        form.fecha &&
-                        form.profesionalId &&
-                        estaHorarioOcupado(
-                          new Date(form.fecha + "T12:00:00"),
-                          horario,
-                          Number.parseInt(form.profesionalId),
-                        )
-                      return (
-                        <option key={index} value={horario} disabled={ocupado}>
-                          {horario} {ocupado ? "(Ocupado)" : ""}
-                        </option>
-                      )
-                    })}
+
+                    {HORARIOS_DISPONIBLES
+                      .filter((h) => {
+                        if (!form.fecha || !form.profesionalId) return false;
+
+                        const fecha = new Date(form.fecha);
+
+                        // La hora de inicio es válida si existe al menos una hora fin válida
+                        const tieneFinValido = HORARIOS_DISPONIBLES.some((hf) =>
+                          hf > h &&
+                          rangoDisponible(
+                            fecha,
+                            h,
+                            hf,
+                            Number(form.profesionalId)
+                          )
+                        );
+
+                        return tieneFinValido;
+                      })
+                      .map((h) => (
+                        <option key={h} value={h}>{h}</option>
+                      ))}
                   </select>
+
                   {errors.horaInicio && <div className="invalid-feedback">{errors.horaInicio}</div>}
                 </div>
 
@@ -872,14 +883,22 @@ export default function RegistrarTurno() {
                     disabled={!form.horaInicio}
                   >
                     <option value="">Seleccione hora fin</option>
-                    {HORARIOS_DISPONIBLES.filter((h) => h >= form.horaInicio)
-                      .slice(1)
-                      .map((horario, index) => (
-                        <option key={index} value={horario}>
-                          {horario}
-                        </option>
+
+                    {HORARIOS_DISPONIBLES
+                      .filter((hf) => hf > form.horaInicio)
+                      .filter((hf) =>
+                        rangoDisponible(
+                          new Date(form.fecha),
+                          form.horaInicio,
+                          hf,
+                          Number(form.profesionalId)
+                        )
+                      )
+                      .map((h) => (
+                        <option key={h} value={h}>{h}</option>
                       ))}
                   </select>
+
                   {errors.horaFin && <div className="invalid-feedback">{errors.horaFin}</div>}
                 </div>
               </div>
