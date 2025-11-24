@@ -1,0 +1,1033 @@
+/* ==================== CONTENEDOR PRINCIPAL ==================== */
+.turnos-container {
+  padding: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* ==================== HEADER ==================== */
+.turnos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.turnos-header h2 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px; /* Bringing search filters closer together */
+  align-items: center;
+}
+
+/* Estilos para búsqueda de profesional en header */
+.header-search-profesional {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.entrada-busqueda-header {
+  padding: 10px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 250px;
+  transition: all 0.3s ease;
+}
+
+.entrada-busqueda-header:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.lista-desplegable-header {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #3498db;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1001;
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+  margin-top: -2px;
+}
+
+.btn-limpiar-filtro {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.btn-limpiar-filtro:hover {
+  background: #c0392b;
+  transform: scale(1.1);
+}
+
+.item-lista {
+  padding: 12px 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #ecf0f1;
+  color: #2c3e50;
+  font-size: 13px;
+}
+
+.item-lista:hover {
+  background: #f0f8ff;
+  padding-left: 20px;
+}
+
+.item-lista:last-child {
+  border-bottom: none;
+}
+
+.btn-nav {
+  padding: 10px 18px;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-nav:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+}
+
+.btn-nuevo-turno {
+  padding: 12px 24px;
+  background: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+.btn-nuevo-turno:hover {
+  background: #229954;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+/* ==================== LAYOUT CALENDARIO SEMANAL ==================== */
+.calendario-semanal-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 20px;
+  position: relative;
+  margin-bottom: 30px;
+}
+
+.contenedor-principal-calendario {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.sidebar-derecho {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: fit-content;
+}
+
+/* ==================== VISTA SEMANAL ==================== */
+.vista-semanal {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  overflow-x: auto;
+}
+
+.semana-navegacion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+}
+
+.btn-nav-semana {
+  padding: 8px 16px;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 13px;
+  transition: all 0.3s ease;
+}
+
+.btn-nav-semana:hover {
+  background: #2980b9;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(52, 152, 219, 0.3);
+}
+
+.semana-actual-texto {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+/* ==================== HEADER DÍAS ==================== */
+.semana-header {
+  display: grid;
+  width: calc(100% - 17px);
+  grid-template-columns: 70px repeat(6, 1fr);
+  gap: 1px;
+  background: #e0e0e0;
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+}
+
+.time-header {
+  background: #34495e;
+}
+
+.dia-header {
+  background: #34495e;
+  color: white;
+  padding: 12px 8px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.dia-header.hoy {
+  background: #3498db;
+}
+
+.dia-nombre {
+  font-size: 14px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.dia-numero {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+/* ==================== GRID SEMANAL ==================== */
+.semana-grid {
+  display: flex;
+  gap: 0;
+  background: #e0e0e0;
+  border: 1px solid #e0e0e0;
+  border-top: none;
+  max-height: 600px;
+  overflow-y: visible;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.horarios-columna-separada {
+  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  border-right: 2px solid #d0d0d0;
+  flex-shrink: 0;
+  width: 70px;
+}
+
+.dias-grid-container {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  flex: 1;
+  gap: 0;
+}
+
+.horario-celda {
+  height: 50px;
+  min-height: 50px;
+  max-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #7f8c8d;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.dia-columna {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e0e0e0;
+  position: relative;
+  flex: 1;
+}
+
+.dia-columna:last-child {
+  border-right: none;
+}
+
+/* ==================== CELDAS DE TURNOS ==================== */
+.turno-celda {
+  min-height: 50px;
+  max-height: 50px;
+  height: 50px;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  padding: 0;
+  overflow: visible;
+}
+
+.turno-celda:hover {
+  background: #f0f8ff;
+}
+
+.turno-celda.pasado {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+
+/* Contenedor para turnos en paralelo estilo Google Calendar */
+.turnos-contenedor-paralelo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* ==================== BLOQUES DE TURNOS ==================== */
+.turno-bloque {
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  border-left: 4px solid;
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 5;
+  overflow: hidden;
+  pointer-events: auto;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.turno-bloque:hover {
+  transform: scale(1.02);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
+
+.turno-bloque.confirmado {
+  background: #5bc0de;
+  color: white;
+  border-left-color: #057699;
+}
+
+.turno-bloque.pendiente {
+  background: #f0ad4e;
+  color: white;
+  border-left-color: #ec971f;
+}
+
+.turno-hora-bloque {
+  font-weight: 700;
+  font-size: 11px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.turno-paciente {
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.turno-especialidad {
+  font-size: 10px;
+  opacity: 0.9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.btn-cancelar-turno {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: rgba(231, 76, 60, 0.9);
+  color: white;
+  border: none;
+  border-radius: 3px;
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.2s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.turno-bloque:hover .btn-cancelar-turno {
+  opacity: 1;
+}
+
+.btn-cancelar-turno:hover {
+  background: #c0392b;
+  transform: scale(1.1);
+}
+
+/* ==================== PREVIEW DE TURNOS ==================== */
+.turno-preview-bloque {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  background: rgba(100, 200, 100, 0.4);
+  border: 2px dashed #27ae60;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 10px;
+  color: #1e5a31;
+  font-weight: 600;
+  z-index: 15;
+  pointer-events: none;
+  opacity: 0.85;
+  box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+}
+
+.turno-preview-bloque.conflicto {
+  background: rgba(231, 76, 60, 0.5);
+  border: 2px dashed #c0392b;
+  color: #7f0000;
+  box-shadow: 0 2px 8px rgba(231, 76, 60, 0.4);
+}
+
+.turno-preview-bloque.conflicto .preview-texto {
+  font-weight: 700;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.preview-texto {
+  line-height: 1.3;
+}
+
+/* ==================== CALENDARIO MINI ==================== */
+.calendario-mini {
+  background: white;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  height: fit-content;
+  flex-shrink: 0;
+}
+
+.calendario-mini-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.mes-año {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.btn-mini {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #3498db;
+  cursor: pointer;
+  padding: 5px 10px;
+  transition: all 0.2s ease;
+}
+
+.btn-mini:hover {
+  color: #2980b9;
+  transform: scale(1.2);
+}
+
+.calendario-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.dia-mini-header {
+  font-size: 10px;
+  font-weight: 600;
+  color: #7f8c8d;
+  text-align: center;
+  padding: 5px 0;
+  text-transform: uppercase;
+}
+
+.dia-mini {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.dia-mini:hover {
+  background: #e3f2fd;
+  transform: scale(1.1);
+}
+
+.dia-mini.otro-mes {
+  color: #bdc3c7;
+  cursor: default;
+}
+
+.dia-mini.otro-mes:hover {
+  background: white;
+  transform: none;
+}
+
+.dia-mini.hoy {
+  background: #3498db;
+  color: white;
+  font-weight: 700;
+}
+
+.dia-mini.seleccionado {
+  background: rgba(52, 152, 219, 0.3);
+  border: 2px solid #3498db;
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.dia-mini.dia-lleno {
+  background: #ffebee;
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.dia-mini.dia-con-turnos {
+  background: #fff8e1;
+  color: #f39c12;
+  font-weight: 600;
+}
+
+.dia-mini.hoy.dia-lleno,
+.dia-mini.hoy.dia-con-turnos {
+  background: #3498db;
+  color: white;
+}
+
+.leyenda-mini {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #ecf0f1;
+}
+
+.leyenda-item-mini {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.badge-disponibilidad-mini {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+}
+
+/* ==================== FORMULARIO SIDEBAR ==================== */
+.formulario-registro-sidebar {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+}
+
+.formulario-registro-sidebar h3 {
+  color: #2c3e50;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  margin-top: 0;
+  text-align: center;
+  border-bottom: 2px solid #ecf0f1;
+  padding-bottom: 10px;
+}
+
+.formulario-rapido-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.formulario-rapido {
+  width: 100%;
+}
+
+.grupo-entrada {
+  margin-bottom: 0;
+  position: relative;
+}
+
+.grupo-entrada label {
+  display: block;
+  color: #2c3e50;
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.entrada-busqueda,
+.entrada-fecha,
+.entrada-hora {
+  width: 100%;
+  padding: 8px 10px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 13px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.entrada-busqueda:focus,
+.entrada-fecha:focus,
+.entrada-hora:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+}
+
+.lista-desplegable {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #3498db;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 3px 8px rgba(52, 152, 219, 0.15);
+  margin-top: -2px;
+}
+
+.botones-formulario {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-direction: column;
+}
+
+.btn-confirmar {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(39, 174, 96, 0.2);
+}
+
+.btn-confirmar:hover:not(:disabled) {
+  background: linear-gradient(135deg, #229954 0%, #1e8449 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.btn-confirmar:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-cancelar-form {
+  padding: 12px 20px;
+  background: white;
+  color: #2c3e50;
+  border: 2px solid #2c3e50;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-cancelar-form:hover {
+  background: #2c3e50;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(44, 62, 80, 0.2);
+}
+
+/* ==================== MODALES ==================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-contenido {
+  background: white;
+  border-radius: 12px;
+  padding: 0;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* ==================== MODAL DETALLE DE TURNO ==================== */
+.modal-detalle-turno {
+  max-width: 600px;
+}
+
+.turno-detalle-body {
+  padding: 30px;
+}
+
+.detalle-seccion {
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.detalle-seccion:last-of-type {
+  border-bottom: none;
+}
+
+.detalle-seccion h4 {
+  color: #2c3e50;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detalle-item {
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.detalle-item strong {
+  color: #7f8c8d;
+  min-width: 120px;
+  font-weight: 600;
+}
+
+.badge-estado {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-estado.confirmado {
+  background: #36c75a;
+  color: white;
+}
+
+.badge-estado.pendiente {
+  background: #f0ad4e;
+  color: white;
+}
+
+.detalle-acciones {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 20px;
+  border-top: 2px solid #ecf0f1;
+}
+
+/* Estilos unificados para botones de acción en modales */
+.btn-editar-small,
+.btn-eliminar-small {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-editar-small {
+  background: #5bc0de;
+  color: white;
+}
+
+.btn-editar-small:hover {
+  background: #46b8da;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(91, 192, 222, 0.4);
+}
+
+.btn-eliminar-small {
+  background: #e74c3c;
+  color: white;
+}
+
+.btn-eliminar-small:hover {
+  background: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+}
+
+/* ==================== MODAL EDITAR TURNO - ESTILOS ESPECÍFICOS ==================== */
+/* Hacer todos los estilos del modal editar específicos al modal de turnos */
+
+/* Header del modal con gradiente elegante */
+.modal-overlay .modal-contenido .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  border-bottom: 2px solid #ecf0f1;
+  background: linear-gradient(135deg, #5bc0de 0%, #057699 100%);
+
+}
+
+.modal-overlay .modal-contenido .modal-header h3 {
+  margin: 0;
+  color: white;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Removiendo el círculo de fondo del botón cerrar */
+.modal-overlay .modal-contenido .btn-cerrar {
+  background: transparent;
+  color: white;
+  border: none;
+  border-radius: 0;
+  width: 36px;
+  height: 36px;
+  font-size: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.modal-overlay .modal-contenido .btn-cerrar:hover {
+  color: #ecf0f1;
+  transform: scale(1.2);
+}
+
+/* Estilos mejorados del formulario de turno */
+.modal-overlay .modal-contenido .turno-form {
+  padding: 30px;
+}
+
+.modal-overlay .modal-contenido .turno-form .mb-3 {
+  margin-bottom: 20px;
+}
+
+.modal-overlay .modal-contenido .turno-form .form-label {
+  display: block;
+  color: #2c3e50;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.modal-overlay .modal-contenido .turno-form .fw-bold {
+  font-weight: 700;
+}
+
+.modal-overlay .modal-contenido .turno-form .form-control {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  background: white;
+  color: #2c3e50;
+}
+
+.modal-overlay .modal-contenido .turno-form .form-control:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  background: #f8f9ff;
+}
+
+.modal-overlay .modal-contenido .turno-form .form-control:disabled {
+  background: #f5f5f5;
+  color: #95a5a6;
+  cursor: not-allowed;
+}
+
+.modal-overlay .modal-contenido .turno-form .form-control.is-invalid {
+  border-color: #e74c3c;
+}
+
+.modal-overlay .modal-contenido .turno-form .form-control.is-invalid:focus {
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+}
+
+.modal-overlay .modal-contenido .turno-form .invalid-feedback {
+  display: block;
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* Estilos unificados para botones del modal de editar/registrar turno */
+.modal-overlay .modal-contenido .turno-form .btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal-overlay .modal-contenido .turno-form .btn-primary {
+  background: #5bc0de;
+  color: white;
+}
+
+.modal-overlay .modal-contenido .turno-form .btn-primary:hover {
+  background: #46b8da;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(91, 192, 222, 0.4);
+}
+
+/* Estilo general para todos los botones de cancelación en la app */
+.btn-cancelar-accion {
+    background: #e74c3c !important; /* El !important puede ser necesario si Bootstrap está sobreescribiendo */
+    color: white !important;
+    border-color: #e74c3c !important; 
+}
+
+/* Modifica el selector original para que solo el botón "Registrar Turno" sea primario */
+
+/* Info box para información del paciente con diseño mejorado */
+.modal-overlay .modal-contenido .turno-form .info-box {
+  background: #e8f5e9;
+  border-left: 4px solid #27ae60;
+  padding: 12px 15px;
+  border-radius: 6px;
+}

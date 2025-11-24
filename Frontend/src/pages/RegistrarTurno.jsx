@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import "../styles/TurnosReg.css"
+import "../styles/Turnos.css"
 import NavBar from "../componentes/NavBar"
 import Fondo from "../componentes/Fondo"
 import * as turnosService from "../services/turnosService"
@@ -31,7 +31,6 @@ function generarHorariosDisponibles(horaInicio = HORARIO_INICIO, horaFin = HORAR
   return horarios
 }
 
-
 export default function RegistrarTurno() {
   const navigate = useNavigate()
   const [semanaActual, setSemanaActual] = useState(new Date())
@@ -51,6 +50,23 @@ export default function RegistrarTurno() {
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(null)
 
+  const [mostrarFormularioRapido, setMostrarFormularioRapido] = useState(true)
+  const [turnoPreview, setTurnoPreview] = useState(null)
+  const [especiaFiltradasRapido, setEspeciaFiltradasRapido] = useState([])
+  const [profFiltradasRapido, setProfsFiltradasRapido] = useState([])
+  const [pacientesFiltradasRapido, setPacientesFiltradasRapido] = useState([])
+
+  // Variables de estado para las búsquedas y filtros rápidos
+  const [busquedaPaciente, setBusquedaPaciente] = useState("")
+  const [busquedaEspecialidad, setBusquedaEspecialidad] = useState("")
+  const [busquedaProfesional, setBusquedaProfesional] = useState("")
+  const [filtroEspecialidad, setFiltroEspecialidad] = useState("")
+  const [filtroProfesional, setFiltroProfesional] = useState("")
+  const [filtroProfesionalHeader, setFiltroProfesionalHeader] = useState("")
+  const [busquedaPacienteHeader, setBusquedaPacienteHeader] = useState("")
+  const [filtroPacienteHeader, setFiltroPacienteHeader] = useState("")
+  const [pacientesFiltradasHeader, setPacientesFiltradasHeader] = useState([])
+
   const [form, setForm] = useState({
     pacienteId: "",
     profesionalId: "",
@@ -67,7 +83,6 @@ export default function RegistrarTurno() {
   const [profesionalSeleccionado, setProfesionalSeleccionado] = useState(null)
 
   const HORARIOS_DISPONIBLES = generarHorariosDisponibles()
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -94,6 +109,49 @@ export default function RegistrarTurno() {
 
     fetchData()
   }, [])
+
+  useEffect(() => {
+    // Filter especialidades by search
+    const filtradasEsp = especialidades.filter((esp) =>
+      esp.nombre?.toLowerCase().includes(busquedaEspecialidad.toLowerCase()),
+    )
+    setEspeciaFiltradasRapido(filtradasEsp)
+
+    // Filter professionals by especialidad and search
+    if (filtroEspecialidad) {
+      const profsFiltrados = profesionales.filter(
+        (prof) =>
+          prof.especialidades?.some((esp) => esp.id === Number.parseInt(filtroEspecialidad)) &&
+          prof.nombre?.toLowerCase().includes(busquedaProfesional.toLowerCase()),
+      )
+      setProfsFiltradasRapido(profsFiltrados)
+    } else {
+      const profsFiltrados = profesionales.filter((prof) =>
+        prof.nombre?.toLowerCase().includes(busquedaProfesional.toLowerCase()),
+      )
+      setProfsFiltradasRapido(profsFiltrados)
+    }
+
+    // Filter pacientes by search
+    const pacientesFiltrados = pacientes.filter((pac) =>
+      pac.nombre?.toLowerCase().includes(busquedaPaciente.toLowerCase()),
+    )
+    setPacientesFiltradasRapido(pacientesFiltrados)
+
+    const pacientesFiltradasHeader = pacientes.filter((pac) =>
+      `${pac.nombre} ${pac.apellido}`.toLowerCase().includes(busquedaPacienteHeader.toLowerCase()),
+    )
+    setPacientesFiltradasHeader(pacientesFiltradasHeader)
+  }, [
+    busquedaPaciente,
+    busquedaEspecialidad,
+    busquedaProfesional,
+    filtroEspecialidad,
+    especialidades,
+    profesionales,
+    pacientes,
+    busquedaPacienteHeader,
+  ])
 
   useEffect(() => {
     if (form.especialidadId) {
@@ -163,11 +221,50 @@ export default function RegistrarTurno() {
 
   const obtenerTurnosDelDia = (fecha) => {
     const fechaStr = formatearFecha(fecha)
-    return turnosProgramados.filter((t) => t.fecha === fechaStr)
+    let turnosFiltrados = turnosProgramados.filter((t) => t.fecha === fechaStr)
+
+    if (filtroProfesionalHeader) {
+      turnosFiltrados = turnosFiltrados.filter((t) => t.profesionalId === Number.parseInt(filtroProfesionalHeader))
+    }
+
+    if (filtroPacienteHeader) {
+      turnosFiltrados = turnosFiltrados.filter((t) => t.pacienteId === Number.parseInt(filtroPacienteHeader))
+    }
+
+    return turnosFiltrados
   }
 
   const formatearFecha = (fecha) => {
-    return fecha.toISOString().split("T")[0]
+    // Si ya es un string en formato YYYY-MM-DD, devolverlo directamente
+    if (typeof fecha === "string" && fecha.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return fecha
+    }
+
+    if (fecha instanceof Date) {
+      const año = fecha.getFullYear()
+      const mes = String(fecha.getMonth() + 1).padStart(2, "0")
+      const dia = String(fecha.getDate()).padStart(2, "0")
+      return `${año}-${mes}-${dia}`
+    }
+
+    // Si es otro formato de string, intentar parsearlo sin conversión
+    if (typeof fecha === "string") {
+      // Si es formato YYYY-MM-DD, devolverlo directamente
+      if (fecha.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        return fecha
+      }
+      // Para otros formatos, crear Date y formatear localmente
+      const partes = fecha.split(/[-/]/)
+      if (partes.length === 3) {
+        const dateObj = new Date(partes[0], partes[1] - 1, partes[2])
+        const año = dateObj.getFullYear()
+        const mes = String(dateObj.getMonth() + 1).padStart(2, "0")
+        const dia = String(dateObj.getDate()).padStart(2, "0")
+        return `${año}-${mes}-${dia}`
+      }
+    }
+
+    return fecha
   }
 
   const esHoy = (fecha) => {
@@ -190,7 +287,17 @@ export default function RegistrarTurno() {
   }
 
   const handleClickTurno = (turno) => {
-    setTurnoSeleccionado(turno)
+    // Buscar el paciente completo para obtener DNI y observaciones
+    const paciente = pacientes.find((p) => p.id === turno.pacienteId)
+
+    // Enriquecer el objeto turno con los datos del paciente
+    const turnoEnriquecido = {
+      ...turno,
+      pacienteDni: paciente?.dni || null,
+      pacienteObservaciones: paciente?.observaciones || null,
+    }
+
+    setTurnoSeleccionado(turnoEnriquecido)
     setModoEdicion(false)
     setMostrarFormulario(false)
   }
@@ -229,25 +336,41 @@ export default function RegistrarTurno() {
     })
   }
 
-
   const rangoDisponible = (fecha, horaInicio, horaFin, profesionalId) => {
-  if (!profesionalId || !fecha || !horaInicio || !horaFin) return false
+    if (!profesionalId || !fecha || !horaInicio || !horaFin) return false
 
-  const fechaStr = formatearFecha(fecha)
-  const indexInicio = HORARIOS_DISPONIBLES.indexOf(horaInicio)
-  const indexFin = HORARIOS_DISPONIBLES.indexOf(horaFin)
+    const fechaStr = formatearFecha(fecha)
+    const indexInicio = HORARIOS_DISPONIBLES.indexOf(horaInicio)
+    const indexFin = HORARIOS_DISPONIBLES.indexOf(horaFin)
 
-  return !turnosProgramados.some((t) => {
-    if (t.fecha !== fechaStr || t.profesionalId !== profesionalId) return false
+    return !turnosProgramados.some((t) => {
+      if (t.fecha !== fechaStr || t.profesionalId !== profesionalId) return false
 
-    const tInicio = HORARIOS_DISPONIBLES.indexOf(t.horaInicio)
-    const tFin = HORARIOS_DISPONIBLES.indexOf(t.horaFin)
+      const tInicio = HORARIOS_DISPONIBLES.indexOf(t.horaInicio)
+      const tFin = HORARIOS_DISPONIBLES.indexOf(t.horaFin)
 
-    // Verifica si hay solapamiento
-    return indexInicio < tFin && indexFin > tInicio
-  })
-}
+      // Verifica si hay solapamiento
+      return indexInicio < tFin && indexFin > tInicio
+    })
+  }
 
+  const hayConflictoEnPreview = (fecha, horaInicio, horaFin, profesionalId) => {
+    if (!profesionalId || !fecha || !horaInicio || !horaFin) return false
+
+    const fechaStr = formatearFecha(fecha)
+    const indexInicio = HORARIOS_DISPONIBLES.indexOf(horaInicio)
+    const indexFin = HORARIOS_DISPONIBLES.indexOf(horaFin)
+
+    return turnosProgramados.some((t) => {
+      if (t.fecha !== fechaStr || t.profesionalId !== Number.parseInt(profesionalId)) return false
+
+      const tInicio = HORARIOS_DISPONIBLES.indexOf(t.horaInicio)
+      const tFin = HORARIOS_DISPONIBLES.indexOf(t.horaFin)
+
+      // Verifica si hay solapamiento
+      return indexInicio < tFin && indexFin > tInicio
+    })
+  }
 
   const validarFormulario = () => {
     const nuevosErrores = {}
@@ -368,8 +491,106 @@ export default function RegistrarTurno() {
     }
   }
 
+  // const handleRegistrarRapido = async (e) => {
+  //   e.preventDefault()
 
-  // Cada celda de la grilla (turno-celda) mide 50px y representa 30 minutos
+  //   if (!filtroEspecialidad || !filtroProfesional || !turnoPreview?.fecha || !turnoPreview?.horaInicio) {
+  //     alert("Debe completar todos los campos")
+  //     return
+  //   }
+
+  //   try {
+  //     await turnosService.crearTurno({
+  //       fecha: turnoPreview.fecha,
+  //       horaInicio: turnoPreview.horaInicio,
+  //       horaFin:
+  //         turnoPreview.horaFin ||
+  //         HORARIOS_DISPONIBLES[HORARIOS_DISPONIBLES.indexOf(turnoPreview.horaInicio) + 1] ||
+  //         turnoPreview.horaInicio,
+  //       pacienteId: Number.parseInt(turnoPreview.pacienteId),
+  //       profesionalId: Number.parseInt(filtroProfesional),
+  //       especialidadId: Number.parseInt(filtroEspecialidad),
+  //       motivoConsulta: "",
+  //     })
+  //     alert("Turno registrado exitosamente")
+
+  //     const turnosRes = await turnosService.obtenerTurnos()
+  //     setTurnosProgramados(turnosRes.data.data || [])
+
+  //     // Reset form
+  //     setBusquedaPaciente("")
+  //     setBusquedaEspecialidad("")
+  //     setBusquedaProfesional("")
+  //     setFiltroEspecialidad("")
+  //     setFiltroProfesional("")
+  //     setTurnoPreview(null)
+  //     setMostrarFormularioRapido(false)
+  //   } catch (err) {
+  //     console.error("Error registrando turno:", err)
+  //     alert("Error al registrar el turno")
+  //   }
+  // }
+
+  const handleConfirmarRegistroRapido = async () => {
+    if (
+      hayConflictoEnPreview(turnoPreview?.fecha, turnoPreview?.horaInicio, turnoPreview?.horaFin, filtroProfesional)
+    ) {
+      alert("Este horario ya está ocupado o en conflicto. Por favor, elija otro.")
+      return
+    }
+
+    if (
+      !turnoPreview?.pacienteId ||
+      !filtroEspecialidad ||
+      !filtroProfesional ||
+      !turnoPreview?.fecha ||
+      !turnoPreview?.horaInicio ||
+      !turnoPreview?.horaFin
+    ) {
+      alert("Debe completar todos los campos para confirmar el registro.")
+      return
+    }
+
+    try {
+      await turnosService.crearTurno({
+        fecha: turnoPreview.fecha,
+        horaInicio: turnoPreview.horaInicio,
+        horaFin: turnoPreview.horaFin,
+        pacienteId: Number.parseInt(turnoPreview.pacienteId),
+        profesionalId: Number.parseInt(filtroProfesional),
+        especialidadId: Number.parseInt(filtroEspecialidad),
+        motivoConsulta: "", // Por ahora, vacío en registro rápido
+      })
+      alert("Turno registrado exitosamente")
+
+      // Refresh turnos
+      const turnosRes = await turnosService.obtenerTurnos()
+      setTurnosProgramados(turnosRes.data.data || [])
+
+      setBusquedaPaciente("")
+      setTurnoPreview({
+        ...turnoPreview,
+        pacienteId: null,
+        horaInicio: null,
+        horaFin: null,
+      })
+    } catch (err) {
+      console.error("Error registrando turno:", err)
+      alert("Error al registrar el turno")
+    }
+  }
+
+  const handleLimpiarFormulario = () => {
+    setBusquedaPaciente("")
+    setBusquedaEspecialidad("")
+    setBusquedaProfesional("")
+    setFiltroEspecialidad("")
+    setFiltroProfesional("")
+    setTurnoPreview(null)
+    setProfsFiltradasRapido([]) // Limpiar también los profesionales filtrados
+  }
+
+  // Cada<bos>tua celda de la grilla (turno-celda) mide 50px y representa 30 minutos
   const ALTURA_CELDA = 50
 
   const calcularAlturaTurno = (horaInicio, horaFin) => {
@@ -390,8 +611,6 @@ export default function RegistrarTurno() {
     // desplazamiento desde la primera celda (08:00)
     return indexInicio * ALTURA_CELDA
   }
-
-
 
   const nombresMeses = [
     "Enero",
@@ -430,7 +649,7 @@ export default function RegistrarTurno() {
       }
     })
 
-    return horasOcupadas.size >= 24
+    return horasOcupadas.size >= HORARIOS_DISPONIBLES.length
   }
 
   const esDiaConTurnos = (fecha) => {
@@ -470,54 +689,134 @@ export default function RegistrarTurno() {
         <div className="container-fluid mt-4">
           <div className="turnos-header">
             <h2>Agenda de Turnos</h2>
-            <button className="btn-nuevo-turno" onClick={() => setMostrarFormulario(true)}>
-              Nuevo Turno
-            </button>
-          </div>
-
-          <div className="calendario-semanal-layout">
-            <div className="vista-semanal">
-              <div className="semana-navegacion">
-                <button className="btn-nav-semana" onClick={() => cambiarSemana(-1)}>
-                  ← Semana Anterior
-                </button>
-                <div className="semana-actual-texto">
-                  {diasSemanaActual[0].getDate()}/{diasSemanaActual[0].getMonth() + 1} - 
-                  {diasSemanaActual[5].getDate()}/{diasSemanaActual[5].getMonth() + 1}/{diasSemanaActual[5].getFullYear()}
-                </div>
-                <button className="btn-nav-semana" onClick={() => cambiarSemana(1)}>
-                  Semana Siguiente →
-                </button>
-              </div>
-
-              <div className="semana-header">
-                <div className="week-day-header time-header"></div>
-                {diasSemanaActual.map((dia, index) => (
-                  <div key={index} className={`dia-header ${esHoy(dia) ? "hoy" : ""}`}>
-                    <div className="dia-nombre">{diasSemana[index]}</div>
-                    <div className="dia-numero">
-                      {dia.getDate()}/{dia.getMonth() + 1}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="semana-grid">
-                <div className="horarios-columna-separada">
-                  {HORARIOS_DISPONIBLES.map((hora, index) => (
-                    <div key={index} className="horario-celda">
-                      {hora}
+            <div className="header-search-profesional">
+              <input
+                type="text"
+                placeholder="Buscar profesional..."
+                value={busquedaProfesional}
+                onChange={(e) => {
+                  setBusquedaProfesional(e.target.value)
+                  // Limpiar filtro si se borra el input
+                  if (e.target.value === "") {
+                    setFiltroProfesionalHeader("")
+                  }
+                }}
+                className="entrada-busqueda-header"
+              />
+              {busquedaProfesional && profFiltradasRapido.length > 0 && (
+                <div className="lista-desplegable-header">
+                  {profFiltradasRapido.map((prof) => (
+                    <div
+                      key={prof.id}
+                      className="item-lista"
+                      onClick={() => {
+                        setBusquedaProfesional(`${prof.nombre} ${prof.apellido}`)
+                        setFiltroProfesionalHeader(prof.id)
+                      }}
+                    >
+                      Dr/a. {prof.apellido}, {prof.nombre}
                     </div>
                   ))}
                 </div>
+              )}
+              {filtroProfesionalHeader && (
+                <button
+                  className="btn-limpiar-filtro"
+                  onClick={() => {
+                    setBusquedaProfesional("")
+                    setFiltroProfesionalHeader("")
+                  }}
+                  title="Limpiar filtro"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            <div className="header-search-profesional">
+              <input
+                type="text"
+                placeholder="Buscar paciente..."
+                value={busquedaPacienteHeader}
+                onChange={(e) => {
+                  setBusquedaPacienteHeader(e.target.value)
+                  if (e.target.value === "") {
+                    setFiltroPacienteHeader("")
+                  }
+                }}
+                className="entrada-busqueda-header"
+              />
+              {busquedaPacienteHeader && pacientesFiltradasHeader.length > 0 && (
+                <div className="lista-desplegable-header">
+                  {pacientesFiltradasHeader.map((pac) => (
+                    <div
+                      key={pac.id}
+                      className="item-lista"
+                      onClick={() => {
+                        setBusquedaPacienteHeader(`${pac.nombre} ${pac.apellido}`)
+                        setFiltroPacienteHeader(pac.id)
+                      }}
+                    >
+                      {pac.apellido}, {pac.nombre} - DNI: {pac.dni}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {filtroPacienteHeader && (
+                <button
+                  className="btn-limpiar-filtro"
+                  onClick={() => {
+                    setBusquedaPacienteHeader("")
+                    setFiltroPacienteHeader("")
+                  }}
+                  title="Limpiar filtro"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="calendario-semanal-layout">
+            <div className="contenedor-principal-calendario">
+              <div className="vista-semanal">
+                <div className="semana-navegacion">
+                  <button className="btn-nav-semana" onClick={() => cambiarSemana(-1)}>
+                    ← Semana Anterior
+                  </button>
+                  <div className="semana-actual-texto">
+                    {diasSemanaActual[0].getDate()}/{diasSemanaActual[0].getMonth() + 1} -{" "}
+                    {diasSemanaActual[5].getDate()}/{diasSemanaActual[5].getMonth() + 1}/
+                    {diasSemanaActual[5].getFullYear()}
+                  </div>
+                  <button className="btn-nav-semana" onClick={() => cambiarSemana(1)}>
+                    Semana Siguiente →
+                  </button>
+                </div>
+
+                <div className="semana-header">
+                  <div className="week-day-header time-header"></div>
+                  {diasSemanaActual.map((dia, index) => (
+                    <div key={index} className={`dia-header ${esHoy(dia) ? "hoy" : ""}`}>
+                      <div className="dia-nombre">{diasSemana[index]}</div>
+                      <div className="dia-numero">
+                        {dia.getDate()}/{dia.getMonth() + 1}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="semana-grid">
+                  <div className="horarios-columna-separada">
+                    {HORARIOS_DISPONIBLES.map((hora, index) => (
+                      <div key={index} className="horario-celda">
+                        {hora}
+                      </div>
+                    ))}
+                  </div>
                   <div className="dias-grid-container">
                     {diasSemanaActual.map((dia, diaIndex) => (
-                      <div
-                        key={diaIndex}
-                        className="dia-columna"
-                        style={{ position: "relative" }} // IMPORTANTE
-                      >
-
+                      <div key={diaIndex} className="dia-columna" style={{ position: "relative" }}>
                         {/* Render de celdas horarias */}
                         {HORARIOS_DISPONIBLES.map((hora, horaIndex) => {
                           const esPasado = dia < new Date() && !esHoy(dia)
@@ -531,107 +830,360 @@ export default function RegistrarTurno() {
                           )
                         })}
 
-                        {/* Render de los turnos (UNA sola vez por día) */}
-                        {obtenerTurnosDelDia(dia).map((turno) => {
-                          const top = calcularTopTurno(turno.horaInicio);
-                          const altura = calcularAlturaTurno(turno.horaInicio, turno.horaFin);
-
-                          return (
+                        {mostrarFormularioRapido &&
+                          turnoPreview?.fecha === formatearFecha(dia) &&
+                          turnoPreview?.horaInicio && (
                             <div
-                              key={turno.id}
-                              className={`turno-bloque ${turno.estado}`}
+                              className={`turno-preview-bloque ${
+                                hayConflictoEnPreview(
+                                  dia,
+                                  turnoPreview.horaInicio,
+                                  turnoPreview.horaFin,
+                                  filtroProfesional,
+                                )
+                                  ? "conflicto"
+                                  : ""
+                              }`}
                               style={{
                                 position: "absolute",
-                                top: `${top}px`,
-                                height: `${altura}px`,
+                                top: `${calcularTopTurno(turnoPreview.horaInicio)}px`,
+                                height: `${calcularAlturaTurno(turnoPreview.horaInicio, turnoPreview.horaFin)}px`,
                                 left: "2px",
                                 right: "2px",
-                                zIndex: 5,
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleClickTurno(turno);
+                                zIndex: 15,
                               }}
                             >
-                              <button
-                                className="btn-cancelar-turno"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleCancelarTurno(turno.id);
-                                }}
-                              >
-                                ✕
-                              </button>
-
-                              <div className="turno-hora-bloque">
-                                {turno.horaInicio} - {turno.horaFin}
+                              <div className="preview-texto">
+                                {hayConflictoEnPreview(
+                                  dia,
+                                  turnoPreview.horaInicio,
+                                  turnoPreview.horaFin,
+                                  filtroProfesional,
+                                )
+                                  ? "Superposición"
+                                  : "Preview"}
                               </div>
-                              <div className="turno-paciente">{turno.paciente}</div>
-                              <div className="turno-especialidad">{turno.especialidad}</div>
                             </div>
-                          );
-                        })}
+                          )}
+
+                        {obtenerTurnosDelDia(dia).length > 0 && (
+                          <div className="turnos-contenedor-paralelo">
+                            {obtenerTurnosDelDia(dia).map((turno, index) => {
+                              const top = calcularTopTurno(turno.horaInicio)
+                              const altura = calcularAlturaTurno(turno.horaInicio, turno.horaFin)
+
+                              const turnosEnHorario = obtenerTurnosDelDia(dia).filter((t) => {
+                                const tTop = calcularTopTurno(t.horaInicio)
+                                const tAltura = calcularAlturaTurno(t.horaInicio, t.horaFin)
+                                // Verificar si hay superposición en el tiempo
+                                return !(tTop + tAltura <= top || tTop >= top + altura)
+                              })
+
+                              const totalTurnosEnHorario = turnosEnHorario.length
+                              // Encontrar la posición de este turno dentro de los turnos superpuestos
+                              const posicionEnGrupo = turnosEnHorario.findIndex((t) => t.id === turno.id)
+
+                              // Calcular ancho y posición con mejor espaciado
+                              const anchoDisponible = 100 / totalTurnosEnHorario
+                              const leftPosition = posicionEnGrupo * anchoDisponible
+
+                              return (
+                                <div
+                                  key={turno.id}
+                                  className={`turno-bloque ${turno.estado}`}
+                                  style={{
+                                    position: "absolute",
+                                    top: `${top}px`,
+                                    height: `${altura}px`,
+                                    left: `${leftPosition}%`,
+                                    width: `${anchoDisponible - 1}%`, // -1% para espacio entre bloques
+                                    zIndex: 5 + posicionEnGrupo, // Incrementar z-index para que se vean mejor
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleClickTurno(turno)
+                                  }}
+                                >
+                                  <button
+                                    className="btn-cancelar-turno"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleCancelarTurno(turno.id)
+                                    }}
+                                  >
+                                    ✕
+                                  </button>
+                                  <div className="turno-hora-bloque">
+                                    {turno.horaInicio} - {turno.horaFin}
+                                  </div>
+                                  <div className="turno-paciente">{turno.paciente || "Sin paciente"}</div>
+                                  <div className="turno-especialidad">{turno.especialidad}</div>
+                                  {/* {turno.consultorio && (
+                                    <div className="turno-consultorio">Cons: {turno.consultorio}</div>
+                                  )} */}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
-
+                </div>
               </div>
             </div>
 
-            <div className="calendario-mini">
-              <div className="calendario-mini-header">
-                <button className="btn-mini" onClick={() => cambiarMesCalendario(-1)}>
-                  ‹
-                </button>
-                <div className="mes-año">
-                  {nombresMeses[mesCalendario.getMonth()]} {mesCalendario.getFullYear()}
-                </div>
-                <button className="btn-mini" onClick={() => cambiarMesCalendario(1)}>
-                  ›
-                </button>
-              </div>
-
-              <div className="calendario-mini-grid">
-                {diasSemanaCortos.map((dia) => (
-                  <div key={dia} className="dia-mini-header">
-                    {dia[0]}
+            <div className="sidebar-derecho">
+              <div className="calendario-mini">
+                <div className="calendario-mini-header">
+                  <button className="btn-mini" onClick={() => cambiarMesCalendario(-1)}>
+                    ‹
+                  </button>
+                  <div className="mes-año">
+                    {nombresMeses[mesCalendario.getMonth()]} {mesCalendario.getFullYear()}
                   </div>
-                ))}
+                  <button className="btn-mini" onClick={() => cambiarMesCalendario(1)}>
+                    ›
+                  </button>
+                </div>
 
-                {obtenerDiasDelMes(mesCalendario).map((dia, index) => {
-                  const turnosDelDia = obtenerTurnosDelDia(dia.fecha)
-                  const esHoyDia = esHoy(dia.fecha)
-                  const diaLleno = esDiaLleno(dia.fecha)
-                  const diaConTurnos = esDiaConTurnos(dia.fecha)
-                  const esSeleccionado = diaSeleccionadoCalendario === formatearFecha(dia.fecha)
-
-                  return (
-                    <div
-                      key={index}
-                      className={`dia-mini ${!dia.esDelMes ? "otro-mes" : ""} ${esHoyDia ? "hoy" : ""} ${esSeleccionado ? "seleccionado" : ""} ${diaLleno ? "dia-lleno" : ""} ${diaConTurnos ? "dia-con-turnos" : ""}`}
-                      onClick={() => handleClickDiaCalendario(dia)}
-                    >
-                      {dia.fecha.getDate()}
+                <div className="calendario-mini-grid">
+                  {diasSemanaCortos.map((dia) => (
+                    <div key={dia} className="dia-mini-header">
+                      {dia[0]}
                     </div>
-                  )
-                })}
+                  ))}
+
+                  {obtenerDiasDelMes(mesCalendario).map((dia, index) => {
+                    const turnosDelDia = obtenerTurnosDelDia(dia.fecha)
+                    const esHoyDia = esHoy(dia.fecha)
+                    const diaLleno = esDiaLleno(dia.fecha)
+                    const diaConTurnos = esDiaConTurnos(dia.fecha)
+                    const esSeleccionado = diaSeleccionadoCalendario === formatearFecha(dia.fecha)
+
+                    return (
+                      <div
+                        key={index}
+                        className={`dia-mini ${!dia.esDelMes ? "otro-mes" : ""} ${esHoyDia ? "hoy" : ""} ${esSeleccionado ? "seleccionado" : ""} ${diaLleno ? "dia-lleno" : ""} ${diaConTurnos ? "dia-con-turnos" : ""}`}
+                        onClick={() => handleClickDiaCalendario(dia)}
+                      >
+                        {dia.fecha.getDate()}
+                      </div>
+                    )
+                  })}
+                </div>
+
+                <div className="leyenda-mini">
+                  <div className="leyenda-item-mini"></div>
+                  <div className="leyenda-item-mini">
+                    <span className="badge-disponibilidad-mini" style={{ backgroundColor: "#f39c12" }}></span> Poca
+                    disponibilidad
+                  </div>
+                  <div className="leyenda-item-mini">
+                    <span className="badge-disponibilidad-mini" style={{ backgroundColor: "#e74c3c" }}></span> Sin
+                    disponibilidad
+                  </div>
+                </div>
               </div>
 
-              <div className="leyenda-mini">
-                <div className="leyenda-item-mini">
-                  
-                </div>
-                <div className="leyenda-item-mini">
-                  <span className="badge-disponibilidad-mini" style={{ backgroundColor: "#f39c12" }}></span> Poca
-                  disponibilidad
-                </div>
-                <div className="leyenda-item-mini">
-                  <span className="badge-disponibilidad-mini" style={{ backgroundColor: "#e74c3c" }}></span> Sin
-                  disponibilidad
+              <div className="formulario-registro-sidebar">
+                <h3>Registrar Nuevo Turno</h3>
+
+                <div className="formulario-rapido-container">
+                  <div className="formulario-rapido">
+                    {/* Busqueda de Paciente */}
+                    <div className="grupo-entrada">
+                      <label>Paciente *</label>
+                      <input
+                        type="text"
+                        placeholder="Buscar paciente por nombre..."
+                        value={busquedaPaciente}
+                        onChange={(e) => setBusquedaPaciente(e.target.value)}
+                        className="entrada-busqueda"
+                      />
+                      {busquedaPaciente && pacientesFiltradasRapido.length > 0 && (
+                        <div className="lista-desplegable">
+                          {pacientesFiltradasRapido.map((pac) => (
+                            <div
+                              key={pac.id}
+                              className="item-lista"
+                              onClick={() => {
+                                setBusquedaPaciente(`${pac.nombre} ${pac.apellido}`)
+                                setTurnoPreview({ ...turnoPreview, pacienteId: pac.id })
+                              }}
+                            >
+                              {pac.nombre} {pac.apellido} - DNI: {pac.dni}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Busqueda de Especialidad */}
+                    <div className="grupo-entrada">
+                      <label>Especialidad *</label>
+                      <input
+                        type="text"
+                        placeholder="Buscar especialidad..."
+                        value={busquedaEspecialidad}
+                        onChange={(e) => setBusquedaEspecialidad(e.target.value)}
+                        className="entrada-busqueda"
+                      />
+                      {busquedaEspecialidad && especiaFiltradasRapido.length > 0 && (
+                        <div className="lista-desplegable">
+                          {especiaFiltradasRapido.map((esp) => (
+                            <div
+                              key={esp.id}
+                              className="item-lista"
+                              onClick={() => {
+                                setBusquedaEspecialidad(esp.nombre)
+                                setFiltroEspecialidad(esp.id)
+                                setTimeout(() => {
+                                  setEspeciaFiltradasRapido([])
+                                }, 100)
+                              }}
+                            >
+                              {esp.nombre}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Busqueda de Profesional */}
+                    <div className="grupo-entrada">
+                      <label>Profesional *</label>
+                      <input
+                        type="text"
+                        placeholder="Buscar profesional..."
+                        value={busquedaProfesional}
+                        onChange={(e) => setBusquedaProfesional(e.target.value)}
+                        onFocus={() => setEspeciaFiltradasRapido([])}
+                        className="entrada-busqueda"
+                      />
+                      {busquedaProfesional && profFiltradasRapido.length > 0 && (
+                        <div className="lista-desplegable">
+                          {profFiltradasRapido.map((prof) => (
+                            <div
+                              key={prof.id}
+                              className="item-lista"
+                              onClick={() => {
+                                setBusquedaProfesional(`Dr/a. ${prof.apellido}, ${prof.nombre}`)
+                                setFiltroProfesional(prof.id)
+                                setProfsFiltradasRapido([])
+                              }}
+                            >
+                              Dr/a. {prof.apellido}, {prof.nombre}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Seleccion de Fecha */}
+                    {turnoPreview?.pacienteId && filtroEspecialidad && filtroProfesional && (
+                      <div className="grupo-entrada">
+                        <label>Fecha *</label>
+                        <DatePicker
+                          selected={turnoPreview?.fecha ? new Date(turnoPreview.fecha + "T12:00:00") : null}
+                          onChange={(date) => {
+                            if (date.getDay() === 0) {
+                              alert("No se pueden registrar turnos los domingos")
+                              return
+                            }
+                            const año = date.getFullYear()
+                            const mes = String(date.getMonth() + 1).padStart(2, "0")
+                            const dia = String(date.getDate()).padStart(2, "0")
+                            setTurnoPreview({ ...turnoPreview, fecha: `${año}-${mes}-${dia}` })
+                          }}
+                          minDate={new Date()}
+                          dateFormat="dd/MM/yyyy"
+                          className="entrada-fecha"
+                          placeholderText="Seleccionar fecha"
+                          filterDate={(date) => date.getDay() !== 0}
+                        />
+                      </div>
+                    )}
+
+                    {/* Seleccion de Hora Inicio */}
+                    {turnoPreview?.fecha && (
+                      <div className="grupo-entrada">
+                        <label>Hora Inicio *</label>
+                        <select
+                          value={turnoPreview?.horaInicio || ""}
+                          onChange={(e) => {
+                            const horaInicio = e.target.value
+                            const indexInicio = HORARIOS_DISPONIBLES.indexOf(horaInicio)
+                            const horaFin = HORARIOS_DISPONIBLES[indexInicio + 1] || horaInicio
+                            setTurnoPreview({ ...turnoPreview, horaInicio, horaFin })
+                          }}
+                          className="entrada-hora"
+                        >
+                          <option value="">Seleccionar hora inicio...</option>
+                          {HORARIOS_DISPONIBLES.map((hora) => (
+                            <option key={hora} value={hora}>
+                              {hora}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Seleccion de Hora Fin */}
+                    {turnoPreview?.horaInicio && (
+                      <div className="grupo-entrada">
+                        <label>Hora Fin *</label>
+                        <select
+                          value={turnoPreview?.horaFin || ""}
+                          onChange={(e) => {
+                            setTurnoPreview({ ...turnoPreview, horaFin: e.target.value })
+                          }}
+                          className="entrada-hora"
+                        >
+                          <option value="">Seleccionar hora fin...</option>
+                          {HORARIOS_DISPONIBLES.filter((h) => h > turnoPreview.horaInicio).map((hora) => (
+                            <option key={hora} value={hora}>
+                              {hora}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    <div className="botones-formulario">
+                      <button
+                        type="button"
+                        className="btn-confirmar"
+                        onClick={handleConfirmarRegistroRapido}
+                        disabled={
+                          !turnoPreview?.pacienteId ||
+                          !filtroEspecialidad ||
+                          !filtroProfesional ||
+                          !turnoPreview?.fecha ||
+                          !turnoPreview?.horaInicio ||
+                          !turnoPreview?.horaFin
+                        }
+                      >
+                        Confirmar Registro
+                      </button>
+                      <button type="button" className="btn-cancelar-form" onClick={handleLimpiarFormulario}>
+                        Limpiar
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* <div className="formulario-registro-debajo-calendario"> moved to sidebar-derecho */}
+          {/*   <h3>Registrar Nuevo Turno</h3> */}
+
+          {/*   <div className="formulario-rapido-container"> */}
+          {/*     <div className="formulario-rapido"> */}
+          {/*       </div> */}
+          {/*   </div> */}
+          {/* </div> */}
         </div>
       </div>
 
@@ -651,11 +1203,21 @@ export default function RegistrarTurno() {
                 <div className="detalle-item">
                   <strong>Paciente:</strong> {turnoSeleccionado.paciente}
                 </div>
+                {turnoSeleccionado.pacienteDni && (
+                  <div className="detalle-item">
+                    <strong>DNI:</strong> {turnoSeleccionado.pacienteDni}
+                  </div>
+                )}
+                {turnoSeleccionado.pacienteObservaciones && (
+                  <div className="detalle-item">
+                    <strong>Observaciones:</strong> {turnoSeleccionado.pacienteObservaciones}
+                  </div>
+                )}
               </div>
 
               <div className="detalle-seccion">
                 <h4>Información del Turno</h4>
-                
+
                 {(() => {
                   const [año, mes, dia] = turnoSeleccionado.fecha.split("-").map(Number)
                   const fechaLocal = new Date(año, mes - 1, dia)
@@ -691,14 +1253,19 @@ export default function RegistrarTurno() {
                     <strong>Motivo:</strong> {turnoSeleccionado.motivoConsulta}
                   </div>
                 )}
+                {turnoSeleccionado.observaciones && (
+                  <div className="detalle-item">
+                    <strong>Observaciones del Turno:</strong> {turnoSeleccionado.observaciones}
+                  </div>
+                )}
               </div>
 
-              <div className="detalle-acciones">
+              <div className="d-flex gap-2 justify-content-end">
+                <button  type="button" className="btn btn-secondary btn-cancelar-accion" onClick={handleEliminarTurnoDesdeModal}>
+                  Cancelar Turno
+                </button>
                 <button className="btn btn-editar-small" onClick={handleEditarTurno}>
                   Editar Turno
-                </button>
-                <button className="btn btn-eliminar-small" onClick={handleEliminarTurnoDesdeModal}>
-                  Cancelar Turno
                 </button>
               </div>
             </div>
@@ -741,7 +1308,8 @@ export default function RegistrarTurno() {
                   <div className="info-box mt-2">
                     <small>
                       <strong>Email:</strong> {pacienteSeleccionado.email} | <strong>Teléfono:</strong>{" "}
-                      {pacienteSeleccionado.telefono} | <strong>Obra Social:</strong> {pacienteSeleccionado.obraSocialNombre}
+                      {pacienteSeleccionado.telefono} | <strong>Obra Social:</strong>{" "}
+                      {pacienteSeleccionado.obraSocialNombre}
                     </small>
                   </div>
                 )}
@@ -810,22 +1378,22 @@ export default function RegistrarTurno() {
                   <label htmlFor="fecha" className="form-label fw-bold">
                     Fecha *
                   </label>
-                <DatePicker
-                  selected={form.fecha ? new Date(form.fecha) : null}
-                  onChange={(date) => {
-                    if (date.getDay() === 0) {
-                      alert("No se pueden registrar turnos los domingos")
-                      return
-                    }
-                    setForm({ ...form, fecha: date.toISOString().split("T")[0] })
-                  }}
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="dd/mm/aaaa"
-                  minDate={new Date()}
-                  filterDate={(date) => date.getDay() !== 0} // bloquea domingos visualmente
-                  className={`form-control ${errors.fecha ? "is-invalid" : ""}`}
-                />
-                {errors.fecha && <div className="invalid-feedback">{errors.fecha}</div>}
+                  <DatePicker
+                    selected={form.fecha ? new Date(form.fecha) : null}
+                    onChange={(date) => {
+                      if (date.getDay() === 0) {
+                        alert("No se pueden registrar turnos los domingos")
+                        return
+                      }
+                      setForm({ ...form, fecha: date.toISOString().split("T")[0] })
+                    }}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="dd/mm/aaaa"
+                    minDate={new Date()}
+                    filterDate={(date) => date.getDay() !== 0}
+                    className={`form-control ${errors.fecha ? "is-invalid" : ""}`}
+                  />
+                  {errors.fecha && <div className="invalid-feedback">{errors.fecha}</div>}
                 </div>
 
                 <div className="col-md-4 mb-3">
@@ -838,33 +1406,26 @@ export default function RegistrarTurno() {
                     className={`form-control ${errors.horaInicio ? "is-invalid" : ""}`}
                     value={form.horaInicio}
                     onChange={(e) => {
-                      setForm({ ...form, horaInicio: e.target.value, horaFin: "" });
+                      setForm({ ...form, horaInicio: e.target.value, horaFin: "" })
                     }}
                   >
                     <option value="">Seleccione hora</option>
 
-                    {HORARIOS_DISPONIBLES
-                      .filter((h) => {
-                        if (!form.fecha || !form.profesionalId) return false;
+                    {HORARIOS_DISPONIBLES.filter((h) => {
+                      if (!form.fecha || !form.profesionalId) return false
 
-                        const fecha = new Date(form.fecha);
+                      const fecha = new Date(form.fecha)
 
-                        // La hora de inicio es válida si existe al menos una hora fin válida
-                        const tieneFinValido = HORARIOS_DISPONIBLES.some((hf) =>
-                          hf > h &&
-                          rangoDisponible(
-                            fecha,
-                            h,
-                            hf,
-                            Number(form.profesionalId)
-                          )
-                        );
+                      const tieneFinValido = HORARIOS_DISPONIBLES.some(
+                        (hf) => hf > h && rangoDisponible(fecha, h, hf, Number(form.profesionalId)),
+                      )
 
-                        return tieneFinValido;
-                      })
-                      .map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
+                      return tieneFinValido
+                    }).map((h) => (
+                      <option key={h} value={h}>
+                        {h}
+                      </option>
+                    ))}
                   </select>
 
                   {errors.horaInicio && <div className="invalid-feedback">{errors.horaInicio}</div>}
@@ -884,18 +1445,14 @@ export default function RegistrarTurno() {
                   >
                     <option value="">Seleccione hora fin</option>
 
-                    {HORARIOS_DISPONIBLES
-                      .filter((hf) => hf > form.horaInicio)
+                    {HORARIOS_DISPONIBLES.filter((hf) => hf > form.horaInicio)
                       .filter((hf) =>
-                        rangoDisponible(
-                          new Date(form.fecha),
-                          form.horaInicio,
-                          hf,
-                          Number(form.profesionalId)
-                        )
+                        rangoDisponible(new Date(form.fecha), form.horaInicio, hf, Number(form.profesionalId)),
                       )
                       .map((h) => (
-                        <option key={h} value={h}>{h}</option>
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
                       ))}
                   </select>
 
@@ -922,7 +1479,7 @@ export default function RegistrarTurno() {
               </div>
 
               <div className="d-flex gap-2 justify-content-end">
-                <button type="button" className="btn btn-secondary" onClick={() => setMostrarFormulario(false)}>
+                <button type="button" className="btn btn-secondary btn-cancelar-accion" onClick={() => setMostrarFormulario(false)}>
                   Cancelar
                 </button>
                 <button type="submit" className="btn btn-primary">

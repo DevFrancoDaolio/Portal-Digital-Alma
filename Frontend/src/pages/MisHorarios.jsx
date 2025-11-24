@@ -14,11 +14,7 @@ export default function MisHorarios() {
 
   useEffect(() => {
     // Sesión de prueba para desarrollo
-    setSesion({
-      profesionalId: 1,
-      nombre: "Profesional",
-      apellido: "Demo",
-    })
+  
 
     // Cargar horarios desde localStorage
     const horariosGuardados = JSON.parse(localStorage.getItem("horarios") || "[]")
@@ -148,7 +144,6 @@ export default function MisHorarios() {
           <div className="card-horario">
             <div className="header-card">
               <p className="nombre-profesional">
-                {sesion ? `${sesion.nombre} ${sesion.apellido}` : "Nombre profesional"}
               </p>
             </div>
 
