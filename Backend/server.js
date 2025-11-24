@@ -331,7 +331,7 @@ app.get('/api/pacientes/:id', (req, res) => {
   })
 })
 
-// POST: Crear nuevo paciente (CORREGIDO: Usa llamadas a la API de Gobierno)
+// POST: Crear nuevo paciente (ahora acepta obraSocialesIds: [])
 app.post('/api/pacientes', async (req, res) => {
   const {
     nombre,
@@ -347,7 +347,7 @@ app.post('/api/pacientes', async (req, res) => {
     dpto,
     provinciaId,
     localidadId,
-    obraSocialId,
+    obraSocialesIds, // array de IDs
     observaciones,
   } = req.body
 
@@ -361,7 +361,7 @@ app.post('/api/pacientes', async (req, res) => {
   }
 
   // Validación de campos requeridos
-  if (!nombre || !apellido || !dni || !email || !fechaNacimiento || !provinciaId || !localidadId || !obraSocialId) {
+  if (!nombre || !apellido || !dni || !email || !fechaNacimiento || !provinciaId || !localidadId || !obraSocialesIds || !Array.isArray(obraSocialesIds) || obraSocialesIds.length === 0) {
     return res.status(400).json({
       success: false,
       message: 'Faltan campos requeridos',
@@ -370,17 +370,10 @@ app.post('/api/pacientes', async (req, res) => {
 
   let provinciaNombre = ''
   let localidadNombre = ''
-  let obraSocial = obrasSociales.find((o) => o.id === Number(obraSocialId))
-
-  if (!obraSocial) {
-    return res.status(400).json({
-      success: false,
-      message: 'Obra Social no válida',
-    })
-  }
+  let obrasSocialesPaciente = []
 
   try {
-    // 1. OBTENER NOMBRE DE LA PROVINCIA por ID (provinciaId viene como string del frontend)
+    // 1. OBTENER NOMBRE DE LA PROVINCIA por ID
     const resProvincia = await axios.get(`${API_GOBIERNO_BASE_URL}/provincias?id=${provinciaId}&campos=nombre&max=1`)
     provinciaNombre = resProvincia.data.provincias[0]?.nombre || 'Desconocida'
 
@@ -389,13 +382,23 @@ app.post('/api/pacientes', async (req, res) => {
     localidadNombre = resLocalidad.data.municipios[0]?.nombre || 'Desconocida'
   } catch (error) {
     console.error('Error al obtener nombres de geolocalización:', error.message)
-    // Devolver un error específico para evitar el 500
     return res.status(400).json({ 
       success: false, 
       message: 'Error al validar provincia/localidad. Asegúrese de usar IDs válidos de la API del Gobierno.' 
     })
   }
 
+  // Buscar todas las obras sociales por ID
+  obrasSocialesPaciente = obraSocialesIds
+    .map(id => obrasSociales.find(o => o.id === Number(id)))
+    .filter(Boolean)
+
+  if (obrasSocialesPaciente.length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'Obras sociales no válidas',
+    })
+  }
 
   const nuevoPaciente = {
     id: nextPacienteId++,
@@ -410,13 +413,11 @@ app.post('/api/pacientes', async (req, res) => {
     codigoPostal: codigoPostal || null,
     piso: piso || null,
     dpto: dpto || null,
-    // Usamos los strings ID que vienen del frontend
     provinciaId: provinciaId,
     provinciaNombre: provinciaNombre,
     localidadId: localidadId,
     localidadNombre: localidadNombre,
-    obraSocialId: Number(obraSocialId),
-    obraSocialNombre: obraSocial?.nombre || '',
+    obraSociales: obrasSocialesPaciente, // array de objetos {id, nombre}
     observaciones: observaciones || null,
     fechaCreacion: new Date().toISOString(),
   }
@@ -430,7 +431,7 @@ app.post('/api/pacientes', async (req, res) => {
   })
 })
 
-// PUT: Actualizar paciente (CORREGIDO: Usa llamadas a la API de Gobierno)
+// PUT: Actualizar paciente (ahora acepta obraSocialesIds: [])
 app.put('/api/pacientes/:id', async (req, res) => {
   const { id } = req.params
   const {
@@ -446,7 +447,7 @@ app.put('/api/pacientes/:id', async (req, res) => {
     dpto,
     provinciaId,
     localidadId,
-    obraSocialId,
+    obraSocialesIds, // array de IDs
     observaciones,
   } = req.body
 
@@ -461,10 +462,8 @@ app.put('/api/pacientes/:id', async (req, res) => {
 
   let provinciaNombre = null
   let localidadNombre = null
-  let obraSocial = null
 
   try {
-    // 1. Si el cliente envió un nuevo provinciaId, obtenemos el nombre
     if (provinciaId && provinciaId !== paciente.provinciaId) {
       const resProvincia = await axios.get(`${API_GOBIERNO_BASE_URL}/provincias?id=${provinciaId}&campos=nombre&max=1`)
       provinciaNombre = resProvincia.data.provincias[0]?.nombre
@@ -473,7 +472,6 @@ app.put('/api/pacientes/:id', async (req, res) => {
       }
     }
 
-    // 2. Si el cliente envió un nuevo localidadId, obtenemos el nombre
     if (localidadId && localidadId !== paciente.localidadId) {
       const resLocalidad = await axios.get(`${API_GOBIERNO_BASE_URL}/municipios?id=${localidadId}&campos=nombre&max=1`)
       localidadNombre = resLocalidad.data.municipios[0]?.nombre
@@ -489,14 +487,6 @@ app.put('/api/pacientes/:id', async (req, res) => {
     })
   }
 
-  // 3. Buscar Obra Social (siempre en memoria)
-  if (obraSocialId) {
-    obraSocial = obrasSociales.find((o) => o.id === Number(obraSocialId))
-    if (!obraSocial) {
-      return res.status(400).json({ success: false, message: 'Obra Social no válida' })
-    }
-  }
-
   // Actualizar campos
   if (nombre) paciente.nombre = nombre
   if (apellido) paciente.apellido = apellido
@@ -509,7 +499,6 @@ app.put('/api/pacientes/:id', async (req, res) => {
   if (piso !== undefined) paciente.piso = piso
   if (dpto !== undefined) paciente.dpto = dpto
 
-  // Actualizar Georeferencia si se enviaron IDs nuevos y se obtuvieron los nombres
   if (provinciaId && provinciaNombre) {
     paciente.provinciaId = provinciaId
     paciente.provinciaNombre = provinciaNombre
@@ -518,12 +507,14 @@ app.put('/api/pacientes/:id', async (req, res) => {
     paciente.localidadId = localidadId
     paciente.localidadNombre = localidadNombre
   }
-  
-  if (obraSocialId && obraSocial) {
-    paciente.obraSocialId = Number(obraSocialId)
-    paciente.obraSocialNombre = obraSocial.nombre
+
+  // Actualizar obras sociales
+  if (obraSocialesIds && Array.isArray(obraSocialesIds)) {
+    paciente.obraSociales = obraSocialesIds
+      .map(id => obrasSociales.find(o => o.id === Number(id)))
+      .filter(Boolean)
   }
-  
+
   if (observaciones !== undefined) paciente.observaciones = observaciones
 
   paciente.fechaModificacion = new Date().toISOString()

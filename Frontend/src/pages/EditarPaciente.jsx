@@ -18,7 +18,6 @@ export default function EditarPaciente() {
     email: "",
     telefono: "",
     fechaNacimiento: "",
-    obraSocial: "",
     calle: "",
     numero: "",
     codigoPostal: "",
@@ -27,6 +26,8 @@ export default function EditarPaciente() {
     provincia: "",
     localidad: "",
     observaciones: "",
+    obraSocialSeleccion: "",
+    obraSocialesSeleccionadas: [],
   })
 
   const [errors, setErrors] = useState({})
@@ -64,7 +65,6 @@ export default function EditarPaciente() {
         email: pacienteData.email || "",
         telefono: pacienteData.telefono || "",
         fechaNacimiento: pacienteData.fechaNacimiento || "",
-        obraSocial: pacienteData.obraSocialId || "",
         calle: pacienteData.calle || "",
         numero: pacienteData.numero || "",
         codigoPostal: pacienteData.codigoPostal || "",
@@ -73,6 +73,12 @@ export default function EditarPaciente() {
         provincia: pacienteData.provinciaId || "",
         localidad: pacienteData.localidadId || "",
         observaciones: pacienteData.observaciones || "",
+        obraSocialSeleccion: "",
+        obraSocialesSeleccionadas: pacienteData.obraSociales
+          ? pacienteData.obraSociales
+          : pacienteData.obraSocialId
+          ? [obrasSocialesData.find((o) => o.id === pacienteData.obraSocialId)].filter(Boolean)
+          : [],
       })
 
       setObrasSociales(obrasSocialesData)
@@ -107,6 +113,30 @@ export default function EditarPaciente() {
     if (errors[name]) {
       setErrors({ ...errors, [name]: "" })
     }
+  }
+
+  // Agregar obra social seleccionada
+  const handleAgregarObraSocial = () => {
+    const id = form.obraSocialSeleccion
+    if (!id) return
+    if (form.obraSocialesSeleccionadas.some((o) => o.id === Number(id))) return
+    const obra = obrasSociales.find((o) => o.id === Number(id))
+    if (obra) {
+      setForm({
+        ...form,
+        obraSocialesSeleccionadas: [...form.obraSocialesSeleccionadas, obra],
+        obraSocialSeleccion: "",
+      })
+      setErrors({ ...errors, obraSocial: "" })
+    }
+  }
+
+  // Quitar obra social
+  const handleQuitarObraSocial = (id) => {
+    setForm({
+      ...form,
+      obraSocialesSeleccionadas: form.obraSocialesSeleccionadas.filter((o) => o.id !== id),
+    })
   }
 
   const validarFormulario = () => {
@@ -144,8 +174,8 @@ export default function EditarPaciente() {
       }
     }
 
-    if (!form.obraSocial) {
-      nuevosErrores.obraSocial = "La obra social es obligatoria"
+    if (form.obraSocialesSeleccionadas.length === 0) {
+      nuevosErrores.obraSocial = "Debe agregar al menos una obra social"
     }
 
     if (!form.provincia) {
@@ -207,7 +237,9 @@ export default function EditarPaciente() {
         dpto: form.dpto.trim() || null,
         provinciaId: Number.parseInt(form.provincia),
         localidadId: Number.parseInt(form.localidad),
-        obraSocialId: Number.parseInt(form.obraSocial),
+        obraSocialId: form.obraSocialesSeleccionadas[0]?.id, // solo la primera para compatibilidad actual
+        // Si el backend acepta array: obraSocialIds: form.obraSocialesSeleccionadas.map(o => o.id)
+        obraSocialesIds: form.obraSocialesSeleccionadas.map(o => o.id),
         observaciones: form.observaciones.trim() || null,
       }
 
@@ -240,11 +272,9 @@ export default function EditarPaciente() {
   return (
     <Fondo>
       <NavBar />
-
       <div className="registro-card">
         <div className="container mt-5">
           <h2 className="text-center mb-4">Editar Paciente</h2>
-
           <form onSubmit={handleActualizar} className="paciente-form">
             <div className="row">
               <div className="col-md-6 mb-3">
@@ -354,21 +384,51 @@ export default function EditarPaciente() {
               <label htmlFor="obraSocial" className="form-label">
                 Obra Social
               </label>
-              <select
-                id="obraSocial"
-                name="obraSocial"
-                className={`form-select ${errors.obraSocial ? "is-invalid" : ""}`}
-                value={form.obraSocial}
-                onChange={handleChange}
-              >
-                <option value="">Seleccione una obra social</option>
-                {obrasSociales.map((obra) => (
-                  <option key={obra.id} value={obra.id}>
-                    {obra.nombre}
-                  </option>
-                ))}
-              </select>
-              {errors.obraSocial && <div className="invalid-feedback">{errors.obraSocial}</div>}
+              <div className="d-flex gap-2">
+                <select
+                  id="obraSocial"
+                  name="obraSocialSeleccion"
+                  className={`form-select ${errors.obraSocial ? "is-invalid" : ""}`}
+                  value={form.obraSocialSeleccion}
+                  onChange={handleChange}
+                >
+                  <option value="">Seleccione una obra social</option>
+                  {obrasSociales.map((obra) => (
+                    <option key={obra.id} value={obra.id}>
+                      {obra.nombre}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="btn btn-success"
+                  style={{ minWidth: "40px" }}
+                  onClick={handleAgregarObraSocial}
+                  disabled={!form.obraSocialSeleccion}
+                  title="Agregar obra social"
+                >
+                  +
+                </button>
+              </div>
+              {errors.obraSocial && <div className="invalid-feedback d-block">{errors.obraSocial}</div>}
+              {/* Listado de obras sociales seleccionadas */}
+              {form.obraSocialesSeleccionadas.length > 0 && (
+                <ul className="list-group mt-2">
+                  {form.obraSocialesSeleccionadas.map((obra) => (
+                    <li key={obra.id} className="list-group-item d-flex justify-content-between align-items-center">
+                      {obra.nombre}
+                      <button
+                        type="button"
+                        className="btn btn-danger btn-sm"
+                        onClick={() => handleQuitarObraSocial(obra.id)}
+                        title="Quitar obra social"
+                      >
+                        &times;
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
             <div className="mb-4">

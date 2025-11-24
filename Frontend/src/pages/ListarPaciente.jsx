@@ -111,7 +111,6 @@ export default function ListarPaciente() {
   return (
     <Fondo>
       <NavBar />
-
       <div className="registro-card">
         <div className="container mt-5">
           <div className="d-flex justify-content-between align-items-center mb-4">
@@ -163,7 +162,7 @@ export default function ListarPaciente() {
                       <th>Apellido</th>
                       <th>DNI</th>
                       <th>Teléfono</th>
-                      <th>Obra Social</th>
+                      <th>Obras Sociales</th>
                       <th>Acciones</th>
                     </tr>
                   </thead>
@@ -174,7 +173,11 @@ export default function ListarPaciente() {
                         <td>{paciente.apellido}</td>
                         <td>{paciente.dni}</td>
                         <td>{paciente.telefono}</td>
-                        <td>{paciente.obraSocialNombre}</td>
+                        <td>
+                          {paciente.obraSociales && paciente.obraSociales.length > 0
+                            ? paciente.obraSociales.map((obra) => obra.nombre).join(", ")
+                            : paciente.obraSocialNombre || "Sin obra social"}
+                        </td>
                         <td>
                           <button
                             className="btn btn-sm btn-outline-info me-2"
@@ -320,7 +323,10 @@ export default function ListarPaciente() {
                       <strong>Provincia:</strong> {pacienteSeleccionado.provinciaNombre || "No especificado"}
                     </p>
                     <p>
-                      <strong>Obra Social:</strong> {pacienteSeleccionado.obraSocialNombre || "No especificado"}
+                      <strong>Obras Sociales:</strong>{" "}
+                      {pacienteSeleccionado.obraSociales && pacienteSeleccionado.obraSociales.length > 0
+                        ? pacienteSeleccionado.obraSociales.map((obra) => obra.nombre).join(", ")
+                        : pacienteSeleccionado.obraSocialNombre || "No especificado"}
                     </p>
                   </div>
 

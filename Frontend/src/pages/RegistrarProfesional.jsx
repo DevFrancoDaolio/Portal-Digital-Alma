@@ -17,7 +17,7 @@ import "../styles/Profesionales.css"
 import NavBar from "../componentes/NavBar"
 import Fondo from "../componentes/Fondo"
 
-export default function AgregarProfesional({ isModal = false, onClose = null, profesional = null, onSave = null }) {
+export default function RegistrarProfesional({ isModal, onClose, profesional, onSave }) {
   const navigate = useNavigate()
   const { id } = useParams()
   const modoEdicion = !!id || !!profesional
@@ -33,6 +33,7 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
   const [nuevaEspecialidad, setNuevaEspecialidad] = useState("")
   const [loadingEspecialidad, setLoadingEspecialidad] = useState(false)
 
+  // Cambia el estado para especialidades seleccionadas
   const [form, setForm] = useState({
     nombre: "",
     apellido: "",
@@ -47,7 +48,10 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
     departamento: "",
     provinciaNombre: "",
     localidadNombre: "",
-    especialidadesConMatricula: [],
+    especialidadSeleccion: "",
+    matricula: "",
+    esPrincipal: false,
+    especialidadesSeleccionadas: [],
     fotoUrl: "",
   })
 
@@ -110,30 +114,42 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
       }
     }
 
+    // Esperamos a tener catálogos para formatear correctamente (provincias & especialidades)
     if (especialidadesDisponibles.length > 0 && provincias.length > 0) {
       cargarProfesional()
     }
   }, [id, profesional, navigate, especialidadesDisponibles, provincias])
 
+  // CORRECCIÓN: al cargar profesional dejamos provinciaNombre y localidadNombre tal como estaban guardados
+  // y formateamos especialidades para que tengan { id, nombre, matricula, esPrincipal }
   const cargarDatosProfesional = (prof) => {
+    // Mapear especialidades del profesional a la forma usada en el form
     const especialidadesFormateadas = (prof.especialidades || [])
       .map((esp) => {
-        const especialidad = especialidadesDisponibles.find((e) => e.nombre === esp.nombre)
+        // Si la especialidad ya trae id y nombre, usarlos; sino buscar por nombre en el catálogo
+        const encontrada = especialidadesDisponibles.find((e) => {
+          if (esp.id && e.id === esp.id) return true
+          return e.nombre === esp.nombre
+        })
         return {
-          especialidadId: especialidad?.id || null,
+          id: encontrada ? encontrada.id : esp.id || null,
+          nombre: encontrada ? encontrada.nombre : esp.nombre,
           matricula: esp.matricula || "",
           esPrincipal: esp.esPrincipal || false,
         }
       })
-      .filter((e) => e.especialidadId !== null)
+      .filter((e) => e.id !== null && e.id !== undefined)
 
-    const provincia = provincias.find((p) => p.nombre === prof.provincia)
+    // Asegurar que usamos las mismas propiedades que el formulario: provinciaNombre y localidadNombre
+    const provinciaNombre = prof.provinciaNombre || prof.provincia || ""
+    const localidadNombre = prof.localidadNombre || prof.localidad || ""
 
     if (prof.fotoUrl) {
       setFotoPreview(prof.fotoUrl)
     }
 
-    setForm({
+    setForm((prev) => ({
+      ...prev,
       nombre: prof.nombre || "",
       apellido: prof.apellido || "",
       sexo: prof.sexo?.toLowerCase() || "",
@@ -145,11 +161,11 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
       codigoPostal: prof.codigoPostal || "",
       piso: prof.piso || "",
       departamento: prof.departamento || "",
-      provinciaId: provincia?.id || "",
-      localidadNombre: prof.localidad || "", // Changed from localidadId to localidadNombre
-      especialidadesConMatricula: especialidadesFormateadas,
-      fotoUrl: prof.fotoUrl || "", // load existing photo URL
-    })
+      provinciaNombre: provinciaNombre,
+      localidadNombre: localidadNombre,
+      especialidadesSeleccionadas: especialidadesFormateadas,
+      fotoUrl: prof.fotoUrl || "",
+    }))
   }
 
   const handleFotoChange = (e) => {
@@ -174,7 +190,7 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
     }
   }
 
-  const handleAgregarEspecialidad = async () => {
+  const handleAgregarEspecialidadCatalogo = async () => {
     if (!nuevaEspecialidad.trim()) {
       alert("Por favor ingrese el nombre de la especialidad")
       return
@@ -185,18 +201,7 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
       const response = await createEspecialidad({ nombre: nuevaEspecialidad.trim() })
       const nuevaEsp = response.data
 
-      // Update the list of available specialties
       setEspecialidadesDisponibles([...especialidadesDisponibles, nuevaEsp])
-
-      // Automatically add it to the selected specialties
-      setForm({
-        ...form,
-        especialidadesConMatricula: [
-          ...form.especialidadesConMatricula,
-          { especialidadId: nuevaEsp.id, matricula: "", esPrincipal: false },
-        ],
-      })
-
       alert("Especialidad agregada exitosamente")
       setMostrarModalEspecialidad(false)
       setNuevaEspecialidad("")
@@ -255,8 +260,14 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
       newErrors.localidadNombre = "La Localidad es obligatoria"
     }
 
-    if (form.especialidadesConMatricula.length === 0) {
+    if (form.especialidadesSeleccionadas.length === 0) {
       newErrors.especialidades = "Debe seleccionar al menos una especialidad"
+    } else {
+      // Validar que cada especialidad tenga matrícula (según tu requerimiento)
+      const faltanMatriculas = form.especialidadesSeleccionadas.some((esp) => !esp.matricula?.trim())
+      if (faltanMatriculas) {
+        newErrors.especialidades = "Cada especialidad debe tener matrícula"
+      }
     }
 
     setErrors(newErrors)
@@ -264,10 +275,64 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
   }
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-    if (errors[e.target.name]) {
-      setErrors({ ...errors, [e.target.name]: "" })
+    const { name, value, type, checked } = e.target
+    setForm({
+      ...form,
+      [name]: type === "checkbox" ? checked : value,
+    })
+    if (errors[name]) setErrors({ ...errors, [name]: "" })
+  }
+
+  // Agregar especialidad seleccionada al listado
+  const handleAgregarEspecialidad = () => {
+    const id = form.especialidadSeleccion
+    if (!id) return
+    if (form.especialidadesSeleccionadas.some((e) => e.id === Number(id))) return
+    const especialidad = especialidadesDisponibles.find((e) => e.id === Number(id))
+    if (especialidad) {
+      setForm({
+        ...form,
+        especialidadesSeleccionadas: [
+          ...form.especialidadesSeleccionadas,
+          {
+            id: especialidad.id,
+            nombre: especialidad.nombre,
+            matricula: "",
+            esPrincipal: false,
+          },
+        ],
+        especialidadSeleccion: "",
+      })
     }
+  }
+
+  // Quitar especialidad del listado
+  const handleQuitarEspecialidad = (id) => {
+    setForm({
+      ...form,
+      especialidadesSeleccionadas: form.especialidadesSeleccionadas.filter((e) => e.id !== id),
+    })
+  }
+
+  // Actualizar matrícula
+  const handleActualizarMatricula = (id, matricula) => {
+    setForm({
+      ...form,
+      especialidadesSeleccionadas: form.especialidadesSeleccionadas.map((e) =>
+        e.id === id ? { ...e, matricula } : e
+      ),
+    })
+  }
+
+  // Marcar principal
+  const handleMarcarPrincipal = (id) => {
+    setForm({
+      ...form,
+      especialidadesSeleccionadas: form.especialidadesSeleccionadas.map((e) => ({
+        ...e,
+        esPrincipal: e.id === id,
+      })),
+    })
   }
 
   const handleAgregar = async (e) => {
@@ -305,8 +370,8 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
         departamento: form.departamento.trim(),
         provinciaNombre: form.provinciaNombre,
         localidadNombre: form.localidadNombre,
-        especialidadesConMatricula: form.especialidadesConMatricula.map((esp) => ({
-          especialidadId: Number.parseInt(esp.especialidadId),
+        especialidadesConMatricula: form.especialidadesSeleccionadas.map((esp) => ({
+          especialidadId: Number(esp.id),
           matricula: esp.matricula.trim(),
           esPrincipal: esp.esPrincipal,
         })),
@@ -591,7 +656,7 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
           </div>
 
           <div className="mb-4">
-            <div className="d-flex justify-content-between align-items-center mb-2">
+            <div className="d-flex justify-content-between align-items-center mb-3">
               <label className="form-label mb-0">Especialidades *</label>
               <button
                 type="button"
@@ -601,80 +666,85 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
                 + Agregar Nueva Especialidad
               </button>
             </div>
-            <table className="table table-bordered">
-              <thead>
-                <tr>
-                  <th>Seleccionar</th>
-                  <th>Matrícula</th>
-                  <th>Principal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {especialidadesDisponibles.map((esp) => {
-                  const seleccionada = form.especialidadesConMatricula.find((e) => e.especialidadId === esp.id)
-                  return (
-                    <tr key={esp.id}>
-                      <td>
-                        <div className="form-check">
+
+            {/* Select y botón alineados */}
+            <div className="d-flex gap-2 mb-3">
+              <select
+                name="especialidadSeleccion"
+                className="form-select"
+                value={form.especialidadSeleccion}
+                onChange={handleChange}
+              >
+                <option value="">Seleccione una especialidad</option>
+                {especialidadesDisponibles.map((esp) => (
+                  <option key={esp.id} value={esp.id}>
+                    {esp.nombre}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="btn btn-success"
+                style={{ minWidth: "40px" }}
+                onClick={handleAgregarEspecialidad}
+                disabled={!form.especialidadSeleccion}
+                title="Agregar especialidad"
+              >
+                +
+              </button>
+            </div>
+
+            {/* Listado de especialidades seleccionadas */}
+            {form.especialidadesSeleccionadas.length > 0 && (
+              <ul className="list-group">
+                {form.especialidadesSeleccionadas.map((esp) => (
+                  <li key={esp.id} className="list-group-item">
+                    <div className="d-flex justify-content-between align-items-center gap-3">
+                      <span className="fw-bold" style={{ minWidth: "150px" }}>
+                        {esp.nombre}
+                      </span>
+                      <div className="d-flex gap-3 align-items-center flex-grow-1">
+                        {/* Input Matrícula - Centrado */}
+                        <div className="flex-grow-1 d-flex justify-content-center">
+                          <input
+                            type="text"
+                            placeholder="Matrícula"
+                            value={esp.matricula}
+                            onChange={(e) => handleActualizarMatricula(esp.id, e.target.value)}
+                            className="form-control text-center"
+                            style={{ maxWidth: "180px" }}
+                          />
+                        </div>
+                        {/* Checkbox Principal */}
+                        <div className="form-check mb-0 ms-2">
                           <input
                             type="checkbox"
                             className="form-check-input"
-                            checked={!!seleccionada}
-                            onChange={() => {
-                              const yaExiste = !!seleccionada
-                              const nuevas = yaExiste
-                                ? form.especialidadesConMatricula.filter((e) => e.especialidadId !== esp.id)
-                                : [
-                                    ...form.especialidadesConMatricula,
-                                    { especialidadId: esp.id, matricula: "", esPrincipal: false },
-                                  ]
-                              setForm({ ...form, especialidadesConMatricula: nuevas })
-                              if (nuevas.length > 0 && errors.especialidades) {
-                                setErrors({ ...errors, especialidades: "" })
-                              }
-                            }}
+                            id={`principal-${esp.id}`}
+                            checked={esp.esPrincipal}
+                            onChange={() => handleMarcarPrincipal(esp.id)}
                           />
-                          <label className="form-check-label ms-2">{esp.nombre}</label>
+                          <label className="form-check-label" htmlFor={`principal-${esp.id}`}>
+                            Principal
+                          </label>
                         </div>
-                      </td>
-                      <td>
-                        {seleccionada && (
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Ej: MN 12345"
-                            value={seleccionada.matricula}
-                            onChange={(e) => {
-                              const actualizadas = form.especialidadesConMatricula.map((item) =>
-                                item.especialidadId === esp.id ? { ...item, matricula: e.target.value } : item,
-                              )
-                              setForm({ ...form, especialidadesConMatricula: actualizadas })
-                            }}
-                          />
-                        )}
-                      </td>
-                      <td className="text-center">
-                        {seleccionada && (
-                          <input
-                            type="radio"
-                            name="principal"
-                            checked={seleccionada.esPrincipal}
-                            onChange={() => {
-                              const actualizadas = form.especialidadesConMatricula.map((item) => ({
-                                ...item,
-                                esPrincipal: item.especialidadId === esp.id,
-                              }))
-                              setForm({ ...form, especialidadesConMatricula: actualizadas })
-                            }}
-                          />
-                        )}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-            {errors.especialidades && <div className="text-danger small mt-1">{errors.especialidades}</div>}
+                        {/* Botón Eliminar */}
+                        <button
+                          type="button"
+                          className="btn btn-danger btn-sm ms-2"
+                          onClick={() => handleQuitarEspecialidad(esp.id)}
+                          title="Quitar especialidad"
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {errors.especialidades && <div className="text-danger small mt-2">{errors.especialidades}</div>}
           </div>
 
           <button type="submit" className="btn btn-primary me-2" disabled={loading}>
@@ -718,7 +788,7 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
                   onKeyPress={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault()
-                      handleAgregarEspecialidad()
+                      handleAgregarEspecialidadCatalogo()
                     }
                   }}
                 />
@@ -742,7 +812,7 @@ export default function AgregarProfesional({ isModal = false, onClose = null, pr
                 <button
                   type="button"
                   className="btn btn-success"
-                  onClick={handleAgregarEspecialidad}
+                  onClick={handleAgregarEspecialidadCatalogo}
                   disabled={loadingEspecialidad || !nuevaEspecialidad.trim()}
                 >
                   {loadingEspecialidad ? "Agregando..." : "Agregar"}
