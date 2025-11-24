@@ -605,21 +605,32 @@ app.post('/api/profesionales', (req, res) => {
     })
   }
 
-  // Validación de campos requeridos
-  if (!nombre || !apellido || !sexo || !cuil || !email || !provinciaNombre || !localidadNombre || !especialidadesConMatricula || especialidadesConMatricula.length === 0) {
+  // Validación de campos requeridos (SIN validar especialidadesConMatricula por ahora)
+  if (!nombre || !apellido || !sexo || !cuil || !email || !provinciaNombre || !localidadNombre) {
     return res.status(400).json({
       success: false,
-      message: 'Faltan campos requeridos',
+      message: 'Faltan campos requeridos: nombre, apellido, sexo, cuil, email, provincia, localidad',
+    })
+  }
+
+  // Validar especialidades
+  if (!especialidadesConMatricula || !Array.isArray(especialidadesConMatricula) || especialidadesConMatricula.length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'Debe agregar al menos una especialidad con matrícula',
     })
   }
 
   // Procesar especialidades
-  const especialidadesFormateadas = especialidadesConMatricula.map((esp) => ({
-    id: esp.especialidadId,
-    nombre: especialidades.find((e) => e.id === esp.especialidadId)?.nombre || '',
-    matricula: esp.matricula,
-    esPrincipal: esp.esPrincipal,
-  }))
+  const especialidadesFormateadas = especialidadesConMatricula.map((esp) => {
+    const especialidadEncontrada = especialidades.find((e) => e.id === esp.especialidadId)
+    return {
+      id: esp.especialidadId,
+      nombre: especialidadEncontrada?.nombre || '',
+      matricula: esp.matricula,
+      esPrincipal: esp.esPrincipal || false,
+    }
+  })
 
   const nuevoProfesional = {
     id: nextProfesionalId++,
@@ -774,8 +785,11 @@ app.post('/api/especialidades', (req, res) => {
     })
   }
 
-  // Verificar que no exista
-  const existente = especialidades.find((e) => e.nombre.toLowerCase() === nombre.toLowerCase())
+  // Formatear: Primera letra mayúscula, resto minúsculas
+  const nombreFormateado = nombre.trim().charAt(0).toUpperCase() + nombre.trim().slice(1).toLowerCase()
+
+  // Verificar que no exista (case-insensitive)
+  const existente = especialidades.find((e) => e.nombre.toLowerCase() === nombreFormateado.toLowerCase())
   if (existente) {
     return res.status(400).json({
       success: false,
@@ -785,7 +799,7 @@ app.post('/api/especialidades', (req, res) => {
 
   const nuevaEspecialidad = {
     id: nextEspecialidadId++,
-    nombre: nombre.trim(),
+    nombre: nombreFormateado,
   }
 
   especialidades.push(nuevaEspecialidad)

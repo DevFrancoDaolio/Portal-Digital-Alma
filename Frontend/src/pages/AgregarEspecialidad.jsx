@@ -12,7 +12,6 @@ export default function AgregarEspecialidad() {
 
     const [form, setForm] = useState({
         nombre: "",
-        descripcion: "",
     })
 
     const handleChange = (e) => {
@@ -22,11 +21,21 @@ export default function AgregarEspecialidad() {
     const handleAgregar = async (e) => {
         e.preventDefault()
         try {
+            const nombreLimpio = form.nombre.trim()
+
+            if (!nombreLimpio) {
+                alert("Por favor ingrese un nombre para la especialidad")
+                return
+            }
+
+            // Formatear: Primera letra mayúscula, resto minúsculas
+            const nombreFormateado = nombreLimpio.charAt(0).toUpperCase() + nombreLimpio.slice(1).toLowerCase()
+
             await createEspecialidad({
-                nombre: form.nombre.trim(),
-                descripcion: form.descripcion.trim(),
+                nombre: nombreFormateado,
             })
-            console.log("Especialidad creada:", form)
+
+            console.log("Especialidad creada:", { nombre: nombreFormateado })
             alert("Especialidad creada exitosamente")
             navigate("/ListarProfesionales")
         } catch (error) {
@@ -41,12 +50,14 @@ export default function AgregarEspecialidad() {
             <div className="registro-card">
                 <div className="container mt-5">
                     <h2 className="text-center mb-4">Agregar Especialidad</h2>
-
-                    <form className="mb-4" onSubmit={handleAgregar}>
+                    <form onSubmit={handleAgregar} className="especialidad-form">
                         <div className="mb-3">
-                            <label className="form-label">Nombre</label>
+                            <label htmlFor="nombre" className="form-label">
+                                Nombre de la Especialidad *
+                            </label>
                             <input
                                 type="text"
+                                id="nombre"
                                 name="nombre"
                                 className="form-control"
                                 value={form.nombre}
@@ -55,29 +66,15 @@ export default function AgregarEspecialidad() {
                                 required
                             />
                         </div>
-                        <div className="mb-3">
-                            <label className="form-label">Descripción</label>
-                            <textarea
-                                name="descripcion"
-                                className="form-control"
-                                value={form.descripcion}
-                                onChange={handleChange}
-                                placeholder="Breve descripción de la especialidad"
-                                rows={4}
-                                required
-                            />
-                        </div>
 
-                        <button type="submit" className="btn btn-primary me-2">
-                            Guardar
-                        </button>
-                        <button
-                            type="button"
-                            className="btn btn-secondary"
-                            onClick={() => navigate("/ListarProfesionales")}
-                        >
-                            Cancelar
-                        </button>
+                        <div className="d-flex gap-2 justify-content-center">
+                            <button type="submit" className="btn btn-success">
+                                Guardar Especialidad
+                            </button>
+                            <button type="button" className="btn btn-secondary" onClick={() => navigate("/ListarProfesionales")}>
+                                Cancelar
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>

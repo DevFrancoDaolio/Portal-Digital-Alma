@@ -198,7 +198,10 @@ export default function RegistrarProfesional({ isModal, onClose, profesional, on
 
     setLoadingEspecialidad(true)
     try {
-      const response = await createEspecialidad({ nombre: nuevaEspecialidad.trim() })
+      // Formatear: Primera letra mayúscula, resto minúsculas
+      const nombreFormateado = nuevaEspecialidad.trim().charAt(0).toUpperCase() + nuevaEspecialidad.trim().slice(1).toLowerCase()
+
+      const response = await createEspecialidad({ nombre: nombreFormateado })
       const nuevaEsp = response.data
 
       setEspecialidadesDisponibles([...especialidadesDisponibles, nuevaEsp])
@@ -363,11 +366,11 @@ export default function RegistrarProfesional({ isModal, onClose, profesional, on
         cuil: form.cuil.replace(/[-\s]/g, ""),
         email: form.email.trim(),
         telefono: form.telefono.replace(/[-\s()]/g, ""),
-        calle: form.calle.trim(),
-        numero: form.numero.trim(),
-        codigoPostal: form.codigoPostal.trim(),
-        piso: form.piso.trim(),
-        departamento: form.departamento.trim(),
+        calle: form.calle.trim() || null,
+        numero: form.numero.trim() || null,
+        codigoPostal: form.codigoPostal.trim() || null,
+        piso: form.piso.trim() || null,
+        departamento: form.departamento.trim() || null,
         provinciaNombre: form.provinciaNombre,
         localidadNombre: form.localidadNombre,
         especialidadesConMatricula: form.especialidadesSeleccionadas.map((esp) => ({
@@ -392,7 +395,8 @@ export default function RegistrarProfesional({ isModal, onClose, profesional, on
           onSave({ ...profesionalData, id: profesionalId })
         }
       } else {
-        await crearProfesional(profesionalData)
+        const response = await crearProfesional(profesionalData)
+        console.log("Respuesta del servidor:", response)
         alert("Profesional registrado exitosamente")
       }
 
@@ -403,7 +407,7 @@ export default function RegistrarProfesional({ isModal, onClose, profesional, on
       }
     } catch (error) {
       console.error("Error al guardar profesional:", error)
-      const mensajeError = error.response?.data?.message || "Error al guardar el profesional"
+      const mensajeError = error.response?.data?.message || error.message || "Error al guardar el profesional"
       alert(mensajeError)
     } finally {
       setLoading(false)
