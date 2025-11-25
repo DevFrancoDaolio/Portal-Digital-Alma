@@ -150,6 +150,17 @@ export default function RegistrarTurno() {
       setPacientesFiltradasRapido([])
       return
     }
+    
+    // Solo filtrar si el texto NO es un nombre completo de paciente seleccionado
+    const pacienteSeleccionadoEnBusqueda = pacientes.find(
+      (pac) => `${pac.nombre} ${pac.apellido}` === busquedaPaciente
+    )
+    
+    if (pacienteSeleccionadoEnBusqueda) {
+      setPacientesFiltradasRapido([]) // Si ya está seleccionado, no mostrar dropdown
+      return
+    }
+    
     const pacientesFiltrados = pacientes.filter((pac) =>
       `${pac.nombre} ${pac.apellido}`.toLowerCase().includes(busquedaPaciente.toLowerCase()),
     )
