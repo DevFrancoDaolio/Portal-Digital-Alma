@@ -110,48 +110,51 @@ export default function RegistrarTurno() {
     fetchData()
   }, [])
 
+  // Especialidades: solo cuando cambia busquedaEspecialidad
   useEffect(() => {
-    // Filter especialidades by search
+    if (!busquedaEspecialidad || busquedaEspecialidad.trim() === "") {
+      setEspeciaFiltradasRapido([])
+      return
+    }
     const filtradasEsp = especialidades.filter((esp) =>
       esp.nombre?.toLowerCase().includes(busquedaEspecialidad.toLowerCase()),
     )
     setEspeciaFiltradasRapido(filtradasEsp)
+  }, [busquedaEspecialidad, especialidades])
 
-    // Filter professionals by especialidad and search
-    if (filtroEspecialidad) {
-      const profsFiltrados = profesionales.filter(
-        (prof) =>
-          prof.especialidades?.some((esp) => esp.id === Number.parseInt(filtroEspecialidad)) &&
-          prof.nombre?.toLowerCase().includes(busquedaProfesional.toLowerCase()),
-      )
-      setProfsFiltradasRapido(profsFiltrados)
-    } else {
-      const profsFiltrados = profesionales.filter((prof) =>
-        prof.nombre?.toLowerCase().includes(busquedaProfesional.toLowerCase()),
-      )
-      setProfsFiltradasRapido(profsFiltrados)
+  // Profesionales: cuando cambia busquedaProfesional o filtroEspecialidad
+  useEffect(() => {
+    if (!busquedaProfesional || !busquedaProfesional.trim()) {
+      // si no escribe, vaciar resultados (evita mostrar cuando escribe en otros campos)
+      setProfsFiltradasRapido([])
+      return
     }
 
-    // Filter pacientes by search
+    let profsFiltrados = profesionales.filter((prof) =>
+      (prof.nombre?.toLowerCase().includes(busquedaProfesional.toLowerCase()) ||
+        prof.apellido?.toLowerCase().includes(busquedaProfesional.toLowerCase()))
+    )
+
+    if (filtroEspecialidad) {
+      profsFiltrados = profsFiltrados.filter((prof) =>
+        prof.especialidades?.some((esp) => esp.id === Number.parseInt(filtroEspecialidad)),
+      )
+    }
+
+    setProfsFiltradasRapido(profsFiltrados)
+  }, [busquedaProfesional, filtroEspecialidad, profesionales])
+
+  // Pacientes (rápido): cuando cambia busquedaPaciente
+  useEffect(() => {
+    if (!busquedaPaciente || !busquedaPaciente.trim()) {
+      setPacientesFiltradasRapido([])
+      return
+    }
     const pacientesFiltrados = pacientes.filter((pac) =>
-      pac.nombre?.toLowerCase().includes(busquedaPaciente.toLowerCase()),
+      `${pac.nombre} ${pac.apellido}`.toLowerCase().includes(busquedaPaciente.toLowerCase()),
     )
     setPacientesFiltradasRapido(pacientesFiltrados)
-
-    const pacientesFiltradasHeader = pacientes.filter((pac) =>
-      `${pac.nombre} ${pac.apellido}`.toLowerCase().includes(busquedaPacienteHeader.toLowerCase()),
-    )
-    setPacientesFiltradasHeader(pacientesFiltradasHeader)
-  }, [
-    busquedaPaciente,
-    busquedaEspecialidad,
-    busquedaProfesional,
-    filtroEspecialidad,
-    especialidades,
-    profesionales,
-    pacientes,
-    busquedaPacienteHeader,
-  ])
+  }, [busquedaPaciente, pacientes])
 
   useEffect(() => {
     if (form.especialidadId) {
@@ -1001,7 +1004,7 @@ export default function RegistrarTurno() {
                         onChange={(e) => setBusquedaPaciente(e.target.value)}
                         className="entrada-busqueda"
                       />
-                      {busquedaPaciente && pacientesFiltradasRapido.length > 0 && (
+                      {pacientesFiltradasRapido.length > 0 && (
                         <div className="lista-desplegable">
                           {pacientesFiltradasRapido.map((pac) => (
                             <div
@@ -1009,7 +1012,16 @@ export default function RegistrarTurno() {
                               className="item-lista"
                               onClick={() => {
                                 setBusquedaPaciente(`${pac.nombre} ${pac.apellido}`)
-                                setTurnoPreview({ ...turnoPreview, pacienteId: pac.id })
+                                setTurnoPreview((prev) => ({ ...(prev || {}), pacienteId: pac.id }))
+                                // Cerrar la lista de resultados inmediatamente
+                                setPacientesFiltradasRapido([])
+                                // quitar foco del input para evitar que reaparezca el teclado en móvil
+                                setTimeout(() => {
+                                  const active = document.activeElement
+                                  if (active && typeof active.blur === "function") {
+                                    active.blur()
+                                  }
+                                }, 50)
                               }}
                             >
                               {pac.nombre} {pac.apellido} - DNI: {pac.dni}
@@ -1058,7 +1070,6 @@ export default function RegistrarTurno() {
                         placeholder="Buscar profesional..."
                         value={busquedaProfesional}
                         onChange={(e) => setBusquedaProfesional(e.target.value)}
-                        onFocus={() => setEspeciaFiltradasRapido([])}
                         className="entrada-busqueda"
                       />
                       {busquedaProfesional && profFiltradasRapido.length > 0 && (
@@ -1070,7 +1081,7 @@ export default function RegistrarTurno() {
                               onClick={() => {
                                 setBusquedaProfesional(`Dr/a. ${prof.apellido}, ${prof.nombre}`)
                                 setFiltroProfesional(prof.id)
-                                setProfsFiltradasRapido([])
+                                setProfsFiltradasRapido([]) // cerrar dropdown al seleccionar
                               }}
                             >
                               Dr/a. {prof.apellido}, {prof.nombre}
