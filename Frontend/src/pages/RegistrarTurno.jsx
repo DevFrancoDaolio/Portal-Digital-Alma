@@ -110,48 +110,62 @@ export default function RegistrarTurno() {
     fetchData()
   }, [])
 
+  // Especialidades: solo cuando cambia busquedaEspecialidad
   useEffect(() => {
-    // Filter especialidades by search
+    if (!busquedaEspecialidad || busquedaEspecialidad.trim() === "") {
+      setEspeciaFiltradasRapido([])
+      return
+    }
     const filtradasEsp = especialidades.filter((esp) =>
       esp.nombre?.toLowerCase().includes(busquedaEspecialidad.toLowerCase()),
     )
     setEspeciaFiltradasRapido(filtradasEsp)
+  }, [busquedaEspecialidad, especialidades])
 
-    // Filter professionals by especialidad and search
-    if (filtroEspecialidad) {
-      const profsFiltrados = profesionales.filter(
-        (prof) =>
-          prof.especialidades?.some((esp) => esp.id === Number.parseInt(filtroEspecialidad)) &&
-          prof.nombre?.toLowerCase().includes(busquedaProfesional.toLowerCase()),
-      )
-      setProfsFiltradasRapido(profsFiltrados)
-    } else {
-      const profsFiltrados = profesionales.filter((prof) =>
-        prof.nombre?.toLowerCase().includes(busquedaProfesional.toLowerCase()),
-      )
-      setProfsFiltradasRapido(profsFiltrados)
+  // Profesionales: cuando cambia busquedaProfesional o filtroEspecialidad
+  useEffect(() => {
+    if (!busquedaProfesional || !busquedaProfesional.trim()) {
+      // si no escribe, vaciar resultados (evita mostrar cuando escribe en otros campos)
+      setProfsFiltradasRapido([])
+      return
     }
 
-    // Filter pacientes by search
+    let profsFiltrados = profesionales.filter((prof) =>
+      (prof.nombre?.toLowerCase().includes(busquedaProfesional.toLowerCase()) ||
+        prof.apellido?.toLowerCase().includes(busquedaProfesional.toLowerCase()))
+    )
+
+    if (filtroEspecialidad) {
+      profsFiltrados = profsFiltrados.filter((prof) =>
+        prof.especialidades?.some((esp) => esp.id === Number.parseInt(filtroEspecialidad)),
+      )
+    }
+
+    setProfsFiltradasRapido(profsFiltrados)
+  }, [busquedaProfesional, filtroEspecialidad, profesionales])
+
+  // Pacientes (rápido): cuando cambia busquedaPaciente
+  useEffect(() => {
+    if (!busquedaPaciente || !busquedaPaciente.trim()) {
+      setPacientesFiltradasRapido([])
+      return
+    }
+    
+    // Solo filtrar si el texto NO es un nombre completo de paciente seleccionado
+    const pacienteSeleccionadoEnBusqueda = pacientes.find(
+      (pac) => `${pac.nombre} ${pac.apellido}` === busquedaPaciente
+    )
+    
+    if (pacienteSeleccionadoEnBusqueda) {
+      setPacientesFiltradasRapido([]) // Si ya está seleccionado, no mostrar dropdown
+      return
+    }
+    
     const pacientesFiltrados = pacientes.filter((pac) =>
-      pac.nombre?.toLowerCase().includes(busquedaPaciente.toLowerCase()),
+      `${pac.nombre} ${pac.apellido}`.toLowerCase().includes(busquedaPaciente.toLowerCase()),
     )
     setPacientesFiltradasRapido(pacientesFiltrados)
-
-    const pacientesFiltradasHeader = pacientes.filter((pac) =>
-      `${pac.nombre} ${pac.apellido}`.toLowerCase().includes(busquedaPacienteHeader.toLowerCase()),
-    )
-    setPacientesFiltradasHeader(pacientesFiltradasHeader)
-  }, [
-    busquedaPaciente,
-    busquedaEspecialidad,
-    busquedaProfesional,
-    filtroEspecialidad,
-    especialidades,
-    profesionales,
-    pacientes,
-    busquedaPacienteHeader,
-  ])
+  }, [busquedaPaciente, pacientes])
 
   useEffect(() => {
     if (form.especialidadId) {
@@ -1001,7 +1015,7 @@ export default function RegistrarTurno() {
                         onChange={(e) => setBusquedaPaciente(e.target.value)}
                         className="entrada-busqueda"
                       />
-                      {busquedaPaciente && pacientesFiltradasRapido.length > 0 && (
+                      {pacientesFiltradasRapido.length > 0 && (
                         <div className="lista-desplegable">
                           {pacientesFiltradasRapido.map((pac) => (
                             <div
@@ -1009,7 +1023,16 @@ export default function RegistrarTurno() {
                               className="item-lista"
                               onClick={() => {
                                 setBusquedaPaciente(`${pac.nombre} ${pac.apellido}`)
-                                setTurnoPreview({ ...turnoPreview, pacienteId: pac.id })
+                                setTurnoPreview((prev) => ({ ...(prev || {}), pacienteId: pac.id }))
+                                // Cerrar la lista de resultados inmediatamente
+                                setPacientesFiltradasRapido([])
+                                // quitar foco del input para evitar que reaparezca el teclado en móvil
+                                setTimeout(() => {
+                                  const active = document.activeElement
+                                  if (active && typeof active.blur === "function") {
+                                    active.blur()
+                                  }
+                                }, 50)
                               }}
                             >
                               {pac.nombre} {pac.apellido} - DNI: {pac.dni}
@@ -1058,7 +1081,6 @@ export default function RegistrarTurno() {
                         placeholder="Buscar profesional..."
                         value={busquedaProfesional}
                         onChange={(e) => setBusquedaProfesional(e.target.value)}
-                        onFocus={() => setEspeciaFiltradasRapido([])}
                         className="entrada-busqueda"
                       />
                       {busquedaProfesional && profFiltradasRapido.length > 0 && (
@@ -1070,7 +1092,7 @@ export default function RegistrarTurno() {
                               onClick={() => {
                                 setBusquedaProfesional(`Dr/a. ${prof.apellido}, ${prof.nombre}`)
                                 setFiltroProfesional(prof.id)
-                                setProfsFiltradasRapido([])
+                                setProfsFiltradasRapido([]) // cerrar dropdown al seleccionar
                               }}
                             >
                               Dr/a. {prof.apellido}, {prof.nombre}
@@ -1096,11 +1118,36 @@ export default function RegistrarTurno() {
                             const dia = String(date.getDate()).padStart(2, "0")
                             setTurnoPreview({ ...turnoPreview, fecha: `${año}-${mes}-${dia}` })
                           }}
-                          minDate={new Date()}
+                          locale="es"
                           dateFormat="dd/MM/yyyy"
-                          className="entrada-fecha"
-                          placeholderText="Seleccionar fecha"
+                          placeholderText="dd/mm/aaaa"
+                          minDate={new Date()}
                           filterDate={(date) => date.getDay() !== 0}
+                          wrapperClassName="w-100"
+                          showYearDropdown
+                          showMonthDropdown
+                          dropdownMode="select"
+                          className={`form-control ${errors.fecha ? "is-invalid" : ""}`}
+                          onKeyDown={(e) => {
+                            const allowedKeys = ["Backspace", "Tab", "Enter", "Delete", "ArrowLeft", "ArrowRight"]
+                            if (allowedKeys.includes(e.key) || /^\d$/.test(e.key)) {
+                              return
+                            }
+                            e.preventDefault()
+                          }}
+                          onInput={(e) => {
+                            let valor = e.target.value.replace(/\D/g, "")
+                            
+                            if (valor.length >= 2) {
+                              valor = valor.slice(0, 2) + "/" + valor.slice(2)
+                            }
+                            if (valor.length >= 5) {
+                              valor = valor.slice(0, 5) + "/" + valor.slice(5, 9)
+                            }
+                            
+                            e.target.value = valor
+                            setForm({ ...form, fecha: valor })
+                          }}
                         />
                       </div>
                     )}
@@ -1379,7 +1426,7 @@ export default function RegistrarTurno() {
                     Fecha *
                   </label>
                   <DatePicker
-                    selected={form.fecha ? new Date(form.fecha) : null}
+                    selected={form.fecha ? new Date(form.fecha + "T12:00:00") : null}
                     onChange={(date) => {
                       if (date.getDay() === 0) {
                         alert("No se pueden registrar turnos los domingos")
@@ -1387,11 +1434,36 @@ export default function RegistrarTurno() {
                       }
                       setForm({ ...form, fecha: date.toISOString().split("T")[0] })
                     }}
+                    locale="es"
                     dateFormat="dd/MM/yyyy"
                     placeholderText="dd/mm/aaaa"
                     minDate={new Date()}
                     filterDate={(date) => date.getDay() !== 0}
+                    wrapperClassName="w-100"
+                    showYearDropdown
+                    showMonthDropdown
+                    dropdownMode="select"
                     className={`form-control ${errors.fecha ? "is-invalid" : ""}`}
+                    onKeyDown={(e) => {
+                      const allowedKeys = ["Backspace", "Tab", "Enter", "Delete", "ArrowLeft", "ArrowRight"]
+                      if (allowedKeys.includes(e.key) || /^\d$/.test(e.key)) {
+                        return
+                      }
+                      e.preventDefault()
+                    }}
+                    onInput={(e) => {
+                      let valor = e.target.value.replace(/\D/g, "")
+                      
+                      if (valor.length >= 2) {
+                        valor = valor.slice(0, 2) + "/" + valor.slice(2)
+                      }
+                      if (valor.length >= 5) {
+                        valor = valor.slice(0, 5) + "/" + valor.slice(5, 9)
+                      }
+                      
+                      e.target.value = valor
+                      setForm({ ...form, fecha: valor })
+                    }}
                   />
                   {errors.fecha && <div className="invalid-feedback">{errors.fecha}</div>}
                 </div>

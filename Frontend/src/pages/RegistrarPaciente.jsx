@@ -6,6 +6,12 @@ import "../styles/Paciente.css"
 import NavBar from "../componentes/NavBar"
 import Fondo from "../componentes/Fondo"
 import pacienteService from "../services/pacientesService"
+import DatePicker, { registerLocale } from "react-datepicker"
+import es from "date-fns/locale/es"
+import "react-datepicker/dist/react-datepicker.css"
+
+// Registrar locale español
+registerLocale("es", es)
 
 export default function RegistrarPaciente() {
   const navigate = useNavigate()
@@ -145,10 +151,17 @@ export default function RegistrarPaciente() {
     if (!form.fechaNacimiento) {
       nuevosErrores.fechaNacimiento = "La fecha de nacimiento es obligatoria"
     } else {
-      const fechaNac = new Date(form.fechaNacimiento)
-      const hoy = new Date()
-      if (fechaNac >= hoy) {
-        nuevosErrores.fechaNacimiento = "Ingresar una fecha válida (debe ser anterior a hoy)"
+      try {
+        // Convertir dd/mm/yyyy a yyyy-mm-dd para validar
+        const [dia, mes, anio] = form.fechaNacimiento.split("/")
+        const fechaNac = new Date(`${anio}-${mes}-${dia}`)
+        const hoy = new Date()
+        hoy.setHours(0, 0, 0, 0)
+        if (fechaNac >= hoy) {
+          nuevosErrores.fechaNacimiento = "Ingresar una fecha válida (debe ser anterior a hoy)"
+        }
+      } catch {
+        nuevosErrores.fechaNacimiento = "Formato de fecha inválido (dd/mm/yyyy)"
       }
     }
 
@@ -209,7 +222,7 @@ export default function RegistrarPaciente() {
         dni: form.dni.trim(),
         email: form.email.trim(),
         telefono: form.telefono.trim() || null,
-        fechaNacimiento: form.fechaNacimiento,
+        fechaNacimiento: convertirFechaAFormato(form.fechaNacimiento), // Convertir al formato DD/MM/YYYY
         calle: form.calle.trim() || null,
         numero: form.numero.trim() || null,
         codigoPostal: form.codigoPostal.trim() || null,
@@ -217,7 +230,7 @@ export default function RegistrarPaciente() {
         dpto: form.dpto.trim() || null,
         provinciaId: Number.parseInt(form.provincia),
         localidadId: Number.parseInt(form.localidad),
-        obraSocialesIds: form.obraSocialesSeleccionadas.map((o) => o.id), // todos los IDs de obras sociales seleccionadas
+        obraSocialesIds: form.obraSocialesSeleccionadas.map((o) => o.id),
         observaciones: form.observaciones.trim() || null,
       }
 
@@ -233,6 +246,26 @@ export default function RegistrarPaciente() {
     } finally {
       setGuardando(false)
     }
+  }
+
+  // Agregar función auxiliar para convertir fecha de dd/mm/yyyy a Date
+  const convertirFechaAlDatePicker = (fechaFormato) => {
+    if (!fechaFormato) return null
+    const [dia, mes, anio] = fechaFormato.split("/")
+    if (!dia || !mes || !anio) return null
+    return new Date(`${anio}-${mes}-${dia}`)
+  }
+
+  // Agregar función auxiliar para convertir fecha
+  const convertirFechaAFormato = (fechaTexto) => {
+    if (!fechaTexto) return null
+    // Si ya está en formato dd/mm/yyyy, devolverlo tal cual
+    if (fechaTexto.includes("/")) {
+      return fechaTexto
+    }
+    // Si está en formato YYYY-MM-DD, convertir a DD/MM/YYYY
+    const [anio, mes, dia] = fechaTexto.split("-")
+    return `${dia}/${mes}/${anio}`
   }
 
   if (cargando) {
@@ -349,15 +382,54 @@ export default function RegistrarPaciente() {
                 <label htmlFor="fechaNacimiento" className="form-label">
                   Fecha de Nacimiento
                 </label>
-                <input
-                  type="date"
-                  id="fechaNacimiento"
-                  name="fechaNacimiento"
+                <DatePicker
+                  selected={form.fechaNacimiento ? convertirFechaAlDatePicker(form.fechaNacimiento) : null}
+                  onChange={(date) => {
+                    if (date) {
+                      const dia = String(date.getDate()).padStart(2, "0")
+                      const mes = String(date.getMonth() + 1).padStart(2, "0")
+                      const anio = date.getFullYear()
+                      const fechaFormateada = `${dia}/${mes}/${anio}`
+                      setForm({ ...form, fechaNacimiento: fechaFormateada })
+                      if (errors.fechaNacimiento) {
+                        setErrors({ ...errors, fechaNacimiento: "" })
+                      }
+                    }
+                  }}
+                  locale="es"
+                  dateFormat="dd/MM/yyyy"
+                  maxDate={new Date()}
                   className={`form-control ${errors.fechaNacimiento ? "is-invalid" : ""}`}
-                  value={form.fechaNacimiento}
-                  onChange={handleChange}
+                  placeholderText="dd/mm/aaaa"
+                  wrapperClassName="w-100"
+                  showYearDropdown
+                  showMonthDropdown
+                  dropdownMode="select"
+                  onKeyDown={(e) => {
+                    const allowedKeys = ["Backspace", "Tab", "Enter", "Delete", "ArrowLeft", "ArrowRight"]
+                    if (allowedKeys.includes(e.key) || /^\d$/.test(e.key)) {
+                      return
+                    }
+                    e.preventDefault()
+                  }}
+                  onInput={(e) => {
+                    let valor = e.target.value.replace(/\D/g, "")
+                    
+                    if (valor.length >= 2) {
+                      valor = valor.slice(0, 2) + "/" + valor.slice(2)
+                    }
+                    if (valor.length >= 5) {
+                      valor = valor.slice(0, 5) + "/" + valor.slice(5, 9)
+                    }
+                    
+                    e.target.value = valor
+                    setForm({ ...form, fechaNacimiento: valor })
+                    if (errors.fechaNacimiento) {
+                      setErrors({ ...errors, fechaNacimiento: "" })
+                    }
+                  }}
                 />
-                {errors.fechaNacimiento && <div className="invalid-feedback">{errors.fechaNacimiento}</div>}
+                {errors.fechaNacimiento && <div className="invalid-feedback d-block">{errors.fechaNacimiento}</div>}
               </div>
             </div>
 
