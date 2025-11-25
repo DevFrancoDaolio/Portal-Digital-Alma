@@ -11,6 +11,13 @@ app.use(cors())
 app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ limit: '50mb', extended: true }))
 
+
+// 🔷 BASE DE DATOS EN MEMORIA - HORARIOS DE PROFESIONALES
+let horariosProfesionales = []
+let nextHorarioProfesionalId = 1
+
+
+
 // 🔷 BASE DE DATOS EN MEMORIA - CONSULTORIOS
 let consultorios = [
   {
@@ -1286,6 +1293,88 @@ app.get('/api/auth/me', (req, res) => {
     message: 'Sesión válida',
   })
 })
+
+
+// POST: Registrar nuevo horario de profesional
+app.post('/api/horarios', (req, res) => {
+  const { profesionalId, dia, horaInicio, horaFin } = req.body
+
+  if (!profesionalId || !dia || !horaInicio || !horaFin) {
+    return res.status(400).json({
+      success: false,
+      message: "Faltan datos requeridos"
+    })
+  }
+
+  // Validar solapamiento
+  const conflicto = horariosProfesionales.some(h =>
+    h.profesionalId === Number(profesionalId) &&
+    h.dia === dia &&
+    !(
+      horaFin <= h.horaInicio ||
+      horaInicio >= h.horaFin
+    )
+  )
+
+  if (conflicto) {
+    return res.status(400).json({
+      success: false,
+      message: "El horario se solapa con otro existente"
+    })
+  }
+
+  const nuevo = {
+    id: nextHorarioProfesionalId++,
+    profesionalId: Number(profesionalId),
+    dia,
+    horaInicio,
+    horaFin
+  }
+
+  horariosProfesionales.push(nuevo)
+
+  res.status(201).json({
+    success: true,
+    message: "Horario registrado",
+    data: nuevo
+  })
+})
+
+// GET: Obtener horarios de un profesional
+app.get('/api/profesionales/:id/horarios', (req, res) => {
+  const profesionalId = Number(req.params.id)
+
+  const horarios = horariosProfesionales.filter(h => h.profesionalId === profesionalId)
+
+  res.json({
+    success: true,
+    data: horarios
+  })
+})
+
+
+// DELETE: eliminar horario
+app.delete('/api/horarios/:id', (req, res) => {
+  const id = Number(req.params.id)
+
+  const index = horariosProfesionales.findIndex(h => h.id === id)
+
+  if (index === -1) {
+    return res.status(404).json({
+      success: false,
+      message: "Horario no encontrado"
+    })
+  }
+
+  const eliminado = horariosProfesionales.splice(index, 1)[0]
+
+  res.json({
+    success: true,
+    message: "Horario eliminado",
+    data: eliminado
+  })
+})
+
 
 // Health check
 app.get('/api/health', (req, res) => {

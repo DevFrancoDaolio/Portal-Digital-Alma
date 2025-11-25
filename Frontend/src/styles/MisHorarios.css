@@ -318,6 +318,41 @@
   margin-bottom: 2rem;
 }
 
+.header-grilla {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.btn-registrar-horario-grilla {
+  padding: 0.75rem 2rem;
+  background-color: #90caf9;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-registrar-horario-grilla:hover {
+  background-color: #64b5f6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.sin-horarios-grilla {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.sin-horarios-grilla p {
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
 .calendario-semanal {
   display: flex;
   align-items: flex-start;
@@ -474,56 +509,6 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .main-layout-horario {
-    flex-direction: column;
-  }
-
-  /* Added responsive styles for new layout */
-  .main-layout-horario-sin-sidebar {
-    flex-direction: column;
-  }
-
-  .sidebar-horario {
-    width: 100%;
-    padding: 1rem;
-  }
-
-  .menu-sidebar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .menu-sidebar li {
-    flex: 1 1 calc(50% - 0.5rem);
-    min-width: 150px;
-  }
-
-  .contenido-horario {
-    padding: 1rem;
-  }
-
-  .card-horario {
-    padding: 1rem;
-  }
-
-  .titulo-registro {
-    font-size: 1.4rem;
-  }
-
-  .footer-botones-horarios {
-    flex-direction: column;
-  }
-
-  .btn-ver-horario,
-  .btn-registrar-horario {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
 /* New detailed card-based summary layout for better visual distinction */
 .resumen-detallado-columnas {
   display: grid;
@@ -587,6 +572,36 @@
   font-weight: 500;
 }
 
+.acciones-horario-grilla {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.btn-editar-grilla,
+.btn-eliminar-grilla {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-editar-grilla:hover {
+  background-color: #e3f2fd;
+  transform: scale(1.1);
+}
+
+.btn-eliminar-grilla:hover {
+  background-color: #ffebee;
+  transform: scale(1.1);
+}
+
 .sin-horarios-dia {
   text-align: center;
   color: #999;
@@ -597,7 +612,327 @@
   border: 1px dashed #ddd;
 }
 
-/* Hide the old pill-based summary */
-.resumen-horarios-columnas {
-  display: none;
+.sin-horarios-dia p {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.btn-agregar-dia {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.3rem;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-agregar-dia:hover {
+  background-color: #0056b3;
+  transform: scale(1.1);
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content-horario {
+  background-color: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #999;
+  transition: color 0.2s ease;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.close-button:hover {
+  color: #333;
+  background-color: #f8f9fa;
+}
+
+.modal-body-horario {
+  padding: 1.5rem;
+}
+
+.alert-error {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #c62828;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: #f8f9fa;
+  transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #007bff;
+  background-color: #fff;
+}
+
+.form-control option {
+  padding: 0.5rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.error-text {
+  color: #c62828;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.btn-secundario {
+  padding: 0.75rem 1.5rem;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secundario:hover {
+  background-color: #5a6268;
+}
+
+.vista-previa-content {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.vista-previa-content h3 {
+  color: #007bff;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.vista-previa-content p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.vista-previa-content strong {
+  color: #555;
+}
+
+/* Contenedor para alinear los botones arriba a la derecha */
+.acciones-grilla-top {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+/* Botón editar */
+.btn-editar-grilla {
+  background-color: #ffeb3b;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  padding: 0.35rem 0.5rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-editar-grilla:hover {
+  background-color: #fdd835;
+  transform: scale(1.07);
+}
+
+/* Botón eliminar */
+.btn-eliminar-grilla {
+  background-color: #f44336;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  padding: 0.35rem 0.5rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-eliminar-grilla:hover {
+  background-color: #d32f2f;
+  transform: scale(1.07);
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main-layout-horario {
+    flex-direction: column;
+  }
+
+  /* Added responsive styles for new layout */
+  .main-layout-horario-sin-sidebar {
+    flex-direction: column;
+  }
+
+  .sidebar-horario {
+    width: 100%;
+    padding: 1rem;
+  }
+
+  .menu-sidebar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .menu-sidebar li {
+    flex: 1 1 calc(50% - 0.5rem);
+    min-width: 150px;
+  }
+
+  .contenido-horario {
+    padding: 1rem;
+  }
+
+  .card-horario {
+    padding: 1rem;
+  }
+
+  .titulo-registro {
+    font-size: 1.4rem;
+  }
+
+  .footer-botones-horarios {
+    flex-direction: column;
+  }
+
+  .btn-ver-horario,
+  .btn-registrar-horario {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .resumen-detallado-columnas {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .header-grilla {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-registrar-horario-grilla {
+    width: 100%;
+  }
+
+  .form-row {
+    flex-direction: column;
+  }
+
+  .modal-content-horario {
+    width: 95%;
+  }
+}
+
+@media (max-width: 480px) {
+  .resumen-detallado-columnas {
+    grid-template-columns: 1fr;
+  }
+
+  .dia-titulo {
+    font-size: 1rem;
+  }
+
+  .card-horario-resumen {
+    padding: 0.75rem;
+  }
+
+  .horario-tiempo {
+    font-size: 1rem;
+  }
+
+  .titulo-calendario {
+    font-size: 1.5rem;
+  }
 }

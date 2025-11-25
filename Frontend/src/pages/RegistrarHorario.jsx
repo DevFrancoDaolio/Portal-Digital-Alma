@@ -18,7 +18,7 @@ export default function RegistrarHorario() {
   const [errors, setErrors] = useState({})
   const [vistaPrevia, setVistaPrevia] = useState(false)
 
-  const diasSemana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"]
+  const diasSemana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]
 
   // Generar horarios en intervalos de 15 minutos
   const generarHorarios = () => {
@@ -94,23 +94,25 @@ export default function RegistrarHorario() {
     }
   }
 
-  const handleConfirmar = () => {
-    const horarios = JSON.parse(localStorage.getItem("horarios") || "[]")
+const handleConfirmar = () => {
+  const horarios = JSON.parse(localStorage.getItem("horarios") || "[]")
 
-    const nuevoHorario = {
-      id: Date.now(),
-      profesionalId: sesion?.profesionalId || 1,
-      nombreProfesional: sesion ? `${sesion.nombre} ${sesion.apellido}` : "Profesional Demo",
-      dia: formData.dia,
-      horaInicio: formData.horaInicio,
-      horaFin: formData.horaFin,
-    }
-
-    horarios.push(nuevoHorario)
-    localStorage.setItem("horarios", JSON.stringify(horarios))
-
-    navigate("/MisHorarios")
+  const nuevoHorario = {
+    id: Date.now(),
+    profesionalId: sesion?.profesionalId || 1,
+    nombreProfesional: sesion ? `${sesion.nombre} ${sesion.apellido}` : "Profesional Demo",
+    dia: formData.dia,
+    horaInicio: formData.horaInicio,
+    horaFin: formData.horaFin,
   }
+
+  horarios.push(nuevoHorario)
+  localStorage.setItem("horarios", JSON.stringify(horarios))
+
+  navigate("/MisHorarios")
+}
+
+
 
   if (vistaPrevia) {
     return (
