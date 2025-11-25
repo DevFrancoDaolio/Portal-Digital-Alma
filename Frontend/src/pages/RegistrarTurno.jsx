@@ -1118,11 +1118,36 @@ export default function RegistrarTurno() {
                             const dia = String(date.getDate()).padStart(2, "0")
                             setTurnoPreview({ ...turnoPreview, fecha: `${año}-${mes}-${dia}` })
                           }}
-                          minDate={new Date()}
+                          locale="es"
                           dateFormat="dd/MM/yyyy"
-                          className="entrada-fecha"
-                          placeholderText="Seleccionar fecha"
+                          placeholderText="dd/mm/aaaa"
+                          minDate={new Date()}
                           filterDate={(date) => date.getDay() !== 0}
+                          wrapperClassName="w-100"
+                          showYearDropdown
+                          showMonthDropdown
+                          dropdownMode="select"
+                          className={`form-control ${errors.fecha ? "is-invalid" : ""}`}
+                          onKeyDown={(e) => {
+                            const allowedKeys = ["Backspace", "Tab", "Enter", "Delete", "ArrowLeft", "ArrowRight"]
+                            if (allowedKeys.includes(e.key) || /^\d$/.test(e.key)) {
+                              return
+                            }
+                            e.preventDefault()
+                          }}
+                          onInput={(e) => {
+                            let valor = e.target.value.replace(/\D/g, "")
+                            
+                            if (valor.length >= 2) {
+                              valor = valor.slice(0, 2) + "/" + valor.slice(2)
+                            }
+                            if (valor.length >= 5) {
+                              valor = valor.slice(0, 5) + "/" + valor.slice(5, 9)
+                            }
+                            
+                            e.target.value = valor
+                            setForm({ ...form, fecha: valor })
+                          }}
                         />
                       </div>
                     )}
@@ -1401,7 +1426,7 @@ export default function RegistrarTurno() {
                     Fecha *
                   </label>
                   <DatePicker
-                    selected={form.fecha ? new Date(form.fecha) : null}
+                    selected={form.fecha ? new Date(form.fecha + "T12:00:00") : null}
                     onChange={(date) => {
                       if (date.getDay() === 0) {
                         alert("No se pueden registrar turnos los domingos")
@@ -1409,11 +1434,36 @@ export default function RegistrarTurno() {
                       }
                       setForm({ ...form, fecha: date.toISOString().split("T")[0] })
                     }}
+                    locale="es"
                     dateFormat="dd/MM/yyyy"
                     placeholderText="dd/mm/aaaa"
                     minDate={new Date()}
                     filterDate={(date) => date.getDay() !== 0}
+                    wrapperClassName="w-100"
+                    showYearDropdown
+                    showMonthDropdown
+                    dropdownMode="select"
                     className={`form-control ${errors.fecha ? "is-invalid" : ""}`}
+                    onKeyDown={(e) => {
+                      const allowedKeys = ["Backspace", "Tab", "Enter", "Delete", "ArrowLeft", "ArrowRight"]
+                      if (allowedKeys.includes(e.key) || /^\d$/.test(e.key)) {
+                        return
+                      }
+                      e.preventDefault()
+                    }}
+                    onInput={(e) => {
+                      let valor = e.target.value.replace(/\D/g, "")
+                      
+                      if (valor.length >= 2) {
+                        valor = valor.slice(0, 2) + "/" + valor.slice(2)
+                      }
+                      if (valor.length >= 5) {
+                        valor = valor.slice(0, 5) + "/" + valor.slice(5, 9)
+                      }
+                      
+                      e.target.value = valor
+                      setForm({ ...form, fecha: valor })
+                    }}
                   />
                   {errors.fecha && <div className="invalid-feedback">{errors.fecha}</div>}
                 </div>
