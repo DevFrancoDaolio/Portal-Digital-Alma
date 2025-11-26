@@ -366,13 +366,13 @@
 .turno-bloque.confirmado {
   background: #5bc0de;
   color: white;
-  border-left-color: #057699;
+  /* Removido border-left-color para que se aplique dinámicamente desde el componente */
 }
 
 .turno-bloque.pendiente {
   background: #f0ad4e;
   color: white;
-  border-left-color: #ec971f;
+  /* Removido border-left-color para que se aplique dinámicamente desde el componente */
 }
 
 .turno-hora-bloque {
@@ -892,7 +892,6 @@
   padding: 20px 30px;
   border-bottom: 2px solid #ecf0f1;
   background: linear-gradient(135deg, #5bc0de 0%, #057699 100%);
-
 }
 
 .modal-overlay .modal-contenido .modal-header h3 {
@@ -1017,9 +1016,9 @@
 
 /* Estilo general para todos los botones de cancelación en la app */
 .btn-cancelar-accion {
-    background: #e74c3c !important; /* El !important puede ser necesario si Bootstrap está sobreescribiendo */
-    color: white !important;
-    border-color: #e74c3c !important; 
+  background: #e74c3c !important; /* El !important puede ser necesario si Bootstrap está sobreescribiendo */
+  color: white !important;
+  border-color: #e74c3c !important;
 }
 
 /* Modifica el selector original para que solo el botón "Registrar Turno" sea primario */

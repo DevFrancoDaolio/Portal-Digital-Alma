@@ -14,6 +14,29 @@ const HORARIO_INICIO = "08:00"
 const HORARIO_FIN = "20:00"
 const INTERVALO_MIN = 30
 
+function obtenerColorProfesional(profesionalId) {
+  const colores = [
+    "#057699", // Azul original
+    "#01aa47ff", // Verde
+    "#e74c3c", // Rojo
+    "#f3a62bff", // Naranja
+    "#9b59b6", // Púrpura
+    "#34495e", // Gris azulado
+    "#8b0e00ff", // Rojo oscuro
+    "#d35400", // Naranja quemado
+    "#9f3bcaff", // Púrpura oscuro
+    "#2c3e50", // Gris oscuro
+    "#ffd900ff", // Amarillo
+    "#e84393", // Rosa
+    "#2d8a77ff", // Verde menta
+    "#6d59ffff", // Índigo
+    "#fa97b9ff", // Rosa claro
+  ]
+
+  // Usar el ID del profesional para seleccionar un color consistente
+  return colores[profesionalId % colores.length]
+}
+
 function generarHorariosDisponibles(horaInicio = HORARIO_INICIO, horaFin = HORARIO_FIN, intervaloMin = INTERVALO_MIN) {
   const horarios = []
   let [hora, minuto] = horaInicio.split(":").map(Number)
@@ -933,6 +956,7 @@ export default function RegistrarTurno() {
                                     left: `${leftPosition}%`,
                                     width: `${anchoDisponible - 1}%`, // -1% para espacio entre bloques
                                     zIndex: 5 + posicionEnGrupo, // Incrementar z-index para que se vean mejor
+                                    borderLeftColor: obtenerColorProfesional(turno.profesionalId),
                                   }}
                                   onClick={(e) => {
                                     e.stopPropagation()
@@ -1381,7 +1405,8 @@ export default function RegistrarTurno() {
                     <small>
                       <strong>Email:</strong> {pacienteSeleccionado.email} | <strong>Teléfono:</strong>{" "}
                       {pacienteSeleccionado.telefono} | <strong>Obra Social:</strong>{" "}
-                      {pacienteSeleccionado.obraSocialNombre}
+                      {pacienteSeleccionado.obraSocialNombre}  | <strong>observaciónes:</strong>{" "}
+                      {pacienteSeleccionado.observaciones || "Ninguna"}
                     </small>
                   </div>
                 )}
