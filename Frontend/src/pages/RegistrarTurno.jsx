@@ -130,9 +130,10 @@ export default function RegistrarTurno() {
       return
     }
 
-    let profsFiltrados = profesionales.filter((prof) =>
-      (prof.nombre?.toLowerCase().includes(busquedaProfesional.toLowerCase()) ||
-        prof.apellido?.toLowerCase().includes(busquedaProfesional.toLowerCase()))
+    let profsFiltrados = profesionales.filter(
+      (prof) =>
+        prof.nombre?.toLowerCase().includes(busquedaProfesional.toLowerCase()) ||
+        prof.apellido?.toLowerCase().includes(busquedaProfesional.toLowerCase()),
     )
 
     if (filtroEspecialidad) {
@@ -150,22 +151,42 @@ export default function RegistrarTurno() {
       setPacientesFiltradasRapido([])
       return
     }
-    
+
     // Solo filtrar si el texto NO es un nombre completo de paciente seleccionado
-    const pacienteSeleccionadoEnBusqueda = pacientes.find(
-      (pac) => `${pac.nombre} ${pac.apellido}` === busquedaPaciente
-    )
-    
+    const pacienteSeleccionadoEnBusqueda = pacientes.find((pac) => `${pac.nombre} ${pac.apellido}` === busquedaPaciente)
+
     if (pacienteSeleccionadoEnBusqueda) {
       setPacientesFiltradasRapido([]) // Si ya está seleccionado, no mostrar dropdown
       return
     }
-    
+
     const pacientesFiltrados = pacientes.filter((pac) =>
       `${pac.nombre} ${pac.apellido}`.toLowerCase().includes(busquedaPaciente.toLowerCase()),
     )
     setPacientesFiltradasRapido(pacientesFiltrados)
   }, [busquedaPaciente, pacientes])
+
+  useEffect(() => {
+    if (!busquedaPacienteHeader || !busquedaPacienteHeader.trim()) {
+      setPacientesFiltradasHeader([])
+      return
+    }
+
+    // Solo filtrar si el texto NO es un nombre completo de paciente seleccionado
+    const pacienteSeleccionadoEnBusqueda = pacientes.find(
+      (pac) => `${pac.nombre} ${pac.apellido}` === busquedaPacienteHeader,
+    )
+
+    if (pacienteSeleccionadoEnBusqueda) {
+      setPacientesFiltradasHeader([]) // Si ya está seleccionado, no mostrar dropdown
+      return
+    }
+
+    const pacientesFiltradasHeaderResult = pacientes.filter((pac) =>
+      `${pac.nombre} ${pac.apellido}`.toLowerCase().includes(busquedaPacienteHeader.toLowerCase()),
+    )
+    setPacientesFiltradasHeader(pacientesFiltradasHeaderResult)
+  }, [busquedaPacienteHeader, pacientes])
 
   useEffect(() => {
     if (form.especialidadId) {
@@ -1137,14 +1158,14 @@ export default function RegistrarTurno() {
                           }}
                           onInput={(e) => {
                             let valor = e.target.value.replace(/\D/g, "")
-                            
+
                             if (valor.length >= 2) {
                               valor = valor.slice(0, 2) + "/" + valor.slice(2)
                             }
                             if (valor.length >= 5) {
                               valor = valor.slice(0, 5) + "/" + valor.slice(5, 9)
                             }
-                            
+
                             e.target.value = valor
                             setForm({ ...form, fecha: valor })
                           }}
@@ -1308,7 +1329,11 @@ export default function RegistrarTurno() {
               </div>
 
               <div className="d-flex gap-2 justify-content-end">
-                <button  type="button" className="btn btn-secondary btn-cancelar-accion" onClick={handleEliminarTurnoDesdeModal}>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-cancelar-accion"
+                  onClick={handleEliminarTurnoDesdeModal}
+                >
                   Cancelar Turno
                 </button>
                 <button className="btn btn-editar-small" onClick={handleEditarTurno}>
@@ -1453,14 +1478,14 @@ export default function RegistrarTurno() {
                     }}
                     onInput={(e) => {
                       let valor = e.target.value.replace(/\D/g, "")
-                      
+
                       if (valor.length >= 2) {
                         valor = valor.slice(0, 2) + "/" + valor.slice(2)
                       }
                       if (valor.length >= 5) {
                         valor = valor.slice(0, 5) + "/" + valor.slice(5, 9)
                       }
-                      
+
                       e.target.value = valor
                       setForm({ ...form, fecha: valor })
                     }}
@@ -1551,7 +1576,11 @@ export default function RegistrarTurno() {
               </div>
 
               <div className="d-flex gap-2 justify-content-end">
-                <button type="button" className="btn btn-secondary btn-cancelar-accion" onClick={() => setMostrarFormulario(false)}>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-cancelar-accion"
+                  onClick={() => setMostrarFormulario(false)}
+                >
                   Cancelar
                 </button>
                 <button type="submit" className="btn btn-primary">
