@@ -797,10 +797,7 @@ export default function RegistrarProfesional({ isModal, onClose, profesional, on
                   }}
                 />
               </div>
-              <div className="mb-3">
-                <label className="form-label">Descripción *</label>
-                {/* Description will be added through the dedicated page */}
-              </div>
+              
               <div className="d-flex gap-2 justify-content-end">
                 <button
                   type="button"
